@@ -114,7 +114,7 @@ function getHeaderToken(e) {
 
 function getSpreadsheet() {
   const props = PropertiesService.getScriptProperties();
-  const id = props.getProperty('SPREADSHEET_ID');
+  const id = props.getProperty('SPREADSHEET_ID') || '1QUISBqNelYSP2PZggtW1qZl0QF_XCxhSPBj7ilphVGg';
   if (!id) throw new Error('SPREADSHEET_ID no configurado');
   return SpreadsheetApp.openById(id);
 }
