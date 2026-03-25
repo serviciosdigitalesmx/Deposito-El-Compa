@@ -67,6 +67,8 @@ function handleRequest(method, e) {
   switch (`${method}:${action}`) {
     case 'GET:health':
       return { ok: true, service: 'Deposito El Compa GAS', now: new Date().toISOString() };
+    case 'GET:setup':
+      return setup();
     case 'GET:productos':
       return listSheet(SHEETS.productos);
     case 'GET:pedidos':
@@ -120,8 +122,11 @@ function getSpreadsheet() {
 }
 
 function getSheet(name) {
-  const sheet = getSpreadsheet().getSheetByName(name);
-  if (!sheet) throw new Error(`No existe la hoja: ${name}`);
+  const ss = getSpreadsheet();
+  let sheet = ss.getSheetByName(name);
+  if (!sheet) {
+    sheet = ss.insertSheet(name);
+  }
   return sheet;
 }
 
