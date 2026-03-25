@@ -360,7 +360,7 @@ function processOrder(e) {
     }, 3000);
 }
 
-// Hieleras
+// Cocina
 function renderKitchenOrders() {
     const container = document.getElementById('kitchenOrders');
     if (!container) return;
