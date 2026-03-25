@@ -40,36 +40,31 @@ let state = {
 document.addEventListener('DOMContentLoaded', () => {
     updateDate();
     setInterval(updateDate, 60000);
-    generateSampleOrders();
-    updateStats();
     const savedTheme = localStorage.getItem('theme') || 'dark';
     if (savedTheme === 'light') toggleTheme();
+    loadOrdersFromApi();
 });
+
+async function loadOrdersFromApi() {
+    try {
+        const api = window.DEPOSITO_API;
+        if (api) {
+            const response = await api.get('?action=pedidos');
+            state.orders = Array.isArray(response.data) ? response.data : [];
+        }
+    } catch (_) {}
+    updateStats();
+    renderRecentOrders();
+    renderAllOrders();
+    renderKitchenOrders();
+    renderDeliveryOrders();
+}
 
 function updateDate() {
     const now = new Date();
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     const dateElem = document.getElementById('currentDate');
     if (dateElem) dateElem.textContent = now.toLocaleDateString('es-ES', options);
-}
-
-function generateSampleOrders() {
-    const statuses = ['pending', 'preparing', 'ready', 'delivered'];
-    const names = ['Juan Pérez', 'María García', 'Carlos López', 'Ana Martínez', 'Luis Hernández'];
-    for (let i = 1; i <= 8; i++) {
-        state.orders.push({
-            id: 100 + i,
-            customer: names[Math.floor(Math.random() * names.length)],
-            phone: '81' + Math.floor(Math.random() * 10000000),
-            address: 'Calle ' + Math.floor(Math.random() * 100) + ' # ' + Math.floor(Math.random() * 1000),
-            products: [{ name: 'Cerveza Modelo', qty: Math.floor(Math.random() * 6) + 1 }],
-            total: Math.floor(Math.random() * 500) + 100,
-            status: statuses[Math.floor(Math.random() * statuses.length)],
-            time: new Date(Date.now() - Math.random() * 3600000).toLocaleTimeString(),
-            date: new Date().toLocaleDateString()
-        });
-    }
-    renderRecentOrders();
 }
 
 function updateStats() {
