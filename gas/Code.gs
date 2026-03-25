@@ -13,10 +13,12 @@ const SHEETS = {
 };
 
 function doGet(e) {
+  console.log('GET recibido', JSON.stringify(e || {}));
   return jsonResponse(handleRequest('GET', e));
 }
 
 function doPost(e) {
+  console.log('POST recibido', JSON.stringify(e || {}));
   return jsonResponse(handleRequest('POST', e));
 }
 
