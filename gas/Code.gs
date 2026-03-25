@@ -174,32 +174,43 @@ function requireAuth(token, allowedRoles) {
 }
 
 function createPedido(body, token) {
-  const session = body.publico ? { rol: 'cliente' } : requireAuth(token, ['admin', 'caja']);
   const lock = LockService.getScriptLock();
-  lock.waitLock(15000);
   try {
-    const sheet = getSheet(SHEETS.pedidos);
+    const session = body.publico ? { rol: 'cliente', nombre: 'Público' } : requireAuth(token, ['admin', 'caja']);
+    if (!lock.tryLock(10000)) {
+      return { ok: false, error: 'Servidor ocupado. Reintenta en unos segundos.' };
+    }
+
+    const ss = getSpreadsheet();
+    let sheet = ss.getSheetByName(SHEETS.pedidos);
+    if (!sheet) {
+      sheet = ss.insertSheet(SHEETS.pedidos);
+      sheet.appendRow(['id', 'fecha_hora', 'cliente', 'telefono', 'direccion', 'total', 'estado', 'repartidor_id', 'metodo_pago', 'updated_at', 'creado_por']);
+    }
+
     const id = Utilities.getUuid();
+    const now = new Date().toISOString();
     const row = [
       id,
-      new Date().toISOString(),
-      body.cliente || '',
-      body.telefono || '',
-      body.direccion || '',
+      now,
+      String(body.cliente || 'Sin nombre'),
+      String(body.telefono || ''),
+      String(body.direccion || 'Entrega en sucursal'),
       Number(body.total || 0),
       'nuevo',
       '',
-      body.metodo_pago || 'efectivo',
-      new Date().toISOString(),
+      String(body.metodo_pago || 'efectivo'),
+      now,
       session.rol,
     ];
-    if (sheet.getLastRow() === 0) {
-      sheet.appendRow(['id', 'fecha_hora', 'cliente', 'telefono', 'direccion', 'total', 'estado', 'repartidor_id', 'metodo_pago', 'updated_at', 'creado_por']);
-    }
     sheet.appendRow(row);
     return { ok: true, id };
+  } catch (e) {
+    return { ok: false, error: 'Error en createPedido', details: String(e) };
   } finally {
-    lock.releaseLock();
+    try {
+      lock.releaseLock();
+    } catch (_) {}
   }
 }
 
