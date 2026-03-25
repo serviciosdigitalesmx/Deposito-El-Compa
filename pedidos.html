@@ -241,7 +241,51 @@
         function showCart() { showSection('cart', document.querySelectorAll('.nav-item')[1]); }
         function openCheckout() { if (state.cart.length === 0) return; if (state.user.name) document.getElementById('checkoutName').value = state.user.name; if (state.user.phone) document.getElementById('checkoutPhone').value = state.user.phone; if (state.user.address) document.getElementById('checkoutAddress').value = state.user.address; document.getElementById('checkoutModal').classList.add('active'); }
         function selectPayment(el, method) { document.querySelectorAll('.payment-method').forEach(p => p.classList.remove('selected')); el.classList.add('selected'); state.paymentMethod = method; document.getElementById('cashChange').style.display = method === 'efectivo' ? 'block' : 'none'; }
-        function processPayment(e) { e.preventDefault(); state.user.name = document.getElementById('checkoutName').value; state.user.phone = document.getElementById('checkoutPhone').value; state.user.address = document.getElementById('checkoutAddress').value; saveUserData(); const subtotal = state.cart.reduce((sum, item) => sum + (item.price * item.qty), 0); const discountEl = document.getElementById('cartDiscount'); const discount = discountEl ? parseFloat(discountEl.textContent.replace('-$', '')) || 0 : 0; const order = { id: Date.now(), items: [...state.cart], total: subtotal - discount, status: 'pending', date: new Date(), address: state.user.address, customer: state.user.name }; state.orders.unshift(order); state.activeOrder = order; state.cart = []; updateCartUI(); closeModal('checkoutModal'); showToast('¡Pedido realizado con éxito!'); showSection('orders', document.querySelectorAll('.nav-item')[2]); startTracking(); }
+        async function processPayment(e) {
+            e.preventDefault();
+            state.user.name = document.getElementById('checkoutName').value;
+            state.user.phone = document.getElementById('checkoutPhone').value;
+            state.user.address = document.getElementById('checkoutAddress').value;
+            saveUserData();
+
+            const subtotal = state.cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            const discountEl = document.getElementById('cartDiscount');
+            const discount = discountEl ? parseFloat(discountEl.textContent.replace('-$', '')) || 0 : 0;
+            const total = subtotal - discount;
+            const payload = {
+                publico: true,
+                cliente: state.user.name,
+                telefono: state.user.phone,
+                direccion: state.user.address,
+                total,
+                metodo_pago: state.paymentMethod,
+                items: state.cart.map(item => ({ id: item.id, nombre: item.name, cantidad: item.qty, precio: item.price })),
+            };
+
+            try {
+                const response = await window.DEPOSITO_API.post('?action=pedidos', payload);
+                const orderId = response && response.id ? response.id : Date.now();
+                const order = {
+                    id: orderId,
+                    items: [...state.cart],
+                    total,
+                    status: 'nuevo',
+                    date: new Date(),
+                    address: state.user.address,
+                    customer: state.user.name
+                };
+                state.orders.unshift(order);
+                state.activeOrder = order;
+                state.cart = [];
+                updateCartUI();
+                closeModal('checkoutModal');
+                showToast('Pedido enviado a caja', 'success');
+                showSection('orders', document.querySelectorAll('.nav-item')[2]);
+                startTracking();
+            } catch (error) {
+                showToast(`No se pudo enviar el pedido: ${error.message}`, 'error');
+            }
+        }
         function startTracking() { document.getElementById('activeOrder').style.display = 'block'; document.getElementById('trackingOrderId').textContent = `#${state.activeOrder.id.toString().slice(-4)}`; const steps = [{ status: 'preparing', desc: 'Estamos preparando tu pedido', progress: 25, icon: '🔥' },{ status: 'ready', desc: '¡Tu pedido está listo!', progress: 50, icon: '📦' },{ status: 'delivered', desc: 'Pedido entregado. ¡Disfruta!', progress: 100, icon: '✅' }]; let currentStep = 0; const interval = setInterval(() => { if (currentStep >= steps.length) { clearInterval(interval); state.activeOrder.status = 'delivered'; renderOrders(); return; } updateTracking(steps[currentStep]); currentStep++; }, 8000); state.trackingInterval = interval; }
         function updateTracking(step) { document.getElementById('trackingStatus').textContent = step.status === 'preparing' ? 'Preparando tu pedido' : step.status === 'ready' ? '¡Listo para entregar!' : 'Pedido entregado'; document.getElementById('trackingDesc').textContent = step.desc; document.getElementById('trackingIcon').textContent = step.icon; document.getElementById('progressFill').style.width = step.progress + '%'; document.querySelectorAll('.progress-step').forEach((s, i) => { s.classList.remove('active', 'completed'); if (i < step.progress / 25) s.classList.add('completed'); if (i === step.progress / 25) s.classList.add('active'); }); }
         function renderOrders() { const container = document.getElementById('ordersHistory'); if (state.orders.length === 0 && !state.activeOrder) { container.innerHTML = `<div class="empty-state"><div class="empty-icon">📦</div><div class="empty-title">No tienes pedidos aún</div><div class="empty-desc">Haz tu primer pedido y tracking en tiempo real</div><button class="btn-primary" onclick="showSection('home', document.querySelectorAll('.nav-item')[0])">Hacer pedido</button></div>`; return; } container.innerHTML = state.orders.map(order => `<div class="order-history-item"><div class="history-header"><div><div class="history-id">#${order.id.toString().slice(-4)}</div><div class="history-date">${new Date(order.date).toLocaleDateString()}</div></div><span class="history-status ${order.status === 'delivered' ? 'status-delivered' : 'status-cancelled'}">${order.status === 'delivered' ? 'Entregado' : 'En camino'}</span></div><div class="history-products">${order.items.map(i => `<div class="history-product">${i.icon}</div>`).join('')}</div><div class="history-footer"><div class="history-total">$${order.total}</div><button class="btn-reorder" onclick="reorder(${order.id})"><i class="fas fa-redo"></i> Reordenar</button></div></div>`).join(''); }
