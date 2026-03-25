@@ -1,3 +1,4 @@
+// Deposito El Compa GAS backend
 const SHEETS = {
   productos: 'productos',
   pedidos: 'pedidos',
