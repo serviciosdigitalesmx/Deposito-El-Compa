@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Depósito El Compa - Sistema Integral</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Login Overlay -->
+    <div class="login-overlay" id="loginOverlay">
+        <div class="pin-container">
+            <h1 style="font-size: 2.5rem; margin-bottom: 10px;">🍻 Depósito El Compa</h1>
+            <p style="opacity: 0.7; margin-bottom: 30px;">Sistema de Gestión Integral</p>
+            <div class="role-selector">
+                <button class="role-btn active" data-role="admin" onclick="selectRole('admin')">
+                    <i class="fas fa-user-shield"></i><span>Admin</span>
+                </button>
+                <button class="role-btn" data-role="cocina" onclick="selectRole('cocina')">
+                    <i class="fas fa-utensils"></i><span>Cocina</span>
+                </button>
+                <button class="role-btn" data-role="repartidor" onclick="selectRole('repartidor')">
+                    <i class="fas fa-motorcycle"></i><span>Repartidor</span>
+                </button>
+                <button class="role-btn" data-role="caja" onclick="selectRole('caja')">
+                    <i class="fas fa-cash-register"></i><span>Caja</span>
+                </button>
+            </div>
+            <div class="pin-display" id="pinDisplay">
+                <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+            </div>
+            <div class="pin-pad">
+                <button class="pin-btn" onclick="enterPin(1)">1</button><button class="pin-btn" onclick="enterPin(2)">2</button><button class="pin-btn" onclick="enterPin(3)">3</button>
+                <button class="pin-btn" onclick="enterPin(4)">4</button><button class="pin-btn" onclick="enterPin(5)">5</button><button class="pin-btn" onclick="enterPin(6)">6</button>
+                <button class="pin-btn" onclick="enterPin(7)">7</button><button class="pin-btn" onclick="enterPin(8)">8</button><button class="pin-btn" onclick="enterPin(9)">9</button>
+                <button class="pin-btn" onclick="clearPin()">C</button><button class="pin-btn" onclick="enterPin(0)">0</button>
+                <button class="pin-btn delete" onclick="deletePin()"><i class="fas fa-backspace"></i></button>
+            </div>
+            <p style="margin-top: 20px; opacity: 0.5; font-size: 0.9rem;">PIN por defecto: 1234</p>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- App Container -->
+    <div class="app-container" id="appContainer" style="display: none;">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="logo">
+                <div class="logo-icon">🍻</div>
+                <div class="logo-text"><h1>El Compa</h1><p>Sistema Integral</p></div>
+            </div>
+            <div class="nav-section">
+                <div class="nav-title">Principal</div>
+                <div class="nav-item active" onclick="showSection('dashboard')"><i class="fas fa-chart-line"></i><span>Dashboard</span></div>
+                <div class="nav-item" onclick="showSection('tienda')"><i class="fas fa-store"></i><span>Tienda</span><span class="badge" id="cartBadge">0</span></div>
+                <div class="nav-item" onclick="showSection('pedidos')"><i class="fas fa-clipboard-list"></i><span>Pedidos</span><span class="badge warning" id="ordersBadge">3</span></div>
+            </div>
+            <div class="nav-section" id="adminNav" style="display: none;">
+                <div class="nav-title">Administración</div>
+                <div class="nav-item" onclick="showSection('cocina')"><i class="fas fa-fire"></i><span>Cocina</span><span class="badge" id="kitchenBadge">2</span></div>
+                <div class="nav-item" onclick="showSection('reparto')"><i class="fas fa-map-marked-alt"></i><span>Reparto</span></div>
+                <div class="nav-item" onclick="showSection('inventario')"><i class="fas fa-boxes"></i><span>Inventario</span></div>
+                <div class="nav-item" onclick="showSection('reportes')"><i class="fas fa-chart-pie"></i><span>Reportes</span></div>
+            </div>
+            <div class="nav-section">
+                <div class="nav-title">Sistema</div>
+                <div class="nav-item" onclick="toggleTheme()"><i class="fas fa-moon"></i><span>Cambiar Tema</span></div>
+                <div class="nav-item" onclick="logout()"><i class="fas fa-sign-out-alt"></i><span>Cerrar Sesión</span></div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="header">
+                <div class="header-left"><h2 id="pageTitle">Dashboard</h2><p id="currentDate">Cargando fecha...</p></div>
+                <div class="header-actions">
+                    <button class="btn-icon" onclick="toggleSound()" id="soundBtn"><i class="fas fa-volume-up"></i></button>
+                    <button class="btn-icon" onclick="showNotifications()"><i class="fas fa-bell"></i><span class="notification-dot"></span></button>
+                    <div class="user-profile"><div class="user-avatar" id="userAvatar">A</div><div><div style="font-weight: 600;" id="userName">Admin</div><div style="font-size: 0.8rem; opacity: 0.7;" id="userRole">Administrador</div></div></div>
+                </div>
+            </header>
+
+            <!-- Dashboard Section -->
+            <section id="dashboardSection" class="section-content">
+                <div class="stats-grid">
+                    <div class="stat-card"><div class="stat-header"><div class="stat-icon purple"><i class="fas fa-dollar-sign"></i></div><span class="stat-trend up">+12.5%</span></div><div class="stat-value" id="totalVentas">$0</div><div class="stat-label">Ventas Hoy</div></div>
+                    <div class="stat-card"><div class="stat-header"><div class="stat-icon cyan"><i class="fas fa-shopping-bag"></i></div><span class="stat-trend up">+8.2%</span></div><div class="stat-value" id="totalPedidos">0</div><div class="stat-label">Pedidos Hoy</div></div>
+                    <div class="stat-card"><div class="stat-header"><div class="stat-icon yellow"><i class="fas fa-clock"></i></div><span class="stat-trend down">-2.1%</span></div><div class="stat-value" id="tiempoPromedio">18m</div><div class="stat-label">Tiempo Promedio</div></div>
+                    <div class="stat-card"><div class="stat-header"><div class="stat-icon green"><i class="fas fa-star"></i></div><span class="stat-trend up">+5.4%</span></div><div class="stat-value">4.8</div><div class="stat-label">Calificación</div></div>
+                </div>
+                <div class="content-grid">
+                    <div class="panel"><div class="panel-header"><h3 class="panel-title"><i class="fas fa-chart-bar"></i>Ventas por Hora</h3><div class="panel-actions"><button class="btn btn-secondary btn-small">Hoy</button><button class="btn btn-secondary btn-small">Semana</button></div></div><div class="chart-container" id="salesChart"></div></div>
+                    <div class="panel"><div class="panel-header"><h3 class="panel-title"><i class="fas fa-map-marker-alt"></i>Mapa de Entregas</h3></div><div class="map-container"><div class="map-grid"></div><div class="map-point" style="top: 30%; left: 20%;" data-label="Pedido #123"><i class="fas fa-motorcycle"></i></div><div class="map-point" style="top: 60%; left: 70%;" data-label="Pedido #124"><i class="fas fa-motorcycle"></i></div><div class="map-point" style="top: 40%; left: 50%; background: var(--success);" data-label="Entregado"><i class="fas fa-check"></i></div></div><div style="display: flex; justify-content: space-between; font-size: 0.9rem;"><span><i class="fas fa-circle" style="color: var(--primary);"></i> En camino (2)</span><span><i class="fas fa-circle" style="color: var(--success);"></i> Entregados (8)</span></div></div>
+                </div>
+                <div class="panel"><div class="panel-header"><h3 class="panel-title"><i class="fas fa-list"></i>Pedidos Recientes</h3><button class="btn btn-primary" onclick="showSection('pedidos')">Ver Todos</button></div><div class="orders-list" id="recentOrders"></div></div>
+            </section>
+
+            <!-- Tienda Section -->
+            <section id="tiendaSection" class="section-content hidden">
+                <div class="content-grid" style="grid-template-columns: 1fr 350px;">
+                    <div><div class="search-bar"><i class="fas fa-search search-icon"></i><input type="text" class="search-input" placeholder="Buscar productos..." id="searchProduct" onkeyup="filterProducts()"></div><div class="quick-filters"><button class="filter-chip active" onclick="filterCategory('all')">Todos</button><button class="filter-chip" onclick="filterCategory('cerveza')">Cervezas</button><button class="filter-chip" onclick="filterCategory('botana')">Botanas</button><button class="filter-chip" onclick="filterCategory('otros')">Otros</button></div><div class="products-grid" id="productsGrid"></div></div>
+                    <div class="panel" style="position: sticky; top: 30px; height: fit-content;"><div class="panel-header"><h3 class="panel-title"><i class="fas fa-shopping-cart"></i>Carrito</h3><button class="btn-icon" onclick="clearCart()" style="width: 35px; height: 35px;"><i class="fas fa-trash"></i></button></div><div class="cart-items" id="cartItems"><p class="text-center" style="opacity: 0.5; padding: 40px 0;">El carrito está vacío</p></div><div class="cart-total"><div class="total-row"><span>Subtotal:</span><span id="subtotal">$0</span></div><div class="total-row"><span>Envío:</span><span>$50</span></div><div class="total-row final"><span>Total:</span><span id="cartTotal">$0</span></div></div><button class="btn btn-primary" style="width: 100%; margin-top: 15px;" onclick="openCheckout()"><i class="fas fa-credit-card"></i>Finalizar Compra</button></div>
+                </div>
+            </section>
+
+            <!-- Pedidos Section -->
+            <section id="pedidosSection" class="section-content hidden">
+                <div class="tabs"><button class="tab active" onclick="filterOrders('all')">Todos</button><button class="tab" onclick="filterOrders('pending')">Pendientes</button><button class="tab" onclick="filterOrders('preparing')">En Preparación</button><button class="tab" onclick="filterOrders('ready')">Listos</button><button class="tab" onclick="filterOrders('delivered')">Entregados</button></div>
+                <div class="orders-list" id="allOrdersList"></div>
+            </section>
+
+            <!-- Cocina Section -->
+            <section id="cocinaSection" class="section-content hidden">
+                <div class="panel"><div class="panel-header"><h3 class="panel-title"><i class="fas fa-fire-alt"></i>Pedidos en Cocina</h3><div class="timer" id="kitchenTimer">00:00</div></div><div class="cooking-animation"><div class="bubble"></div><div class="bubble"></div><div class="bubble"></div></div><div class="orders-list" id="kitchenOrders"></div></div>
+            </section>
+
+            <!-- Reparto Section -->
+            <section id="repartoSection" class="section-content hidden">
+                <div class="content-grid"><div class="panel"><div class="panel-header"><h3 class="panel-title"><i class="fas fa-route"></i>Rutas de Entrega</h3></div><div class="map-container" style="height: 400px;"><div class="map-grid"></div><svg style="position: absolute; width: 100%; height: 100%; pointer-events: none;"><path d="M 100 150 Q 250 100 400 200" stroke="var(--primary)" stroke-width="3" fill="none" stroke-dasharray="5,5"><animate attributeName="stroke-dashoffset" from="100" to="0" dur="2s" repeatCount="indefinite"/></path></svg><div class="map-point" style="top: 30%; left: 15%;" data-label="Inicio"><i class="fas fa-store"></i></div><div class="map-point" style="top: 50%; left: 40%; animation: none; background: var(--warning);" data-label="Pedido #125"><i class="fas fa-box"></i></div><div class="map-point" style="top: 70%; left: 70%; animation: none; background: var(--warning);" data-label="Pedido #126"><i class="fas fa-box"></i></div></div></div><div class="panel"><div class="panel-header"><h3 class="panel-title"><i class="fas fa-motorcycle"></i>Entregas Pendientes</h3></div><div class="orders-list" id="deliveryOrders"></div></div></div>
+            </section>
+
+            <!-- Inventario Section -->
+            <section id="inventarioSection" class="section-content hidden">
+                <div class="panel"><div class="panel-header"><h3 class="panel-title"><i class="fas fa-boxes"></i>Gestión de Inventario</h3><button class="btn btn-primary" onclick="openAddProductModal()"><i class="fas fa-plus"></i>Agregar Producto</button></div><div class="search-bar"><i class="fas fa-search search-icon"></i><input type="text" class="search-input" placeholder="Buscar en inventario..."></div><table style="width: 100%; border-collapse: collapse;"><thead><tr style="text-align: left; border-bottom: 2px solid var(--glass-border);"><th style="padding: 15px;">Producto</th><th style="padding: 15px;">Stock</th><th style="padding: 15px;">Precio</th><th style="padding: 15px;">Estado</th><th style="padding: 15px;">Acciones</th></tr></thead><tbody id="inventoryTable"></tbody></table></div>
+            </section>
+
+            <!-- Reportes Section -->
+            <section id="reportesSection" class="section-content hidden">
+                <div class="content-grid"><div class="panel"><div class="panel-header"><h3 class="panel-title"><i class="fas fa-chart-line"></i>Resumen de Ventas</h3></div><div style="text-align: center; padding: 40px;"><div style="font-size: 3rem; font-weight: 800; color: var(--primary); margin-bottom: 10px;">$45,230</div><div style="opacity: 0.7;">Ventas totales del mes</div></div><div class="chart-container" style="height: 250px;"><div class="chart-bar" style="height: 40%;" data-value="$8k"></div><div class="chart-bar" style="height: 65%;" data-value="$13k"></div><div class="chart-bar" style="height: 45%;" data-value="$9k"></div><div class="chart-bar" style="height: 80%;" data-value="$16k"></div><div class="chart-bar" style="height: 55%;" data-value="$11k"></div><div class="chart-bar" style="height: 90%;" data-value="$18k"></div><div class="chart-bar" style="height: 70%;" data-value="$14k"></div></div><div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 0.8rem; opacity: 0.6;"><span>Lun</span><span>Mar</span><span>Mie</span><span>Jue</span><span>Vie</span><span>Sab</span><span>Dom</span></div></div><div class="panel"><div class="panel-header"><h3 class="panel-title"><i class="fas fa-trophy"></i>Productos Más Vendidos</h3></div><div id="topProducts"></div></div></div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal Checkout -->
+    <div class="modal" id="checkoutModal"><div class="modal-content"><div class="modal-header"><h3 class="modal-title">Finalizar Pedido</h3><button class="close-btn" onclick="closeModal('checkoutModal')"><i class="fas fa-times"></i></button></div><form id="checkoutForm" onsubmit="processOrder(event)"><div class="form-group"><label class="form-label">Nombre del Cliente</label><input type="text" class="form-input" id="customerName" required></div><div class="form-group"><label class="form-label">Teléfono</label><input type="tel" class="form-input" id="customerPhone" required></div><div class="form-group"><label class="form-label">Dirección de Entrega</label><textarea class="form-textarea" id="customerAddress" rows="2" required></textarea></div><div class="form-group"><label class="form-label">Método de Pago</label><select class="form-select" id="paymentMethod"><option value="efectivo">💵 Efectivo</option><option value="tarjeta">💳 Tarjeta</option><option value="transferencia">🏦 Transferencia</option></select></div><div class="form-group"><label class="form-label">Código de Descuento</label><input type="text" class="form-input" id="discountCode" placeholder="Opcional" onblur="applyDiscount()"></div><div style="background: var(--dark-lighter); padding: 15px; border-radius: 10px; margin-bottom: 20px;"><div style="display: flex; justify-content: space-between; margin-bottom: 8px;"><span>Subtotal:</span><span id="checkoutSubtotal">$0</span></div><div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: var(--success);"><span>Descuento:</span><span id="checkoutDiscount">-$0</span></div><div style="display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: 800; border-top: 1px solid var(--glass-border); padding-top: 8px;"><span>Total:</span><span id="checkoutTotal">$0</span></div></div><button type="submit" class="btn btn-primary" style="width: 100%;"><i class="fas fa-paper-plane"></i>Confirmar Pedido</button></form><div class="ticket-preview" id="ticketPreview" style="display: none;"><div class="ticket-header"><h3>🍻 DEPÓSITO EL COMPA</h3><p>Ticket #: <span id="ticketNumber">001</span></p><p id="ticketDate">--</p></div><div id="ticketItems"></div><div class="ticket-total">Total: <span id="ticketTotal">$0</span></div><p style="text-align: center; margin-top: 10px; font-size: 0.8rem;">¡Gracias por su compra!</p></div></div></div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
