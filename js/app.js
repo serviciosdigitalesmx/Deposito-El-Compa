@@ -43,6 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const savedTheme = localStorage.getItem('theme') || 'dark';
     if (savedTheme === 'light') toggleTheme();
     loadOrdersFromApi();
+    setInterval(loadOrdersFromApi, 10000);
 });
 
 async function loadOrdersFromApi() {
@@ -53,11 +54,19 @@ async function loadOrdersFromApi() {
             state.orders = Array.isArray(response.data) ? response.data : [];
         }
     } catch (_) {}
+    updateOrderHistoryView();
     updateStats();
     renderRecentOrders();
     renderAllOrders();
     renderKitchenOrders();
     renderDeliveryOrders();
+}
+
+function updateOrderHistoryView() {
+    const container = document.getElementById('ordersHistory');
+    if (!container) return;
+    if (!state.orders.length) return;
+    container.innerHTML = state.orders.map(order => `<div class="order-history-item"><div class="history-header"><div><div class="history-id">#${String(order.id).slice(-4)}</div><div class="history-date">${new Date(order.fecha_hora || order.date || Date.now()).toLocaleDateString()}</div></div><span class="history-status ${order.estado === 'entregado' ? 'status-delivered' : 'status-cancelled'}">${order.estado || order.status || 'nuevo'}</span></div><div class="history-footer"><div class="history-total">$${order.total}</div></div></div>`).join('');
 }
 
 function updateDate() {

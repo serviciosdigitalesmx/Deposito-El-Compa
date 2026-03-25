@@ -43,6 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const savedTheme = localStorage.getItem('theme') || 'dark';
     if (savedTheme === 'light') toggleTheme();
     loadOrdersFromApi();
+    setInterval(loadOrdersFromApi, 5000);
 });
 
 async function loadOrdersFromApi() {
@@ -51,11 +52,21 @@ async function loadOrdersFromApi() {
         const response = await api.get('?action=pedidos');
         state.orders = Array.isArray(response.data) ? response.data : [];
     } catch (_) {}
+    syncBadges();
     updateStats();
     renderRecentOrders();
     renderAllOrders();
     renderKitchenOrders();
     renderDeliveryOrders();
+}
+
+function syncBadges() {
+    const pending = state.orders.filter(o => o.estado === 'nuevo' || o.estado === 'aceptado' || o.estado === 'en_hieleras').length;
+    const hieleras = state.orders.filter(o => o.estado === 'aceptado' || o.estado === 'en_hieleras').length;
+    const ordersBadge = document.getElementById('ordersBadge');
+    const kitchenBadge = document.getElementById('kitchenBadge');
+    if (ordersBadge) ordersBadge.textContent = pending;
+    if (kitchenBadge) kitchenBadge.textContent = hieleras;
 }
 
 function DEPTO_API() {
