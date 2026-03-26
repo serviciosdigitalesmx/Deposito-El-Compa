@@ -332,6 +332,19 @@ function requireAuth(token, allowedRoles) {
   return session;
 }
 
+function withDocumentLock(fn, timeoutMs) {
+  const lock = LockService.getDocumentLock();
+  const acquired = lock.tryLock(timeoutMs || 10000);
+  if (!acquired) {
+    throw new Error('No se pudo obtener el bloqueo del documento');
+  }
+  try {
+    return fn();
+  } finally {
+    lock.releaseLock();
+  }
+}
+
 function createPedido(body, token) {
   const lock = LockService.getScriptLock();
   try {
