@@ -56,10 +56,35 @@
       <a class="btn" href="./panel-archivo.html" target="_blank"><i class="fa-solid fa-box-archive"></i> Archivo</a>
     </div>
   </main>
+  <script>
+    window.DEPOSITO_GAS_URL = 'https://script.google.com/macros/s/AKfycbw36LgiUW3Mp7ezvsQKcaDOAITZSryrMLdOXf0zu-8AtORq8l_0lwWkMu8RLYaS24ZZ/exec';
+  </script>
   <script src="./js/deposito-api.js"></script>
   <script>
+    const AUTH_ROLE = 'admin';
+    const AUTH_PIN = '1234';
+    const AUTH_TOKEN_KEY = 'DEPOSITO_GAS_TOKEN';
+    function setApiAuth(token) {
+      window.DEPOSITO_API.setConfig({
+        endpoint: window.DEPOSITO_GAS_URL,
+        token: token || ''
+      });
+    }
+    async function ensureAuth() {
+      const cached = localStorage.getItem(AUTH_TOKEN_KEY);
+      if (cached) {
+        setApiAuth(cached);
+        return cached;
+      }
+      const res = await window.DEPOSITO_API.get(`?action=login&role=${encodeURIComponent(AUTH_ROLE)}&pin=${encodeURIComponent(AUTH_PIN)}&t=${Date.now()}`);
+      if (!res || !res.ok || !res.token) throw new Error((res && res.error) || 'No se pudo autenticar admin');
+      localStorage.setItem(AUTH_TOKEN_KEY, res.token);
+      setApiAuth(res.token);
+      return res.token;
+    }
     async function load() {
       try {
+        await ensureAuth();
         const res = await window.DEPOSITO_API.get('?action=pedidos&t=' + Date.now());
         const rows = Array.isArray(res.data) ? res.data : [];
         document.getElementById('m-pedidos').textContent = rows.length;

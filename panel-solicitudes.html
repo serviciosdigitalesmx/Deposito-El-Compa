@@ -74,12 +74,40 @@
     </div>
     <div class="grid" id="list"></div>
   </main>
+  <script>
+    window.DEPOSITO_GAS_URL = 'https://script.google.com/macros/s/AKfycbw36LgiUW3Mp7ezvsQKcaDOAITZSryrMLdOXf0zu-8AtORq8l_0lwWkMu8RLYaS24ZZ/exec';
+  </script>
   <script src="./js/deposito-api.js"></script>
   <script>
+    const AUTH_ROLE = 'caja';
+    const AUTH_PIN = '3333';
+    const AUTH_TOKEN_KEY = 'DEPOSITO_GAS_TOKEN';
     const list = document.getElementById('list');
     const toast = document.getElementById('toast');
     let pollTimer = null;
     let lastSignature = '';
+
+    function setApiAuth(token) {
+      window.DEPOSITO_API.setConfig({
+        endpoint: window.DEPOSITO_GAS_URL,
+        token: token || ''
+      });
+    }
+
+    async function ensureAuth() {
+      const cached = localStorage.getItem(AUTH_TOKEN_KEY);
+      if (cached) {
+        setApiAuth(cached);
+        return cached;
+      }
+      const res = await window.DEPOSITO_API.get(`?action=login&role=${encodeURIComponent(AUTH_ROLE)}&pin=${encodeURIComponent(AUTH_PIN)}&t=${Date.now()}`);
+      if (!res || !res.ok || !res.token) {
+        throw new Error((res && res.error) || 'No se pudo autenticar caja');
+      }
+      localStorage.setItem(AUTH_TOKEN_KEY, res.token);
+      setApiAuth(res.token);
+      return res.token;
+    }
 
     function showToast(msg, ms = 2200) {
       toast.textContent = msg;
@@ -118,6 +146,7 @@
 
     async function load(force = false) {
       try {
+        await ensureAuth();
         const res = await window.DEPOSITO_API.get('?action=pedidos&t=' + Date.now());
         const rows = Array.isArray(res.data) ? res.data : [];
         const sig = signature(rows);

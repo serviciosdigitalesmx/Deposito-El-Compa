@@ -169,6 +169,8 @@ function handleRequest(method, e) {
       return listArchivoPedidos(params, token);
     case 'GET:repartidores':
       return listSheet(SHEETS.repartidores);
+    case 'GET:login':
+      return login({ role: params.role, pin: params.pin });
     case 'POST:login':
       return login(body);
     case 'POST:pedidos':
