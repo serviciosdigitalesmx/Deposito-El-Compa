@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#ff6b6b" />
+  <title>Depósito El Compa - Dashboard Unificado</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root{
+      --primary:#ff6b6b; --primary-dark:#ff5252; --secondary:#4ecdc4; --accent:#ffe66d;
+      --dark:#0f0f1a; --dark-light:#1a1a2e; --dark-lighter:#252540; --light:#fff;
+      --gray:#8b8b9e; --success:#00d9a3; --warning:#ffc107; --danger:#ff4757;
+      --gradient:linear-gradient(135deg,var(--primary),var(--primary-dark));
+      --shadow:0 10px 40px rgba(255,107,107,.24);
+    }
+    *{box-sizing:border-box} html,body{margin:0;padding:0;font-family:Inter,sans-serif;background:var(--dark);color:var(--light);min-height:100%}
+    body{overflow-x:hidden}
+    button,input,select,textarea{font:inherit}
+    .app{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+    .sidebar{background:rgba(255,255,255,.03);backdrop-filter:blur(18px);border-right:1px solid rgba(255,255,255,.08);padding:20px;position:sticky;top:0;height:100vh}
+    .logo{display:flex;align-items:center;gap:12px;padding:14px 0 18px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:18px}
+    .logo-icon{width:46px;height:46px;border-radius:14px;background:var(--gradient);display:grid;place-items:center;font-size:24px}
+    .logo h1{font-size:1.2rem;margin:0}.logo p{margin:0;color:var(--gray);font-size:.8rem}
+    .nav-section{margin-top:18px}.nav-title{font-size:.72rem;text-transform:uppercase;letter-spacing:2px;color:var(--gray);margin:0 0 10px 12px}
+    .nav-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;color:var(--light);cursor:pointer;user-select:none}
+    .nav-item:hover,.nav-item.active{background:rgba(255,255,255,.06);transform:translateX(2px)}
+    .badge{margin-left:auto;background:var(--primary);padding:3px 8px;border-radius:999px;font-size:.75rem;font-weight:700}
+    .main{padding:22px 22px 60px}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}
+    .hero{background:linear-gradient(135deg, rgba(255,107,107,.95), rgba(255,82,82,.92));padding:18px 20px;border-radius:22px;box-shadow:var(--shadow);display:flex;justify-content:space-between;gap:16px;align-items:center}
+    .hero .meta{display:flex;align-items:center;gap:12px}
+    .hero .bubble{width:42px;height:42px;border-radius:14px;background:rgba(255,255,255,.16);display:grid;place-items:center}
+    .hero small{display:block;opacity:.92}
+    .toolbar{display:flex;gap:10px;align-items:center}
+    .btn-icon{width:42px;height:42px;border-radius:12px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.05);color:#fff;display:grid;place-items:center;cursor:pointer}
+    .user{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:14px;background:rgba(255,255,255,.06)}
+    .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--secondary),var(--primary));display:grid;place-items:center;font-weight:800}
+    .section{display:none}.section.active{display:block}
+    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin:18px 0}
+    .card{background:var(--dark-light);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:16px}
+    .card h3,.panel h3{margin:0 0 8px}
+    .metric{font-size:1.9rem;font-weight:800}
+    .content-grid{display:grid;grid-template-columns:2fr 1fr;gap:18px}
+    .panel{background:var(--dark-light);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:18px}
+    .panel-header{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}
+    .panel-title{display:flex;align-items:center;gap:10px;font-size:1.05rem}
+    .btn{border:none;border-radius:12px;padding:10px 14px;cursor:pointer;font-weight:700}
+    .btn-primary{background:var(--gradient);color:#fff}
+    .btn-secondary{background:rgba(255,255,255,.06);color:#fff;border:1px solid rgba(255,255,255,.08)}
+    .btn-success{background:linear-gradient(135deg,var(--success),#00b8d4);color:#001}
+    .btn-danger{background:linear-gradient(135deg,var(--danger),#ff6f7c);color:#fff}
+    .products-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+    .product-card,.order-card,.history-card{background:#20203a;border:1px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden}
+    .product-image{height:165px;background:radial-gradient(circle at top, rgba(255,255,255,.08), rgba(255,255,255,.02));display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+    .product-image img{width:100%;height:100%;object-fit:contain;object-position:center;padding:14px;display:block}
+    .product-info{padding:14px}
+    .product-name{font-weight:700}.product-desc{font-size:.78rem;color:var(--gray);margin:5px 0 10px;min-height:28px}
+    .price{font-size:1.3rem;font-weight:800;color:var(--primary)}
+    .small{font-size:.8rem;color:var(--gray)}
+    .cart-item,.history-row{display:flex;gap:12px;align-items:center}
+    .cart-items{display:flex;flex-direction:column;gap:10px}
+    .cart-item{background:#232341;border-radius:14px;padding:12px}
+    .cart-thumb{width:56px;height:56px;border-radius:12px;background:#161626;display:grid;place-items:center;overflow:hidden}
+    .cart-thumb img{width:100%;height:100%;object-fit:contain;padding:6px}
+    .qty{display:flex;align-items:center;gap:8px;margin-left:auto}
+    .qty button{width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,.06);color:#fff;border:1px solid rgba(255,255,255,.08)}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .form-group{margin-bottom:12px}
+    .label{display:block;font-size:.85rem;font-weight:700;margin-bottom:6px}
+    .input,.select,.textarea{width:100%;border-radius:12px;border:1px solid rgba(255,255,255,.08);background:#141423;color:#fff;padding:12px 14px}
+    .textarea{min-height:94px;resize:vertical}
+    .status{padding:5px 10px;border-radius:999px;font-size:.72rem;font-weight:800}
+    .status.new{background:rgba(255,193,7,.16);color:#ffd86b}.status.ok{background:rgba(0,217,163,.16);color:var(--success)}.status.ready{background:rgba(78,205,196,.16);color:var(--secondary)}.status.ship{background:rgba(255,107,107,.16);color:#ff8c8c}
+    .table{width:100%;border-collapse:collapse}.table th,.table td{padding:12px 10px;border-bottom:1px solid rgba(255,255,255,.08);text-align:left;font-size:.92rem}
+    .hidden{display:none!important}
+    .login{position:fixed;inset:0;background:rgba(15,15,26,.98);display:flex;align-items:center;justify-content:center;z-index:3000;padding:20px}
+    .login-box{width:min(760px,100%);background:var(--dark-light);border:1px solid rgba(255,255,255,.08);border-radius:24px;padding:22px;box-shadow:var(--shadow)}
+    .role-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0 16px}
+    .role{background:#131322;border:1px solid rgba(255,255,255,.08);padding:14px;border-radius:16px;color:#fff;cursor:pointer}
+    .role.active{outline:2px solid var(--primary)}
+    .pin{display:grid;grid-template-columns:repeat(3,72px);gap:10px;justify-content:center;margin-top:14px}
+    .pin button{height:72px;border-radius:18px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:#fff;font-size:1.25rem}
+    .pin-dots{display:flex;gap:10px;justify-content:center;margin:14px 0}
+    .dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--primary)}
+    .dot.filled{background:var(--primary)}
+    .toast{position:fixed;top:18px;right:18px;z-index:9999;background:#1d1d32;border:1px solid rgba(255,255,255,.08);padding:12px 14px;border-radius:14px;box-shadow:var(--shadow);display:none}
+    @media (max-width: 1040px){.app{grid-template-columns:1fr}.sidebar{position:relative;height:auto}.content-grid{grid-template-columns:1fr}.role-grid{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width: 640px){.grid-2{grid-template-columns:1fr}.role-grid{grid-template-columns:1fr}.pin{grid-template-columns:repeat(3,1fr)}}
+  </style>
+</head>
+<body>
+  <div class="login" id="loginScreen">
+    <div class="login-box">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+        <div>
+          <div class="logo" style="border:0;margin:0;padding:0">
+            <div class="logo-icon">🍻</div>
+            <div>
+              <h1>Depósito El Compa</h1>
+              <p>Dashboard unificado para cliente e interno</p>
+            </div>
+          </div>
+        </div>
+        <div class="small">Base para rediseño visual y funcional</div>
+      </div>
+      <div class="role-grid">
+        <button class="role active" data-role="cliente"><i class="fa-solid fa-user"></i><div>Cliente</div></button>
+        <button class="role" data-role="caja"><i class="fa-solid fa-cash-register"></i><div>Caja</div></button>
+        <button class="role" data-role="hieleras"><i class="fa-solid fa-ice-cream"></i><div>Hieleras</div></button>
+        <button class="role" data-role="repartidor"><i class="fa-solid fa-motorcycle"></i><div>Reparto</div></button>
+      </div>
+      <div class="pin-dots" id="pinDots"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+      <div class="pin">
+        <button onclick="pinAdd(1)">1</button><button onclick="pinAdd(2)">2</button><button onclick="pinAdd(3)">3</button>
+        <button onclick="pinAdd(4)">4</button><button onclick="pinAdd(5)">5</button><button onclick="pinAdd(6)">6</button>
+        <button onclick="pinAdd(7)">7</button><button onclick="pinAdd(8)">8</button><button onclick="pinAdd(9)">9</button>
+        <button onclick="pinClear()">C</button><button onclick="pinAdd(0)">0</button><button onclick="pinBack()"><i class="fa-solid fa-delete-left"></i></button>
+      </div>
+      <div style="margin-top:14px;text-align:center"><button class="btn btn-primary" onclick="login()">Entrar</button></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="app hidden" id="app">
+    <aside class="sidebar">
+      <div class="logo">
+        <div class="logo-icon">🍻</div>
+        <div><h1>El Compa</h1><p id="roleLabel">Cliente</p></div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-title">Cliente</div>
+        <div class="nav-item active" data-section="cliente-home"><i class="fa-solid fa-house"></i>Inicio</div>
+        <div class="nav-item" data-section="cliente-carrito"><i class="fa-solid fa-basket-shopping"></i>Carrito <span class="badge" id="cartCount">0</span></div>
+        <div class="nav-item" data-section="cliente-pedidos"><i class="fa-solid fa-clipboard-list"></i>Pedidos</div>
+        <div class="nav-item" data-section="cliente-perfil"><i class="fa-solid fa-user"></i>Perfil</div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-title">Operación</div>
+        <div class="nav-item" data-section="panel-solicitudes"><i class="fa-solid fa-inbox"></i>Solicitudes <span class="badge" id="badgeSolicitudes">0</span></div>
+        <div class="nav-item" data-section="panel-hieleras"><i class="fa-solid fa-icicles"></i>Hieleras <span class="badge" id="badgeHieleras">0</span></div>
+        <div class="nav-item" data-section="panel-reparto"><i class="fa-solid fa-motorcycle"></i>Reparto</div>
+        <div class="nav-item" data-section="panel-inventario"><i class="fa-solid fa-boxes-stacked"></i>Inventario</div>
+        <div class="nav-item" data-section="panel-archivo"><i class="fa-solid fa-box-archive"></i>Archivo</div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-title">Sistema</div>
+        <div class="nav-item" onclick="toggleTheme()"><i class="fa-solid fa-moon"></i>Tema</div>
+        <div class="nav-item" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i>Salir</div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div>
+          <h2 id="pageTitle" style="margin:0 0 4px">Inicio</h2>
+          <div class="small" id="pageSubtitle">Catálogo y solicitudes del depósito</div>
+        </div>
+        <div class="toolbar">
+          <button class="btn-icon" onclick="refreshAll()"><i class="fa-solid fa-rotate"></i></button>
+          <button class="btn-icon" onclick="showToast('Sin notificaciones')"><i class="fa-solid fa-bell"></i></button>
+          <div class="user"><div class="avatar" id="avatar">A</div><div><div id="userName">Admin</div><div class="small" id="userRoleText">Administrador</div></div></div>
+        </div>
+      </div>
+
+      <section class="section active" id="cliente-home">
+        <div class="hero">
+          <div class="meta"><div class="bubble">🍻</div><div><strong>Depósito El Compa</strong><small>Entrega en 30 min</small></div></div>
+          <button class="btn-icon" style="background:rgba(255,255,255,.14)" onclick="showSection('cliente-carrito')"><i class="fa-solid fa-basket-shopping"></i></button>
+        </div>
+        <div class="stats">
+          <div class="card"><div class="small">Pedidos activos</div><div class="metric" id="statPedidos">0</div></div>
+          <div class="card"><div class="small">Tiempo estimado</div><div class="metric">25m</div></div>
+          <div class="card"><div class="small">Categorías</div><div class="metric">3</div></div>
+          <div class="card"><div class="small">Atención</div><div class="metric">24/7</div></div>
+        </div>
+        <div class="content-grid">
+          <div class="panel">
+            <div class="panel-header"><h3 class="panel-title"><i class="fa-solid fa-store"></i> Catálogo</h3><button class="btn btn-secondary" onclick="filterCatalog('all')">Todo</button></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+              <button class="btn btn-secondary" onclick="filterCatalog('cerveza')">Cerveza</button>
+              <button class="btn btn-secondary" onclick="filterCatalog('botana')">Botana</button>
+              <button class="btn btn-secondary" onclick="filterCatalog('otros')">Otros</button>
+            </div>
+            <div class="products-grid" id="catalogGrid"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><h3 class="panel-title"><i class="fa-solid fa-truck-fast"></i> Estado real</h3></div>
+            <div id="trackingBox" class="card">Sin pedidos activos.</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="cliente-carrito">
+        <div class="panel">
+          <div class="panel-header"><h3 class="panel-title"><i class="fa-solid fa-basket-shopping"></i> Carrito</h3><button class="btn btn-danger" onclick="clearCart()">Vaciar</button></div>
+          <div class="cart-items" id="cartList"></div>
+          <div class="grid-2" style="margin-top:14px">
+            <div class="card"><div class="small">Subtotal</div><div class="metric" id="subtotal">$0</div></div>
+            <div class="card"><div class="small">Total</div><div class="metric" id="total">$0</div></div>
+          </div>
+          <div style="margin-top:14px">
+            <div class="form-group"><label class="label">Nombre</label><input class="input" id="clientName"></div>
+            <div class="form-group"><label class="label">Teléfono</label><input class="input" id="clientPhone"></div>
+            <div class="form-group"><label class="label">Dirección</label><textarea class="textarea" id="clientAddress"></textarea></div>
+            <div class="form-group"><label class="label">Método de pago</label><select class="select" id="paymentMethod"><option>efectivo</option><option>tarjeta</option><option>transferencia</option></select></div>
+            <button class="btn btn-primary" onclick="submitOrder()">Enviar pedido a caja</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="cliente-pedidos">
+        <div class="panel">
+          <div class="panel-header"><h3 class="panel-title"><i class="fa-solid fa-clipboard-list"></i> Mis pedidos</h3></div>
+          <div id="ordersList"></div>
+        </div>
+      </section>
+
+      <section class="section" id="cliente-perfil">
+        <div class="panel">
+          <div class="panel-header"><h3 class="panel-title"><i class="fa-solid fa-user"></i> Perfil</h3></div>
+          <div class="card">
+            <div class="small">Depósito El Compa v1</div>
+            <p style="margin:8px 0 0">Un solo dashboard para cliente, caja, hieleras, reparto, inventario y archivo.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="panel-solicitudes">
+        <div class="panel">
+          <div class="panel-header"><h3 class="panel-title"><i class="fa-solid fa-inbox"></i> Solicitudes / Caja</h3><button class="btn btn-primary" onclick="refreshAll()">Actualizar</button></div>
+          <div id="solicitudesList"></div>
+        </div>
+      </section>
+
+      <section class="section" id="panel-hieleras">
+        <div class="panel">
+          <div class="panel-header"><h3 class="panel-title"><i class="fa-solid fa-icicles"></i> Hieleras</h3></div>
+          <div id="hielerasList"></div>
+        </div>
+      </section>
+
+      <section class="section" id="panel-reparto">
+        <div class="panel">
+          <div class="panel-header"><h3 class="panel-title"><i class="fa-solid fa-motorcycle"></i> Reparto</h3></div>
+          <div id="repartoList"></div>
+        </div>
+      </section>
+
+      <section class="section" id="panel-inventario">
+        <div class="panel">
+          <div class="panel-header"><h3 class="panel-title"><i class="fa-solid fa-boxes-stacked"></i> Inventario</h3><button class="btn btn-primary" onclick="openProductModal()">Agregar producto</button></div>
+          <table class="table">
+            <thead><tr><th>Producto</th><th>Stock</th><th>Precio</th><th>Estado</th></tr></thead>
+            <tbody id="inventoryTable"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section" id="panel-archivo">
+        <div class="panel">
+          <div class="panel-header"><h3 class="panel-title"><i class="fa-solid fa-box-archive"></i> Archivo</h3></div>
+          <div id="archiveList"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    window.DEPOSITO_GAS_URL = 'https://script.google.com/macros/s/AKfycbw8ma1Iu8XiymcBfWwy0EnrYKdcNQiGGCBnLAQMkg0wKz-dNYoWylcPIUhHmzYCo81F/exec';
+  </script>
+  <script src="js/deposito-api.js"></script>
+  <script>
+    const CONFIG = {
+      PINS: { cliente:'0000', caja:'3333', hieleras:'1111', repartidor:'2222', admin:'1234' },
+      roles: { cliente:'Cliente', caja:'Caja', hieleras:'Hieleras', repartidor:'Repartidor', admin:'Administrador' }
+    };
+    const state = {
+      role: 'cliente',
+      pin: '',
+      cart: [],
+      orders: [],
+      activeOrderId: localStorage.getItem('elCompaActiveOrderId') || null,
+      products: [
+        { id: 1, name: 'Cerveza Modelo Especial', price: 35, category: 'cerveza', stock: 50, image: 'modelo.png', icon: '🍺', desc: 'Cerveza lager mexicana de sabor único' },
+        { id: 2, name: 'Cerveza Corona', price: 32, category: 'cerveza', stock: 45, image: 'corona.png', icon: '🍺', desc: 'La cerveza más fina' },
+        { id: 3, name: 'Cerveza Victoria', price: 30, category: 'cerveza', stock: 30, image: 'victoria.png', icon: '🍺', desc: 'La más mexicana' },
+        { id: 4, name: 'Cerveza Indio', price: 32, category: 'cerveza', stock: 25, image: 'indio.png', icon: '🍺', desc: 'Sabor tradicional' },
+        { id: 5, name: 'Cerveza XX Lager', price: 34, category: 'cerveza', stock: 40, image: 'xx.png', icon: '🍺', desc: 'Dos equis' },
+        { id: 6, name: 'Cerveza Tecate', price: 28, category: 'cerveza', stock: 30, image: 'tecate.png', icon: '🍺', desc: 'Con carácter' },
+        { id: 7, name: 'Cerveza Sol', price: 29, category: 'cerveza', stock: 30, image: 'sol.png', icon: '🍺', desc: 'El sabor del sol' },
+        { id: 8, name: 'Botana Mixta', price: 50, category: 'botana', stock: 20, image: 'botana.png', icon: '🥜', desc: 'Cacahuates, churros y más' },
+        { id: 9, name: 'Papas Sabritas', price: 35, category: 'botana', stock: 30, image: 'papas.png', icon: '🥔', desc: 'Clásicas adobadas' },
+        { id: 10, name: 'Cacahuates Japonés', price: 25, category: 'botana', stock: 50, image: 'cacahuates.png', icon: '🥜', desc: 'Estilo japonés' },
+        { id: 11, name: 'Hielo 5kg', price: 40, category: 'otros', stock: 15, image: 'hielo.png', icon: '🧊', desc: 'Bolsa de hielo' },
+        { id: 12, name: 'Coca Cola 2L', price: 28, category: 'otros', stock: 35, image: 'refresco.png', icon: '🥤', desc: 'Refresco' },
+        { id: 13, name: 'Six Pack Modelo', price: 180, category: 'cerveza', stock: 12, image: 'sixpackmodelo.png', icon: '📦', desc: '6 cervezas + descuento' },
+        { id: 14, name: 'Cubeta 12 Modelo', price: 350, category: 'cerveza', stock: 8, image: 'cubeta12modelo.png', icon: '🪣', desc: '12 cervezas + hielo gratis' }
+      ]
+    };
+
+    const $ = (id) => document.getElementById(id);
+    const api = window.DEPOSITO_API;
+
+    document.querySelectorAll('.role').forEach(btn => btn.addEventListener('click', () => {
+      document.querySelectorAll('.role').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.role = btn.dataset.role;
+      $('roleLabel').textContent = CONFIG.roles[state.role];
+      $('userRoleText').textContent = CONFIG.roles[state.role];
+    }));
+    document.querySelectorAll('.nav-item').forEach(item => item.addEventListener('click', () => showSection(item.dataset.section)));
+
+    function showToast(msg) { const t = $('toast'); t.textContent = msg; t.style.display = 'block'; clearTimeout(window.__toastTimer); window.__toastTimer = setTimeout(() => t.style.display = 'none', 2500); }
+    function pinAdd(n){ if (state.pin.length < 4) { state.pin += String(n); renderPin(); } }
+    function pinBack(){ state.pin = state.pin.slice(0,-1); renderPin(); }
+    function pinClear(){ state.pin = ''; renderPin(); }
+    function renderPin(){ $('pinDots').querySelectorAll('.dot').forEach((d,i)=> d.classList.toggle('filled', i < state.pin.length)); }
+    function toggleTheme(){ document.body.dataset.theme = document.body.dataset.theme === 'light' ? 'dark' : 'light'; showToast('Tema alternado'); }
+    function logout(){ localStorage.removeItem('elCompaActiveOrderId'); location.reload(); }
+    function login(){
+      const ok = state.pin === CONFIG.PINS[state.role];
+      if (!ok) return showToast('PIN incorrecto');
+      $('loginScreen').classList.add('hidden'); $('app').classList.remove('hidden');
+      $('userName').textContent = CONFIG.roles[state.role];
+      $('userRoleText').textContent = CONFIG.roles[state.role];
+      $('avatar').textContent = CONFIG.roles[state.role][0];
+      refreshAll(); setInterval(refreshAll, 10000);
+      showToast('Sesión iniciada');
+    }
+
+    function showSection(id){
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      const sec = $(id); if (sec) sec.classList.add('active');
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.section === id));
+      const titles = {
+        'cliente-home':['Inicio','Catálogo y solicitudes del depósito'],
+        'cliente-carrito':['Carrito','Pedido listo para enviar a caja'],
+        'cliente-pedidos':['Pedidos','Seguimiento de tus pedidos'],
+        'cliente-perfil':['Perfil','Datos del cliente'],
+        'panel-solicitudes':['Solicitudes / Caja','Pedidos reales entrantes'],
+        'panel-hieleras':['Hieleras','Armado y preparación física'],
+        'panel-reparto':['Reparto','Pedidos listos para salida'],
+        'panel-inventario':['Inventario','Stock y producto'],
+        'panel-archivo':['Archivo','Histórico']
+      };
+      if (titles[id]) { $('pageTitle').textContent = titles[id][0]; $('pageSubtitle').textContent = titles[id][1]; }
+      renderBySection(id);
+    }
+
+    function imgSrc(p){ return `assets/images/${p.image || ''}`; }
+    function renderCatalog(filter='all'){
+      const grid = $('catalogGrid');
+      grid.innerHTML = state.products.filter(p => filter === 'all' || p.category === filter).map(p => `
+        <div class="product-card">
+          <div class="product-image"><img src="${imgSrc(p)}" alt="${p.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><div class="hidden" style="place-items:center;width:100%;height:100%;font-size:60px">${p.icon}</div></div>
+          <div class="product-info">
+            <div class="product-name">${p.name}</div>
+            <div class="product-desc">${p.desc}</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+              <div><div class="price">$${p.price}</div><div class="small">Stock ${p.stock}</div></div>
+              <button class="btn btn-primary" onclick="addToCart(${p.id})"><i class="fa-solid fa-plus"></i></button>
+            </div>
+          </div>
+        </div>`).join('');
+    }
+    function filterCatalog(cat){ renderCatalog(cat); }
+    function addToCart(id){
+      const p = state.products.find(x=>x.id===id); const found = state.cart.find(x=>x.id===id);
+      if (found) found.qty++; else state.cart.push({...p, qty:1});
+      renderCart(); showToast(`${p.name} agregado`);
+    }
+    function renderCart(){
+      $('cartCount').textContent = state.cart.reduce((s,i)=>s+i.qty,0);
+      $('statPedidos').textContent = state.orders.length;
+      const subtotal = state.cart.reduce((s,i)=>s+i.qty*i.price,0);
+      $('subtotal').textContent = `$${subtotal}`; $('total').textContent = `$${subtotal}`;
+      $('cartList').innerHTML = state.cart.length ? state.cart.map(i => `
+        <div class="cart-item">
+          <div class="cart-thumb"><img src="${imgSrc(i)}" alt=""></div>
+          <div style="min-width:0">
+            <div style="font-weight:700">${i.name}</div>
+            <div class="small">$${i.price} x ${i.qty}</div>
+          </div>
+          <div class="qty">
+            <button onclick="qty(${i.id},-1)">-</button><span>${i.qty}</span><button onclick="qty(${i.id},1)">+</button>
+          </div>
+        </div>`).join('') : `<div class="card">El carrito está vacío.</div>`;
+    }
+    function qty(id,delta){
+      const it = state.cart.find(x=>x.id===id);
+      if (!it) return;
+      it.qty += delta;
+      if (it.qty <= 0) state.cart = state.cart.filter(x=>x.id!==id);
+      renderCart();
+    }
+    function clearCart(){ state.cart = []; renderCart(); }
+    function saveClient(){
+      localStorage.setItem('elCompaClient', JSON.stringify({
+        name: $('clientName').value, phone: $('clientPhone').value, address: $('clientAddress').value
+      }));
+    }
+    function loadClient(){
+      try {
+        const saved = JSON.parse(localStorage.getItem('elCompaClient') || 'null');
+        if (saved) { $('clientName').value = saved.name || ''; $('clientPhone').value = saved.phone || ''; $('clientAddress').value = saved.address || ''; }
+      } catch {}
+    }
+    async function submitOrder(){
+      if (!state.cart.length) return showToast('El carrito está vacío');
+      saveClient();
+      const payload = {
+        publico: true,
+        cliente: $('clientName').value,
+        telefono: $('clientPhone').value,
+        direccion: $('clientAddress').value,
+        total: state.cart.reduce((s,i)=>s+i.qty*i.price,0),
+        metodo_pago: $('paymentMethod').value,
+        items: state.cart.map(i => ({ id:i.id, nombre:i.name, cantidad:i.qty, precio:i.price, icon:i.icon }))
+      };
+      try {
+        const res = await api.post('?action=pedidos', payload);
+        state.orders.unshift({
+          id: res.id || Date.now(),
+          ...payload,
+          status: 'nuevo',
+          date: new Date().toISOString()
+        });
+        localStorage.setItem('elCompaActiveOrderId', String(state.orders[0].id));
+        state.activeOrderId = String(state.orders[0].id);
+        state.cart = [];
+        renderCart(); renderOrders(); renderTracking();
+        showToast('Pedido enviado a caja');
+        showSection('cliente-pedidos');
+      } catch (e) {
+        showToast(`Error: ${e.message}`);
+      }
+    }
+    function renderOrders(){
+      const box = $('ordersList');
+      if (!box) return;
+      box.innerHTML = state.orders.length ? state.orders.map(o => `
+        <div class="history-card" style="padding:14px;margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;gap:12px;align-items:center">
+            <div><div style="font-weight:800">#${String(o.id).slice(-4)}</div><div class="small">${new Date(o.date).toLocaleString()}</div></div>
+            <span class="status ${statusClass(o.status)}">${o.status || 'nuevo'}</span>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0">${(o.items||[]).map(i=>`<div class="card" style="padding:8px 10px">${i.qty}x ${i.nombre}</div>`).join('')}</div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <strong>$${o.total}</strong><button class="btn btn-secondary" onclick="reorder(${o.id})">Reordenar</button>
+          </div>
+        </div>`).join('') : `<div class="card">Aún no hay pedidos.</div>`;
+    }
+    function reorder(id){
+      const o = state.orders.find(x=>String(x.id)===String(id));
+      if (!o) return;
+      o.items.forEach(i => addToCart(i.id, i.qty));
+      showSection('cliente-carrito');
+    }
+    function statusClass(status){
+      const s = String(status || '').toLowerCase();
+      if (['entregado'].includes(s)) return 'ok';
+      if (['listo','preparado','ready'].includes(s)) return 'ready';
+      if (['en_ruta','asignado','ship','en camino'].includes(s)) return 'ship';
+      return 'new';
+    }
+    function renderTracking(){
+      const id = state.activeOrderId ? String(state.activeOrderId) : null;
+      const o = id ? state.orders.find(x=>String(x.id)===id) : null;
+      const box = $('trackingBox');
+      if (!box) return;
+      if (!o) { box.innerHTML = 'Sin pedidos activos.'; return; }
+      const status = String(o.status || 'nuevo');
+      const map = {
+        nuevo:['Pedido recibido','Caja aún no lo marca como listo','📥'],
+        aceptado:['Pedido aceptado','Caja lo confirmó y pasa a hieleras','✅'],
+        en_hieleras:['En hieleras','Se está armando el pedido','🧊'],
+        preparado:['Pedido listo','Caja ya lo marcó como listo','📦'],
+        asignado:['Asignado a reparto','Esperando salida','🛵'],
+        en_ruta:['En camino','El repartidor ya salió','🚚'],
+        entregado:['Pedido entregado','Pedido entregado. ¡Disfruta!','✅']
+      };
+      const current = map[status] || map.nuevo;
+      box.innerHTML = `
+        <div style="text-align:center;padding:14px 6px">
+          <div style="font-size:56px;margin-bottom:10px">${current[2]}</div>
+          <h3 style="margin:0 0 6px">${current[0]}</h3>
+          <div class="small">${current[1]}</div>
+        </div>
+      `;
+    }
+    function renderSolicitudes(){
+      const list = $('solicitudesList');
+      const orders = state.orders.slice();
+      $('badgeSolicitudes').textContent = orders.filter(o => ['nuevo','aceptado'].includes(String(o.status||'').toLowerCase())).length;
+      list.innerHTML = orders.length ? orders.map(o => `
+        <div class="order-card" style="padding:14px;margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;gap:12px;align-items:center">
+            <div><div style="font-weight:800">#${String(o.id).slice(-4)}</div><div class="small">${o.cliente || o.customer || 'Cliente'}</div></div>
+            <span class="status ${statusClass(o.status)}">${o.status || 'nuevo'}</span>
+          </div>
+          <div class="small" style="margin:8px 0">${o.direccion || o.address || ''}</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0">${(o.items||[]).map(i=>`<div class="card" style="padding:8px 10px">${i.cantidad || i.qty || 1}x ${i.nombre || i.name}</div>`).join('')}</div>
+          <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-primary" onclick="markStatus(${o.id}, 'aceptado')">Aceptar</button>
+            <button class="btn btn-secondary" onclick="markStatus(${o.id}, 'en_hieleras')">A hieleras</button>
+            <button class="btn btn-success" onclick="markStatus(${o.id}, 'preparado')">Listo</button>
+            <button class="btn btn-danger" onclick="markStatus(${o.id}, 'entregado')">Entregado</button>
+          </div>
+        </div>`).join('') : `<div class="card">No hay solicitudes.</div>`;
+    }
+    function renderHieleras(){
+      const list = $('hielerasList');
+      const orders = state.orders.filter(o => ['aceptado','en_hieleras'].includes(String(o.status||'').toLowerCase()));
+      $('badgeHieleras').textContent = orders.length;
+      list.innerHTML = orders.length ? orders.map(o => `
+        <div class="order-card" style="padding:14px;margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <strong>#${String(o.id).slice(-4)}</strong><span class="status ready">${o.status || ''}</span>
+          </div>
+          <div class="small">${o.cliente || o.customer || ''}</div>
+          <div style="margin-top:10px">
+            ${(o.items||[]).map(i=>`<div class="card" style="padding:8px 10px;margin-bottom:8px">${i.cantidad || i.qty || 1}x ${i.nombre || i.name}</div>`).join('')}
+          </div>
+          <div class="small">Hieleras no cambia el estado; solo avisa a caja.</div>
+        </div>`).join('') : `<div class="card">No hay pedidos en hieleras.</div>`;
+    }
+    function renderReparto(){
+      const list = $('repartoList');
+      const orders = state.orders.filter(o => ['preparado','asignado','en_ruta'].includes(String(o.status||'').toLowerCase()));
+      list.innerHTML = orders.length ? orders.map(o => `
+        <div class="order-card" style="padding:14px;margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <strong>#${String(o.id).slice(-4)}</strong><span class="status ship">${o.status || ''}</span>
+          </div>
+          <div class="small">${o.cliente || o.customer || ''}</div>
+          <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+            <button class="btn btn-primary" onclick="markStatus(${o.id}, 'asignado')">Asignar</button>
+            <button class="btn btn-success" onclick="markStatus(${o.id}, 'en_ruta')">En ruta</button>
+            <button class="btn btn-danger" onclick="markStatus(${o.id}, 'entregado')">Entregado</button>
+          </div>
+        </div>`).join('') : `<div class="card">No hay pedidos listos para reparto.</div>`;
+    }
+    function renderInventory(){
+      const tb = $('inventoryTable');
+      tb.innerHTML = state.products.map(p => `
+        <tr><td><div style="display:flex;align-items:center;gap:10px"><img src="${imgSrc(p)}" width="34" height="34" style="object-fit:contain;background:#111;border-radius:8px"><span>${p.name}</span></div></td><td>${p.stock}</td><td>$${p.price}</td><td><span class="status ${p.stock>20?'ok':p.stock>0?'new':'ship'}">${p.stock>20?'Disponible':p.stock>0?'Bajo stock':'Agotado'}</span></td></tr>
+      `).join('');
+    }
+    function renderArchive(){ $('archiveList').innerHTML = `<div class="card">Histórico listo para conectarse al backend de archivo.</div>`; }
+    function markStatus(id, status){
+      const o = state.orders.find(x=>String(x.id)===String(id));
+      if (!o) return;
+      o.status = status;
+      renderAll();
+      showToast(`Pedido #${String(id).slice(-4)} => ${status}`);
+      // Aquí se conecta el backend real (Apps Script / Sheets)
+    }
+    async function refreshAll(){
+      renderCart();
+      renderOrders();
+      renderTracking();
+      renderSolicitudes();
+      renderHieleras();
+      renderReparto();
+      renderInventory();
+      renderArchive();
+      try {
+        if (api) {
+          const res = await api.get('?action=pedidos');
+          if (res && Array.isArray(res.data)) {
+            state.orders = res.data.map(x => ({
+              id: x.id || x.ID || Date.now(),
+              cliente: x.cliente || x.NOMBRE || x.customer || '',
+              telefono: x.telefono || x.TELEFONO || '',
+              direccion: x.direccion || x.DIRECCION || '',
+              total: x.total || x.TOTAL || 0,
+              status: x.estado || x.status || 'nuevo',
+              date: x.fecha_hora || x.date || new Date().toISOString(),
+              items: x.items || x.ITEMS || []
+            }));
+            renderAll();
+          }
+        }
+      } catch (e) {}
+    }
+    function renderBySection(id){
+      if (id === 'cliente-home') { renderCatalog('all'); renderTracking(); }
+      if (id === 'cliente-carrito') renderCart();
+      if (id === 'cliente-pedidos') renderOrders();
+      if (id === 'panel-solicitudes') renderSolicitudes();
+      if (id === 'panel-hieleras') renderHieleras();
+      if (id === 'panel-reparto') renderReparto();
+      if (id === 'panel-inventario') renderInventory();
+      if (id === 'panel-archivo') renderArchive();
+    }
+    function renderAll(){ renderCart(); renderOrders(); renderTracking(); renderSolicitudes(); renderHieleras(); renderReparto(); renderInventory(); renderArchive(); $('statPedidos').textContent = state.orders.length; }
+
+    function openProductModal(){ showToast('Modal de producto pendiente de extender'); }
+    function startApp(){
+      loadClient();
+      renderCatalog('all');
+      renderAll();
+      $('roleLabel').textContent = CONFIG.roles[state.role];
+      $('userRoleText').textContent = CONFIG.roles[state.role];
+      $('userName').textContent = CONFIG.roles[state.role];
+      $('avatar').textContent = CONFIG.roles[state.role][0];
+      showSection('cliente-home');
+    }
+    startApp();
+  </script>
+</body>
+</html>
