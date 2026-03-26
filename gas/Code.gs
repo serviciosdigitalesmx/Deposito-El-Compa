@@ -63,7 +63,7 @@ function setup() {
 
 function handleRequest(method, e) {
   const params = e && e.parameter ? e.parameter : {};
-  const body = e && e.postData && e.postData.contents ? JSON.parse(e.postData.contents || '{}') : {};
+  const body = parseBody(e);
   const action = params.action || body.action || '';
   const token = getHeaderToken(e) || body.token || params.token || '';
 
@@ -106,6 +106,48 @@ function handleRequest(method, e) {
       return saveCierreCaja(body, token);
     default:
       return { ok: false, error: `Acción no soportada: ${method}:${action}` };
+  }
+}
+
+function parseBody(e) {
+  const params = e && e.parameter ? e.parameter : {};
+  const body = {};
+
+  Object.keys(params).forEach(key => {
+    if (key !== 'action' && key !== 'token') {
+      body[key] = decodeValue(params[key]);
+    }
+  });
+
+  if (e && e.postData && e.postData.contents) {
+    try {
+      const raw = JSON.parse(e.postData.contents || '{}');
+      Object.assign(body, raw);
+    } catch (_) {
+      const contents = String(e.postData.contents || '');
+      if (contents.includes('=')) {
+        contents.split('&').forEach(pair => {
+          const [k, v] = pair.split('=');
+          if (k) body[decodeURIComponent(k)] = decodeValue(decodeURIComponent(v || ''));
+        });
+      }
+    }
+  }
+
+  return body;
+}
+
+function decodeValue(value) {
+  if (value === undefined || value === null) return '';
+  const text = String(value);
+  if (!text) return '';
+  if (text === 'true') return true;
+  if (text === 'false') return false;
+  if (/^-?\d+(\.\d+)?$/.test(text)) return Number(text);
+  try {
+    return JSON.parse(text);
+  } catch (_) {
+    return text;
   }
 }
 
