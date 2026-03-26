@@ -17,20 +17,38 @@ const SHEETS = {
 
 function doGet(e) {
   console.log('GET recibido', JSON.stringify(e || {}));
-  return jsonResponse(handleRequest('GET', e));
+  try {
+    return jsonResponse(handleRequest('GET', e));
+  } catch (error) {
+    console.error('GET error', error && error.stack ? error.stack : String(error));
+    return jsonResponse({ ok: false, error: String(error && error.message ? error.message : error) });
+  }
 }
 
 function doPost(e) {
   console.log('POST recibido', JSON.stringify(e || {}));
-  return jsonResponse(handleRequest('POST', e));
+  try {
+    return jsonResponse(handleRequest('POST', e));
+  } catch (error) {
+    console.error('POST error', error && error.stack ? error.stack : String(error));
+    return jsonResponse({ ok: false, error: String(error && error.message ? error.message : error) });
+  }
 }
 
 function doPatch(e) {
-  return jsonResponse({ ok: false, error: 'PATCH no soportado en Apps Script Web App' });
+  try {
+    return jsonResponse({ ok: false, error: 'PATCH no soportado en Apps Script Web App' });
+  } catch (error) {
+    return jsonResponse({ ok: false, error: String(error) });
+  }
 }
 
 function doDelete(e) {
-  return jsonResponse({ ok: false, error: 'DELETE no soportado en Apps Script Web App' });
+  try {
+    return jsonResponse({ ok: false, error: 'DELETE no soportado en Apps Script Web App' });
+  } catch (error) {
+    return jsonResponse({ ok: false, error: String(error) });
+  }
 }
 
 function setup() {
