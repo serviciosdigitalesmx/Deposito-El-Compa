@@ -6,7 +6,7 @@
   <title>Depósito El Compa - Archivo</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
-    :root{--bg:#12141f;--panel:#1b1f2f;--panel-2:#262a3d;--text:#f3f4f6;--muted:#97a0b3;--accent:#1f7edc;--shadow:0 12px 30px rgba(0,0,0,.25)}
+    :root{--bg:#12141f;--panel:#1b1f2f;--panel-2:#262a3d;--text:#f3f4f6;--muted:#97a0b3;--accent:#1f7edc;--ok:#34d399;--warn:#fbbf24;--shadow:0 12px 30px rgba(0,0,0,.25)}
     *{box-sizing:border-box}
     body{margin:0;font-family:Inter,system-ui,sans-serif;background:radial-gradient(circle at top,#1b1f2f 0,#12141f 55%);color:var(--text)}
     header{position:sticky;top:0;z-index:10;padding:16px 20px;background:rgba(17,20,31,.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.08)}
@@ -14,15 +14,29 @@
     .title{display:flex;flex-direction:column;gap:4px}
     .title strong{font-size:20px}
     .title span{color:var(--muted);font-size:13px}
+    .stats{display:flex;gap:10px;flex-wrap:wrap}
+    .stat{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:10px 14px;min-width:120px}
+    .stat b{display:block;font-size:22px;margin-top:4px}
     main{max-width:1400px;margin:0 auto;padding:18px 20px 28px}
-    .card{background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:16px;box-shadow:var(--shadow)}
-    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:16px}
-    .metric{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:14px}
-    .metric b{display:block;font-size:26px;margin-top:4px}
-    ul{margin:0;padding-left:18px;color:var(--muted);line-height:1.6}
-    .links{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
-    a.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;text-decoration:none;font-weight:800;background:rgba(255,255,255,.08);color:var(--text)}
-    a.btn.primary{background:var(--accent);color:#fff}
+    .toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+    .toolbar .hint{color:var(--muted);font-size:13px}
+    .filters{display:flex;gap:8px;flex-wrap:wrap}
+    select,input,button{border:0;border-radius:12px;padding:10px 12px;font-weight:700}
+    select,input{background:rgba(255,255,255,.06);color:var(--text);border:1px solid rgba(255,255,255,.08)}
+    button{cursor:pointer;background:var(--accent);color:#fff}
+    .list{display:grid;gap:12px}
+    .row{background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:16px;box-shadow:var(--shadow)}
+    .top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+    .folio{font-weight:800;font-size:18px}
+    .badge{padding:6px 10px;border-radius:999px;font-size:12px;font-weight:800;text-transform:capitalize}
+    .solicitud{background:rgba(251,191,36,.14);color:var(--warn)}
+    .cotizacion{background:rgba(31,126,220,.14);color:#7ab8ff}
+    .equipo_entregado{background:rgba(52,211,153,.14);color:var(--ok)}
+    .meta{margin-top:10px;color:var(--muted);font-size:13px;line-height:1.5}
+    .right{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+    .money{font-weight:800;color:#fff}
+    .empty{padding:28px;text-align:center;color:var(--muted);border:1px dashed rgba(255,255,255,.12);border-radius:18px;background:rgba(255,255,255,.02)}
+    .muted{color:var(--muted)}
   </style>
 </head>
 <body>
@@ -30,31 +44,104 @@
     <div class="bar">
       <div class="title">
         <strong><i class="fa-solid fa-box-archive"></i> Archivo</strong>
-        <span>Histórico de pedidos, justificaciones, movimientos y cierres.</span>
+        <span>Pedidos cerrados, justificaciones y movimientos archivados.</span>
+      </div>
+      <div class="stats">
+        <div class="stat"><span class="muted">Total</span><b id="count-total">0</b></div>
+        <div class="stat"><span class="muted">Solicitudes</span><b id="count-solicitudes">0</b></div>
+        <div class="stat"><span class="muted">Cotizaciones</span><b id="count-cotizaciones">0</b></div>
+        <div class="stat"><span class="muted">Entregados</span><b id="count-entregados">0</b></div>
       </div>
     </div>
   </header>
   <main>
-    <section class="card">
-      <h3>Qué va a vivir aquí</h3>
-      <ul>
-        <li>Pedidos terminados y cancelados</li>
-        <li>Justificaciones PDF</li>
-        <li>Movimientos de inventario</li>
-        <li>Cierres de caja</li>
-      </ul>
-    </section>
-    <section class="grid">
-      <div class="metric"><span class="muted">Pedidos archivados</span><b>—</b></div>
-      <div class="metric"><span class="muted">Justificaciones</span><b>—</b></div>
-      <div class="metric"><span class="muted">Cierres</span><b>—</b></div>
-      <div class="metric"><span class="muted">Movimientos</span><b>—</b></div>
-    </section>
-    <div class="links">
-      <a class="btn primary" href="./panel-solicitudes.html" target="_blank"><i class="fa-solid fa-file-lines"></i> Solicitudes</a>
-      <a class="btn" href="./panel-tecnico.html" target="_blank"><i class="fa-solid fa-icicles"></i> Hieleras</a>
-      <a class="btn" href="./panel-operativo.html" target="_blank"><i class="fa-solid fa-cash-register"></i> Operativo</a>
+    <div class="toolbar">
+      <div class="hint">Este módulo consulta el archivo real desde Apps Script.</div>
+      <div class="filters">
+        <select id="tipo">
+          <option value="todos">Todos</option>
+          <option value="solicitudes">Solicitudes</option>
+          <option value="cotizaciones">Cotizaciones</option>
+          <option value="equipos">Entregados</option>
+        </select>
+        <input id="from" type="date">
+        <input id="to" type="date">
+        <button id="refresh"><i class="fa-solid fa-rotate"></i> Refrescar</button>
+      </div>
     </div>
+    <div id="list" class="list"></div>
   </main>
+  <script src="./js/deposito-api.js"></script>
+  <script>
+    const list = document.getElementById('list');
+    const filters = {
+      tipo: document.getElementById('tipo'),
+      from: document.getElementById('from'),
+      to: document.getElementById('to')
+    };
+
+    function money(v) {
+      const n = Number(v || 0);
+      if (!Number.isFinite(n) || n <= 0) return '---';
+      return n.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
+    }
+
+    function badge(tipo) {
+      const t = String(tipo || '').toLowerCase();
+      return `<span class="badge ${t}">${t.replaceAll('_', ' ')}</span>`;
+    }
+
+    function rowHtml(item) {
+      return `
+        <article class="row">
+          <div class="top">
+            <div>
+              <div class="folio">#${String(item.FOLIO || '').slice(-6) || '---'}</div>
+              <div class="meta">
+                <strong>${item.CLIENTE || 'Sin cliente'}</strong><br>
+                ${item.TELEFONO || 'Sin teléfono'}<br>
+                ${item.DETALLE || 'Sin detalle'}
+              </div>
+            </div>
+            <div class="right">
+              ${badge(item.TIPO_ARCHIVO)}
+              <div class="muted">${item.FECHA_ARCHIVO || '---'}</div>
+              <div class="money">${money(item.TOTAL)}</div>
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    async function load() {
+      list.innerHTML = '<div class="empty">Cargando archivo...</div>';
+      try {
+        const params = new URLSearchParams({
+          action: 'archivo',
+          tipo: filters.tipo.value || 'todos',
+          from: filters.from.value || '',
+          to: filters.to.value || '',
+          page: '1',
+          pageSize: '200'
+        });
+        const res = await window.DEPOSITO_API.get(`?${params.toString()}`);
+        const rows = Array.isArray(res.data) ? res.data : [];
+        const solicitudes = rows.filter(r => String(r.TIPO_ARCHIVO || '').toLowerCase() === 'solicitud').length;
+        const cotizaciones = rows.filter(r => String(r.TIPO_ARCHIVO || '').toLowerCase() === 'cotizacion').length;
+        const entregados = rows.filter(r => String(r.TIPO_ARCHIVO || '').toLowerCase() === 'equipo_entregado').length;
+        document.getElementById('count-total').textContent = rows.length;
+        document.getElementById('count-solicitudes').textContent = solicitudes;
+        document.getElementById('count-cotizaciones').textContent = cotizaciones;
+        document.getElementById('count-entregados').textContent = entregados;
+        list.innerHTML = rows.length ? rows.map(rowHtml).join('') : '<div class="empty">No hay registros en archivo.</div>';
+      } catch (e) {
+        list.innerHTML = `<div class="empty">Error al cargar archivo: ${e.message}</div>`;
+      }
+    }
+
+    document.getElementById('refresh').addEventListener('click', load);
+    Object.values(filters).forEach(el => el.addEventListener('change', load));
+    load();
+  </script>
 </body>
 </html>

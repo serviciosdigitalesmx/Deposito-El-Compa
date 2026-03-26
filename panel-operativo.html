@@ -15,13 +15,13 @@
     .title strong{font-size:20px}
     .title span{color:var(--muted);font-size:13px}
     main{max-width:1400px;margin:0 auto;padding:18px 20px 28px}
+    .metrics{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin:18px 0}
+    .metric{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:14px}
+    .metric b{display:block;font-size:26px;margin-top:4px}
     .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
     .card{background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:16px;box-shadow:var(--shadow)}
     .card h3{margin:0 0 8px;font-size:17px}
     .card p{margin:0;color:var(--muted);line-height:1.5;font-size:13px}
-    .metrics{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin:18px 0}
-    .metric{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:14px}
-    .metric b{display:block;font-size:26px;margin-top:4px}
     .links{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
     a.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;text-decoration:none;font-weight:800;background:rgba(255,255,255,.08);color:var(--text)}
     a.btn.primary{background:var(--accent);color:#fff}
@@ -32,7 +32,7 @@
     <div class="bar">
       <div class="title">
         <strong><i class="fa-solid fa-cash-register"></i> Operativo / Caja</strong>
-        <span>Centro del negocio: solicitudes, aceptación, reparto y cierre.</span>
+        <span>Consola operativa con conteos reales desde Apps Script.</span>
       </div>
     </div>
   </header>
@@ -42,12 +42,13 @@
       <div class="metric"><span class="muted">Nuevos</span><b id="m-nuevos">0</b></div>
       <div class="metric"><span class="muted">Aceptados</span><b id="m-aceptados">0</b></div>
       <div class="metric"><span class="muted">En ruta</span><b id="m-ruta">0</b></div>
+      <div class="metric"><span class="muted">Entregados</span><b id="m-entregados">0</b></div>
     </section>
     <section class="grid">
-      <div class="card"><h3>Qué hace caja</h3><p>Recibe solicitudes, confirma pedidos, activa el flujo hacia hieleras y libera a reparto.</p></div>
-      <div class="card"><h3>Qué hace repartidor</h3><p>Toma pedidos asignados, marca salida y entrega final. No toca inventario ni cierres.</p></div>
-      <div class="card"><h3>Qué hace admin</h3><p>Controla usuarios, cierres, inventario, justificaciones y archivo.</p></div>
-      <div class="card"><h3>Qué hace el backend</h3><p>Guarda todo en Sheets mediante Apps Script. El frontend solo muestra y dispara cambios.</p></div>
+      <div class="card"><h3>Operación</h3><p>La caja decide aceptación, avisa a hieleras, asigna reparto y cierra el pedido.</p></div>
+      <div class="card"><h3>Inventario</h3><p>El backend ya tiene movimiento de stock y cierres. Falta conectarlo al panel visual.</p></div>
+      <div class="card"><h3>Archivo</h3><p>Los pedidos cerrados ya pueden archivarse y leerse desde el backend real.</p></div>
+      <div class="card"><h3>Backend</h3><p>Este módulo ya no es texto plano: consulta pedidos reales y calcula resumen.</p></div>
     </section>
     <div class="links">
       <a class="btn primary" href="./panel-solicitudes.html" target="_blank"><i class="fa-solid fa-file-lines"></i> Solicitudes</a>
@@ -55,5 +56,21 @@
       <a class="btn" href="./panel-archivo.html" target="_blank"><i class="fa-solid fa-box-archive"></i> Archivo</a>
     </div>
   </main>
+  <script src="./js/deposito-api.js"></script>
+  <script>
+    async function load() {
+      try {
+        const res = await window.DEPOSITO_API.get('?action=pedidos&t=' + Date.now());
+        const rows = Array.isArray(res.data) ? res.data : [];
+        document.getElementById('m-pedidos').textContent = rows.length;
+        document.getElementById('m-nuevos').textContent = rows.filter(r => String(r.estado || r.status || 'nuevo').toLowerCase() === 'nuevo').length;
+        document.getElementById('m-aceptados').textContent = rows.filter(r => String(r.estado || r.status || '').toLowerCase() === 'aceptado').length;
+        document.getElementById('m-ruta').textContent = rows.filter(r => String(r.estado || r.status || '').toLowerCase() === 'en_ruta').length;
+        document.getElementById('m-entregados').textContent = rows.filter(r => String(r.estado || r.status || '').toLowerCase() === 'entregado').length;
+      } catch (_) {}
+    }
+    load();
+    setInterval(load, 20000);
+  </script>
 </body>
 </html>
