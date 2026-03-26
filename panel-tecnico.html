@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Depósito El Compa - Hieleras</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body{margin:0;font-family:Inter,system-ui,sans-serif;background:#1e1e1e;color:#f2f2f2}
+    header{padding:14px 16px;border-bottom:1px solid #4ecdc4;background:#161616;position:sticky;top:0}
+    main{max-width:1200px;margin:0 auto;padding:16px}.card{background:#2b2b2b;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px}
+  </style>
+</head>
+<body>
+  <header><strong><i class="fa-solid fa-icicles"></i> Hieleras</strong></header>
+  <main>
+    <div class="card">Aquí solo se ve lo que ya aceptó caja. Hieleras arma el pedido y avisa a caja. No cambia estado por su cuenta.</div>
+    <div id="list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-top:12px"></div>
+  </main>
+  <script src="./js/deposito-api.js"></script>
+  <script>
+    async function load(){ const list=document.getElementById('list'); try { const res=await window.DEPOSITO_API.get('?action=pedidos'); const orders=Array.isArray(res.data)?res.data:[]; const filtered=orders.filter(o=>['aceptado','en_hieleras'].includes(String(o.status||o.estado||'').toLowerCase())); list.innerHTML=filtered.length?filtered.map(o=>`<div class="card"><strong>#${String(o.id).slice(-4)}</strong><div>${o.cliente || o.customer || ''}</div><div style="opacity:.7">${o.direccion || o.address || ''}</div></div>`).join(''):'<div class="card">No hay pedidos en hieleras.</div>'; } catch(e){ list.innerHTML=`<div class="card">Error: ${e.message}</div>`; } }
+    load();
+  </script>
+</body>
+</html>

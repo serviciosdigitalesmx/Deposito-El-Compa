@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Depósito El Compa - Integrador</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    :root{--bg:#1e1e1e;--panel:#2b2b2b;--text:#f2f2f2;--muted:#8a8f95;--primary:#ff6b6b;--accent:#4ecdc4}
+    *{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--text)}
+    .bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;background:#161616;border-bottom:1px solid rgba(255,107,107,.35);position:sticky;top:0;z-index:5}
+    .left{display:flex;align-items:center;gap:10px}.logo{width:36px;height:36px;border-radius:9px;background:var(--primary);display:grid;place-items:center}
+    .title{font-weight:800}.tabs{display:flex;gap:8px;flex-wrap:wrap}
+    .tab{border:1px solid rgba(255,255,255,.12);background:var(--panel);color:var(--text);padding:8px 12px;border-radius:10px;cursor:pointer;font-weight:700}
+    .tab.active{background:var(--primary);border-color:var(--primary)}
+    .wrap{height:calc(100vh - 64px)} .panel{display:none;height:100%}.panel.active{display:block}
+    iframe{width:100%;height:100%;border:0;background:var(--bg)}
+    .fallback{padding:10px 16px;color:var(--muted);font-size:12px}.fallback a{color:var(--accent)}
+    .login{position:fixed;inset:0;background:rgba(10,10,10,.92);display:flex;align-items:center;justify-content:center;z-index:20;padding:16px}
+    .card{width:min(380px,100%);background:var(--panel);border:1px solid rgba(255,107,107,.35);border-radius:14px;padding:22px}
+    .card h2{margin:0 0 6px;color:var(--primary)} .card p{margin:0 0 14px;color:var(--muted);font-size:13px}
+    .input{width:100%;background:#1a1a1a;border:1px solid rgba(255,107,107,.35);color:var(--text);border-radius:10px;padding:12px;outline:none;margin-bottom:10px}
+    .btn{width:100%;border:0;background:var(--primary);color:#fff;font-weight:800;border-radius:10px;padding:12px;cursor:pointer}
+    .err{min-height:18px;color:#f87171;font-size:13px;margin-top:8px}
+  </style>
+</head>
+<body>
+  <div id="login-screen" class="login">
+    <div class="card">
+      <h2>Acceso interno</h2>
+      <p>Un solo acceso para Caja, Hieleras, Reparto y Archivo</p>
+      <input id="master-password" class="input" type="password" placeholder="Contraseña" autocomplete="current-password">
+      <button id="master-login-btn" class="btn" type="button">Entrar</button>
+      <div id="master-error" class="err"></div>
+    </div>
+  </div>
+
+  <header class="bar">
+    <div class="left">
+      <div class="logo">🍻</div>
+      <div class="title">Depósito El Compa · Integrador Interno</div>
+    </div>
+    <nav class="tabs">
+      <button id="tab-operativo" class="tab active" type="button">Caja / Operativo</button>
+      <button id="tab-hieleras" class="tab" type="button">Hieleras</button>
+      <button id="tab-solicitudes" class="tab" type="button">Solicitudes</button>
+      <button id="tab-archivo" class="tab" type="button">Archivo</button>
+    </nav>
+  </header>
+
+  <div class="wrap">
+    <section id="panel-operativo" class="panel active"><iframe id="frame-operativo" src="about:blank" title="Operativo"></iframe></section>
+    <section id="panel-hieleras" class="panel"><iframe id="frame-hieleras" src="about:blank" title="Hieleras"></iframe></section>
+    <section id="panel-solicitudes" class="panel"><iframe id="frame-solicitudes" src="about:blank" title="Solicitudes"></iframe></section>
+    <section id="panel-archivo" class="panel"><iframe id="frame-archivo" src="about:blank" title="Archivo"></iframe></section>
+  </div>
+
+  <div class="fallback">
+    Si algo falla:
+    <a href="./panel-operativo.html" target="_blank">Caja / Operativo</a> |
+    <a href="./panel-tecnico.html" target="_blank">Hieleras</a> |
+    <a href="./panel-solicitudes.html" target="_blank">Solicitudes</a> |
+    <a href="./panel-archivo.html" target="_blank">Archivo</a>
+  </div>
+
+  <script>
+    const MASTER_PASS = 'Admin1';
+    const PANEL_OP = document.getElementById('panel-operativo');
+    const PANEL_HI = document.getElementById('panel-hieleras');
+    const PANEL_SO = document.getElementById('panel-solicitudes');
+    const PANEL_AR = document.getElementById('panel-archivo');
+    const FRAME_OP = document.getElementById('frame-operativo');
+    const FRAME_HI = document.getElementById('frame-hieleras');
+    const FRAME_SO = document.getElementById('frame-solicitudes');
+    const FRAME_AR = document.getElementById('frame-archivo');
+    const LOGIN = document.getElementById('login-screen');
+    const PASS = document.getElementById('master-password');
+    const ERR = document.getElementById('master-error');
+    const SRC = {
+      operativo: './panel-operativo.html',
+      hieleras: './panel-tecnico.html',
+      solicitudes: './panel-solicitudes.html',
+      archivo: './panel-archivo.html'
+    };
+
+    function loadFrame(name) {
+      const map = { operativo: FRAME_OP, hieleras: FRAME_HI, solicitudes: FRAME_SO, archivo: FRAME_AR };
+      const frame = map[name];
+      if (frame && frame.src === 'about:blank') frame.src = SRC[name];
+    }
+    function show(name) {
+      ['operativo','hieleras','solicitudes','archivo'].forEach(n => {
+        document.getElementById(`panel-${n}`).classList.toggle('active', n === name);
+        document.getElementById(`tab-${n}`).classList.toggle('active', n === name);
+        if (n === name) loadFrame(n);
+      });
+    }
+    function unlock() {
+      const value = (PASS.value || '').trim();
+      if (value !== MASTER_PASS) {
+        ERR.textContent = 'Contraseña incorrecta';
+        return;
+      }
+      LOGIN.style.display = 'none';
+      show('operativo');
+    }
+    document.getElementById('master-login-btn').addEventListener('click', unlock);
+    PASS.addEventListener('keydown', (e) => { if (e.key === 'Enter') unlock(); });
+    document.getElementById('tab-operativo').addEventListener('click', () => show('operativo'));
+    document.getElementById('tab-hieleras').addEventListener('click', () => show('hieleras'));
+    document.getElementById('tab-solicitudes').addEventListener('click', () => show('solicitudes'));
+    document.getElementById('tab-archivo').addEventListener('click', () => show('archivo'));
+  </script>
+</body>
+</html>

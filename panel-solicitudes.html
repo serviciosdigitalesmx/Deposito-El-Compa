@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Depósito El Compa - Solicitudes</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body{margin:0;font-family:Inter,system-ui,sans-serif;background:#1e1e1e;color:#f2f2f2}
+    header{padding:14px 16px;border-bottom:1px solid #ff6b6b;background:#161616;position:sticky;top:0}
+    main{max-width:1200px;margin:0 auto;padding:16px}
+    .card{background:#2b2b2b;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+    .btn{border:0;border-radius:10px;padding:10px 12px;font-weight:800;cursor:pointer}
+    .btn-primary{background:#ff6b6b;color:#fff}.btn-secondary{background:#3a3a50;color:#fff}
+  </style>
+</head>
+<body>
+  <header><strong><i class="fa-solid fa-file-lines"></i> Solicitudes / Caja</strong></header>
+  <main>
+    <div class="card" style="margin-bottom:12px">Esta vista será la caja del depósito. Aquí se aceptan solicitudes, se generan justificaciones y se manda a hieleras.</div>
+    <div class="grid" id="list"></div>
+  </main>
+  <script src="./js/deposito-api.js"></script>
+  <script>
+    async function load(){ const list = document.getElementById('list'); list.innerHTML = '<div class="card">Cargando solicitudes...</div>'; try { const res = await window.DEPOSITO_API.get('?action=pedidos'); const orders = Array.isArray(res.data) ? res.data : []; list.innerHTML = orders.length ? orders.map(o => `<div class="card"><div style="display:flex;justify-content:space-between"><strong>#${String(o.id).slice(-4)}</strong><span>${o.status || o.estado || 'nuevo'}</span></div><div style="margin:8px 0">${o.cliente || o.customer || ''}</div><div class="small">${o.direccion || o.address || ''}</div><div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary">Aceptar</button><button class="btn btn-secondary">Mandar a hieleras</button></div></div>`).join('') : '<div class="card">No hay solicitudes.</div>'; } catch(e){ list.innerHTML = `<div class="card">Error: ${e.message}</div>`; } }
+    load();
+  </script>
+</body>
+</html>
