@@ -182,7 +182,8 @@ function renderProducts() {
     grid.innerHTML = state.products.map(product => `
         <div class="product-card" data-category="${product.category}">
             <div class="product-image">
-                <img src="assets/images/${product.image}" alt="${product.name}" onerror="this.src='https://placehold.co/150x150?text=${product.icon}'">
+                <img src="assets/images/${product.image}" alt="${product.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="image-fallback" style="display:none;align-items:center;justify-content:center;width:100%;height:100%;font-size:60px;">${product.icon}</div>
             </div>
             <div class="product-info">
                 <div class="product-name">${product.name}</div>
@@ -239,7 +240,8 @@ function updateCart() {
         container.innerHTML = state.cart.map(item => `
             <div class="cart-item">
                 <div class="cart-item-image">
-                    <img src="assets/images/${item.image}" alt="${item.name}" onerror="this.src='https://placehold.co/50x50?text=${item.icon}'">
+                    <img src="assets/images/${item.image}" alt="${item.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="image-fallback" style="display:none;align-items:center;justify-content:center;width:100%;height:100%;font-size:2rem;">${item.icon}</div>
                 </div>
                 <div class="cart-item-details">
                     <div class="cart-item-name">${item.name}</div>
@@ -466,7 +468,8 @@ function renderReports() {
     container.innerHTML = topProducts.map((p, i) => `
         <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px; padding: 15px; background: var(--dark-lighter); border-radius: 10px;">
             <div style="font-size: 1.5rem; font-weight: 800; color: var(--primary); width: 30px;">${i + 1}</div>
-            <img src="assets/images/${p.image}" width="50" height="50" style="object-fit: cover; border-radius: 8px;" onerror="this.src='https://placehold.co/50x50?text=${p.icon}'">
+            <img src="assets/images/${p.image}" width="50" height="50" style="object-fit: cover; border-radius: 8px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <div class="image-fallback" style="display:none;align-items:center;justify-content:center;width:50px;height:50px;border-radius:8px;background:var(--dark);font-size:1.5rem;">${p.icon}</div>
             <div style="flex: 1;">
                 <div style="font-weight: 600;">${p.name}</div>
                 <div style="font-size: 0.85rem; opacity: 0.7;">${Math.floor(Math.random() * 100)} vendidos</div>
