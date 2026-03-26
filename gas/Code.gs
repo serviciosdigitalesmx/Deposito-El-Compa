@@ -1,4 +1,5 @@
 // Deposito El Compa GAS backend
+const VERSION = 'depot-gas-2026-03-26-0550';
 const SHEETS = {
   productos: 'productos',
   inventario: 'inventario',
@@ -156,7 +157,9 @@ function handleRequest(method, e) {
 
   switch (`${method}:${action}`) {
     case 'GET:health':
-      return { ok: true, service: 'Deposito El Compa GAS', now: new Date().toISOString() };
+      return { ok: true, service: 'Deposito El Compa GAS', version: VERSION, now: new Date().toISOString() };
+    case 'GET:version':
+      return { ok: true, version: VERSION };
     case 'GET:setup':
       return setup();
     case 'GET:productos':
