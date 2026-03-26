@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#ff6b6b">
-    <title>Depósito El Compa - Pedidos</title>
+    <title>Depósito El Compa - Pedidos y Entregas</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -175,10 +175,13 @@
 <body>
     <div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toastMessage">Producto agregado</span></div>
     <header class="app-header" id="mainHeader">
+        <div style="margin:0 20px 16px; display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px; background:rgba(255,255,255,.14); color:#fff; font-size:.78rem; font-weight:700; letter-spacing:.02em;">
+            <i class="fas fa-warehouse"></i> Depósito El Compa · Sistema de pedidos
+        </div>
         <div class="header-top">
             <div class="logo">
                 <div class="logo-icon">🍻</div>
-                <div class="logo-text"><h1>Depósito El Compa</h1><p>Entrega en 30 min</p></div>
+                <div class="logo-text"><h1>Depósito El Compa</h1><p>Pedidos, caja, hieleras y reparto</p></div>
             </div>
             <div class="header-actions"><button class="btn-icon" onclick="showNotifications()"><i class="fas fa-bell"></i></button></div>
         </div>
@@ -193,7 +196,7 @@
             <div class="category-chip" onclick="filterCategory('otros', this)"><div class="category-icon">🧊</div><span class="category-name">Otros</span></div>
         </div>
         <div class="promo-section">
-            <div class="section-header"><h2 class="section-title">🔥 Promos de hoy</h2><span class="see-all">Ver todo</span></div>
+            <div class="section-header"><h2 class="section-title">🔥 Promos de hoy</h2><span class="see-all">Depósito El Compa</span></div>
             <div class="promo-scroll">
                 <div class="promo-card" onclick="quickAdd(13)"><span class="promo-badge">-20%</span><div class="promo-content"><h3>6 Pack Modelo</h3><p>Lleválo a solo $168</p></div><div class="promo-img">🍺</div></div>
                 <div class="promo-card" onclick="quickAdd(8)"><span class="promo-badge">2x1</span><div class="promo-content"><h3>Botana Mixta</h3><p>En la compra de 2 cervezas</p></div><div class="promo-img">🥜</div></div>
