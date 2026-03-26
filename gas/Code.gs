@@ -1,15 +1,18 @@
 // Deposito El Compa GAS backend
 const SHEETS = {
   productos: 'productos',
+  inventario: 'inventario',
   pedidos: 'pedidos',
   detallePedidos: 'detalle_pedidos',
   repartidores: 'repartidores',
   movimientosStock: 'movimientos_stock',
+  stock: 'stock',
   cierresCaja: 'cierres_caja',
   usuarios: 'usuarios',
   justificaciones: 'justificaciones',
   configuracion: 'configuracion',
   archivoPedidos: 'archivo_pedidos',
+  archivo: 'archivo',
 };
 
 function doGet(e) {
@@ -34,15 +37,18 @@ function setup() {
   const ss = getSpreadsheet();
   const specs = [
     [SHEETS.productos, ['id', 'nombre', 'precio', 'stock', 'categoria', 'imagen_url', 'activo', 'updated_at']],
+    [SHEETS.inventario, ['id', 'nombre', 'precio', 'stock', 'categoria', 'imagen_url', 'activo', 'updated_at']],
     [SHEETS.pedidos, ['id', 'fecha_hora', 'cliente', 'telefono', 'direccion', 'total', 'estado', 'repartidor_id', 'metodo_pago', 'updated_at', 'creado_por']],
     [SHEETS.detallePedidos, ['id', 'pedido_id', 'producto_id', 'nombre_producto', 'cantidad', 'precio_unitario', 'subtotal', 'created_at']],
     [SHEETS.repartidores, ['id', 'nombre', 'telefono', 'estado', 'lat', 'lng', 'pedido_activo', 'updated_at']],
     [SHEETS.movimientosStock, ['id', 'producto_id', 'tipo', 'cantidad', 'referencia_pedido_id', 'fecha', 'usuario', 'motivo']],
+    [SHEETS.stock, ['id', 'producto_id', 'tipo', 'cantidad', 'referencia_pedido_id', 'fecha', 'usuario', 'motivo']],
     [SHEETS.cierresCaja, ['id', 'fecha', 'total_efectivo', 'total_tarjeta', 'total_transferencia', 'observaciones', 'usuario']],
     [SHEETS.usuarios, ['id', 'nombre', 'rol', 'pin', 'activo', 'updated_at']],
     [SHEETS.justificaciones, ['id', 'pedido_id', 'texto', 'usuario', 'rol', 'created_at', 'pdf_url']],
     [SHEETS.configuracion, ['clave', 'valor']],
     [SHEETS.archivoPedidos, ['id', 'fecha_hora', 'cliente', 'telefono', 'direccion', 'total', 'estado', 'repartidor_id', 'metodo_pago', 'closed_at', 'detalle_json']],
+    [SHEETS.archivo, ['id', 'fecha_hora', 'cliente', 'telefono', 'direccion', 'total', 'estado', 'repartidor_id', 'metodo_pago', 'closed_at', 'detalle_json']],
   ];
 
   specs.forEach(([name, headers]) => {
@@ -58,7 +64,70 @@ function setup() {
     }
   });
 
+  seedUsersIfEmpty(ss);
+  seedProductsIfEmpty(ss);
+  syncAliasSheets(ss);
+
   return { ok: true, message: 'Hojas verificadas o creadas' };
+}
+
+function seedUsersIfEmpty(ss) {
+  const sheet = ss.getSheetByName(SHEETS.usuarios);
+  if (!sheet) return;
+  if (sheet.getLastRow() > 1) return;
+  const now = new Date().toISOString();
+  sheet.appendRow(['id', 'nombre', 'rol', 'pin', 'activo', 'updated_at']);
+  [
+    ['1', 'Administrador', 'admin', '1234', 'true', now],
+    ['2', 'Caja', 'caja', '3333', 'true', now],
+    ['3', 'Hieleras', 'hieleras', '1111', 'true', now],
+    ['4', 'Repartidor', 'repartidor', '2222', 'true', now],
+  ].forEach(row => sheet.appendRow(row));
+}
+
+function seedProductsIfEmpty(ss) {
+  const sheet = ss.getSheetByName(SHEETS.productos);
+  if (!sheet) return;
+  if (sheet.getLastRow() > 1) return;
+  const now = new Date().toISOString();
+  const products = [
+    ['1', 'Cerveza Modelo Especial', 35, 50, 'cerveza', 'modelo.png', 'true', now],
+    ['2', 'Cerveza Corona', 32, 45, 'cerveza', 'corona.png', 'true', now],
+    ['3', 'Cerveza Victoria', 30, 30, 'cerveza', 'victoria.png', 'true', now],
+    ['4', 'Cerveza Indio', 32, 25, 'cerveza', 'indio.png', 'true', now],
+    ['5', 'Cerveza XX Lager', 34, 40, 'cerveza', 'xx.png', 'true', now],
+    ['6', 'Cerveza Tecate', 28, 30, 'cerveza', 'tecate.png', 'true', now],
+    ['7', 'Cerveza Sol', 29, 30, 'cerveza', 'sol.png', 'true', now],
+    ['8', 'Botana Mixta', 50, 20, 'botana', 'botana.png', 'true', now],
+    ['9', 'Papas Sabritas', 35, 30, 'botana', 'papas.png', 'true', now],
+    ['10', 'Cacahuates Japonés', 25, 50, 'botana', 'cacahuates.png', 'true', now],
+    ['11', 'Hielo 5kg', 40, 15, 'otros', 'hielo.png', 'true', now],
+    ['12', 'Coca Cola 2L', 28, 35, 'otros', 'refresco.png', 'true', now],
+    ['13', 'Six Pack Modelo', 180, 12, 'cerveza', 'sixpackmodelo.png', 'true', now],
+    ['14', 'Cubeta 12 Modelo', 350, 8, 'cerveza', 'cubeta12modelo.png', 'true', now],
+  ];
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(['id', 'nombre', 'precio', 'stock', 'categoria', 'imagen_url', 'activo', 'updated_at']);
+  }
+  products.forEach(row => sheet.appendRow(row));
+}
+
+function syncAliasSheets(ss) {
+  const aliases = [
+    [SHEETS.inventario, SHEETS.productos],
+    [SHEETS.stock, SHEETS.movimientosStock],
+    [SHEETS.archivo, SHEETS.archivoPedidos],
+  ];
+  aliases.forEach(([aliasName, sourceName]) => {
+    const alias = ss.getSheetByName(aliasName);
+    const source = ss.getSheetByName(sourceName);
+    if (!alias || !source) return;
+    const values = source.getDataRange().getValues();
+    if (!values || !values.length) return;
+    alias.clear();
+    alias.getRange(1, 1, values.length, values[0].length).setValues(values);
+    alias.setFrozenRows(1);
+  });
 }
 
 function handleRequest(method, e) {
