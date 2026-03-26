@@ -6,15 +6,54 @@
   <title>Depósito El Compa - Operativo</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
-    body{margin:0;font-family:Inter,system-ui,sans-serif;background:#1e1e1e;color:#f2f2f2}
-    header{padding:14px 16px;border-bottom:1px solid #ff6b6b;background:#161616;position:sticky;top:0}
-    main{max-width:1200px;margin:0 auto;padding:16px}.card{background:#2b2b2b;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px}
+    :root{--bg:#12141f;--panel:#1b1f2f;--panel-2:#262a3d;--text:#f3f4f6;--muted:#97a0b3;--accent:#ff6b6b;--accent-2:#4ecdc4;--shadow:0 12px 30px rgba(0,0,0,.25)}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,sans-serif;background:radial-gradient(circle at top,#1b1f2f 0,#12141f 55%);color:var(--text)}
+    header{position:sticky;top:0;z-index:10;padding:16px 20px;background:rgba(17,20,31,.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.08)}
+    .bar{display:flex;justify-content:space-between;align-items:center;gap:14px;max-width:1400px;margin:0 auto;flex-wrap:wrap}
+    .title{display:flex;flex-direction:column;gap:4px}
+    .title strong{font-size:20px}
+    .title span{color:var(--muted);font-size:13px}
+    main{max-width:1400px;margin:0 auto;padding:18px 20px 28px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+    .card{background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:16px;box-shadow:var(--shadow)}
+    .card h3{margin:0 0 8px;font-size:17px}
+    .card p{margin:0;color:var(--muted);line-height:1.5;font-size:13px}
+    .metrics{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin:18px 0}
+    .metric{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:14px}
+    .metric b{display:block;font-size:26px;margin-top:4px}
+    .links{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+    a.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;text-decoration:none;font-weight:800;background:rgba(255,255,255,.08);color:var(--text)}
+    a.btn.primary{background:var(--accent);color:#fff}
   </style>
 </head>
 <body>
-  <header><strong><i class="fa-solid fa-cash-register"></i> Operativo / Caja</strong></header>
+  <header>
+    <div class="bar">
+      <div class="title">
+        <strong><i class="fa-solid fa-cash-register"></i> Operativo / Caja</strong>
+        <span>Centro del negocio: solicitudes, aceptación, reparto y cierre.</span>
+      </div>
+    </div>
+  </header>
   <main>
-    <div class="card">Aquí se controla el flujo principal: solicitudes, confirmación, salida a hieleras, reparto y cierre.</div>
+    <section class="metrics">
+      <div class="metric"><span class="muted">Pedidos</span><b id="m-pedidos">0</b></div>
+      <div class="metric"><span class="muted">Nuevos</span><b id="m-nuevos">0</b></div>
+      <div class="metric"><span class="muted">Aceptados</span><b id="m-aceptados">0</b></div>
+      <div class="metric"><span class="muted">En ruta</span><b id="m-ruta">0</b></div>
+    </section>
+    <section class="grid">
+      <div class="card"><h3>Qué hace caja</h3><p>Recibe solicitudes, confirma pedidos, activa el flujo hacia hieleras y libera a reparto.</p></div>
+      <div class="card"><h3>Qué hace repartidor</h3><p>Toma pedidos asignados, marca salida y entrega final. No toca inventario ni cierres.</p></div>
+      <div class="card"><h3>Qué hace admin</h3><p>Controla usuarios, cierres, inventario, justificaciones y archivo.</p></div>
+      <div class="card"><h3>Qué hace el backend</h3><p>Guarda todo en Sheets mediante Apps Script. El frontend solo muestra y dispara cambios.</p></div>
+    </section>
+    <div class="links">
+      <a class="btn primary" href="./panel-solicitudes.html" target="_blank"><i class="fa-solid fa-file-lines"></i> Solicitudes</a>
+      <a class="btn" href="./panel-tecnico.html" target="_blank"><i class="fa-solid fa-icicles"></i> Hieleras</a>
+      <a class="btn" href="./panel-archivo.html" target="_blank"><i class="fa-solid fa-box-archive"></i> Archivo</a>
+    </div>
   </main>
 </body>
 </html>

@@ -6,15 +6,55 @@
   <title>Depósito El Compa - Archivo</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
-    body{margin:0;font-family:Inter,system-ui,sans-serif;background:#1e1e1e;color:#f2f2f2}
-    header{padding:14px 16px;border-bottom:1px solid #1f7edc;background:#161616;position:sticky;top:0}
-    main{max-width:1200px;margin:0 auto;padding:16px}.card{background:#2b2b2b;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px}
+    :root{--bg:#12141f;--panel:#1b1f2f;--panel-2:#262a3d;--text:#f3f4f6;--muted:#97a0b3;--accent:#1f7edc;--shadow:0 12px 30px rgba(0,0,0,.25)}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,sans-serif;background:radial-gradient(circle at top,#1b1f2f 0,#12141f 55%);color:var(--text)}
+    header{position:sticky;top:0;z-index:10;padding:16px 20px;background:rgba(17,20,31,.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.08)}
+    .bar{display:flex;justify-content:space-between;align-items:center;gap:14px;max-width:1400px;margin:0 auto;flex-wrap:wrap}
+    .title{display:flex;flex-direction:column;gap:4px}
+    .title strong{font-size:20px}
+    .title span{color:var(--muted);font-size:13px}
+    main{max-width:1400px;margin:0 auto;padding:18px 20px 28px}
+    .card{background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:16px;box-shadow:var(--shadow)}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:16px}
+    .metric{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:14px}
+    .metric b{display:block;font-size:26px;margin-top:4px}
+    ul{margin:0;padding-left:18px;color:var(--muted);line-height:1.6}
+    .links{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+    a.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;text-decoration:none;font-weight:800;background:rgba(255,255,255,.08);color:var(--text)}
+    a.btn.primary{background:var(--accent);color:#fff}
   </style>
 </head>
 <body>
-  <header><strong><i class="fa-solid fa-box-archive"></i> Archivo</strong></header>
+  <header>
+    <div class="bar">
+      <div class="title">
+        <strong><i class="fa-solid fa-box-archive"></i> Archivo</strong>
+        <span>Histórico de pedidos, justificaciones, movimientos y cierres.</span>
+      </div>
+    </div>
+  </header>
   <main>
-    <div class="card">Aquí irá el histórico de pedidos, justificaciones, movimientos y cierres.</div>
+    <section class="card">
+      <h3>Qué va a vivir aquí</h3>
+      <ul>
+        <li>Pedidos terminados y cancelados</li>
+        <li>Justificaciones PDF</li>
+        <li>Movimientos de inventario</li>
+        <li>Cierres de caja</li>
+      </ul>
+    </section>
+    <section class="grid">
+      <div class="metric"><span class="muted">Pedidos archivados</span><b>—</b></div>
+      <div class="metric"><span class="muted">Justificaciones</span><b>—</b></div>
+      <div class="metric"><span class="muted">Cierres</span><b>—</b></div>
+      <div class="metric"><span class="muted">Movimientos</span><b>—</b></div>
+    </section>
+    <div class="links">
+      <a class="btn primary" href="./panel-solicitudes.html" target="_blank"><i class="fa-solid fa-file-lines"></i> Solicitudes</a>
+      <a class="btn" href="./panel-tecnico.html" target="_blank"><i class="fa-solid fa-icicles"></i> Hieleras</a>
+      <a class="btn" href="./panel-operativo.html" target="_blank"><i class="fa-solid fa-cash-register"></i> Operativo</a>
+    </div>
   </main>
 </body>
 </html>

@@ -6,25 +6,171 @@
   <title>Depósito El Compa - Solicitudes</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
-    body{margin:0;font-family:Inter,system-ui,sans-serif;background:#1e1e1e;color:#f2f2f2}
-    header{padding:14px 16px;border-bottom:1px solid #ff6b6b;background:#161616;position:sticky;top:0}
-    main{max-width:1200px;margin:0 auto;padding:16px}
-    .card{background:#2b2b2b;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px}
-    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
-    .btn{border:0;border-radius:10px;padding:10px 12px;font-weight:800;cursor:pointer}
-    .btn-primary{background:#ff6b6b;color:#fff}.btn-secondary{background:#3a3a50;color:#fff}
+    :root{--bg:#12141f;--panel:#1b1f2f;--panel-2:#262a3d;--text:#f3f4f6;--muted:#97a0b3;--accent:#ff6b6b;--accent-2:#4ecdc4;--warn:#fbbf24;--danger:#f87171;--shadow:0 12px 30px rgba(0,0,0,.25)}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,sans-serif;background:radial-gradient(circle at top,#1b1f2f 0,#12141f 55%);color:var(--text)}
+    header{position:sticky;top:0;z-index:10;padding:16px 20px;background:rgba(17,20,31,.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.08)}
+    .bar{display:flex;justify-content:space-between;align-items:center;gap:14px;max-width:1400px;margin:0 auto}
+    .title{display:flex;flex-direction:column;gap:4px}
+    .title strong{font-size:20px}
+    .title span{color:var(--muted);font-size:13px}
+    .stats{display:flex;gap:10px;flex-wrap:wrap}
+    .stat{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:10px 14px;min-width:120px}
+    .stat b{display:block;font-size:20px}
+    main{max-width:1400px;margin:0 auto;padding:18px 20px 28px}
+    .toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+    .toolbar .hint{color:var(--muted);font-size:13px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+    .card{background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:16px;box-shadow:var(--shadow)}
+    .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+    .folio{font-weight:800;font-size:18px;color:#fff}
+    .badge{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700;text-transform:capitalize}
+    .nuevo{background:rgba(251,191,36,.14);color:#fbbf24}
+    .aceptado{background:rgba(78,205,196,.14);color:#4ecdc4}
+    .en_hieleras,.listo{background:rgba(96,165,250,.14);color:#60a5fa}
+    .en_ruta{background:rgba(167,139,250,.14);color:#a78bfa}
+    .entregado{background:rgba(52,211,153,.14);color:#34d399}
+    .cancelado{background:rgba(248,113,113,.14);color:#f87171}
+    .meta{margin-top:12px;color:var(--muted);font-size:13px;line-height:1.5}
+    .meta strong{color:var(--text)}
+    .items{margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.08);display:grid;gap:8px}
+    .item{display:flex;justify-content:space-between;gap:12px;font-size:13px}
+    .item span:last-child{color:#dbe3ff}
+    .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+    button{border:0;border-radius:12px;padding:11px 12px;font-weight:800;cursor:pointer;transition:.2s transform,.2s opacity}
+    button:hover{transform:translateY(-1px)}
+    .primary{background:var(--accent);color:#fff}
+    .secondary{background:rgba(255,255,255,.08);color:var(--text)}
+    .success{background:var(--accent-2);color:#04231f}
+    .ghost{background:transparent;border:1px solid rgba(255,255,255,.12);color:var(--text)}
+    .empty{padding:28px;text-align:center;color:var(--muted);border:1px dashed rgba(255,255,255,.12);border-radius:18px;background:rgba(255,255,255,.02)}
+    .refresh{font-size:13px;color:var(--muted)}
+    .pulse{width:8px;height:8px;border-radius:50%;background:var(--accent-2);display:inline-block;box-shadow:0 0 0 0 rgba(78,205,196,.8);animation:pulse 1.8s infinite}
+    @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(78,205,196,.8)}70%{box-shadow:0 0 0 12px rgba(78,205,196,0)}100%{box-shadow:0 0 0 0 rgba(78,205,196,0)}}
+    .toast{position:fixed;top:18px;left:50%;transform:translateX(-50%) translateY(-20px);opacity:0;pointer-events:none;background:#111827;color:#fff;padding:12px 16px;border-radius:999px;border:1px solid rgba(255,255,255,.12);box-shadow:var(--shadow);transition:.25s}
+    .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
   </style>
 </head>
 <body>
-  <header><strong><i class="fa-solid fa-file-lines"></i> Solicitudes / Caja</strong></header>
+  <div id="toast" class="toast"></div>
+  <header>
+    <div class="bar">
+      <div class="title">
+        <strong><i class="fa-solid fa-file-invoice"></i> Solicitudes / Caja</strong>
+        <span>El flujo de entrada que aprueba, rechaza y manda a hieleras</span>
+      </div>
+      <div class="stats">
+        <div class="stat"><span class="refresh"><span class="pulse"></span> vivo</span><b id="count-total">0</b><small>Total</small></div>
+        <div class="stat"><b id="count-nuevo">0</b><small>Nuevas</small></div>
+        <div class="stat"><b id="count-aceptado">0</b><small>Aceptadas</small></div>
+        <div class="stat"><b id="count-listo">0</b><small>Listas</small></div>
+      </div>
+    </div>
+  </header>
   <main>
-    <div class="card" style="margin-bottom:12px">Esta vista será la caja del depósito. Aquí se aceptan solicitudes, se generan justificaciones y se manda a hieleras.</div>
+    <div class="toolbar">
+      <div class="hint">Caja ve lo nuevo; al aceptar se marca y después se manda a hieleras.</div>
+      <button class="ghost" id="btn-refresh"><i class="fa-solid fa-rotate"></i> Refrescar</button>
+    </div>
     <div class="grid" id="list"></div>
   </main>
   <script src="./js/deposito-api.js"></script>
   <script>
-    async function load(){ const list = document.getElementById('list'); list.innerHTML = '<div class="card">Cargando solicitudes...</div>'; try { const res = await window.DEPOSITO_API.get('?action=pedidos'); const orders = Array.isArray(res.data) ? res.data : []; list.innerHTML = orders.length ? orders.map(o => `<div class="card"><div style="display:flex;justify-content:space-between"><strong>#${String(o.id).slice(-4)}</strong><span>${o.status || o.estado || 'nuevo'}</span></div><div style="margin:8px 0">${o.cliente || o.customer || ''}</div><div class="small">${o.direccion || o.address || ''}</div><div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary">Aceptar</button><button class="btn btn-secondary">Mandar a hieleras</button></div></div>`).join('') : '<div class="card">No hay solicitudes.</div>'; } catch(e){ list.innerHTML = `<div class="card">Error: ${e.message}</div>`; } }
-    load();
+    const list = document.getElementById('list');
+    const toast = document.getElementById('toast');
+    let pollTimer = null;
+    let lastSignature = '';
+
+    function showToast(msg, ms = 2200) {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => toast.classList.remove('show'), ms);
+    }
+
+    function badge(status) {
+      const s = String(status || 'nuevo').toLowerCase();
+      return `<span class="badge ${s}"><i class="fa-solid fa-circle"></i> ${s.replaceAll('_', ' ')}</span>`;
+    }
+
+    function signature(rows) {
+      return rows.map(r => `${r.id}|${r.estado || r.status || 'nuevo'}|${r.updated_at || ''}`).join('||');
+    }
+
+    function waLink(order) {
+      const phone = String(order.telefono || order.phone || '').replace(/\D/g, '');
+      if (!phone) return '';
+      const msg = `Hola ${order.cliente || order.customer || ''}, tu pedido ${order.id || ''} fue aceptado por Depósito El Compa.`;
+      return `https://wa.me/52${phone}?text=${encodeURIComponent(msg)}`;
+    }
+
+    async function acceptOrder(id) {
+      await window.DEPOSITO_API.post('?action=aceptarPedido', { id, estado: 'aceptado' });
+      showToast('Pedido aceptado');
+      await load(true);
+    }
+
+    async function sendToHieleras(id) {
+      await window.DEPOSITO_API.post('?action=pedidoListo', { id, estado: 'en_hieleras' });
+      showToast('Pedido enviado a hieleras');
+      await load(true);
+    }
+
+    async function load(force = false) {
+      try {
+        const res = await window.DEPOSITO_API.get('?action=pedidos&t=' + Date.now());
+        const rows = Array.isArray(res.data) ? res.data : [];
+        const sig = signature(rows);
+        if (!force && sig === lastSignature) return;
+        lastSignature = sig;
+
+        const total = rows.length;
+        const nuevo = rows.filter(r => String(r.estado || r.status || 'nuevo').toLowerCase() === 'nuevo').length;
+        const aceptado = rows.filter(r => String(r.estado || r.status || '').toLowerCase() === 'aceptado').length;
+        const listo = rows.filter(r => ['listo', 'en_hieleras'].includes(String(r.estado || r.status || '').toLowerCase())).length;
+        document.getElementById('count-total').textContent = total;
+        document.getElementById('count-nuevo').textContent = nuevo;
+        document.getElementById('count-aceptado').textContent = aceptado;
+        document.getElementById('count-listo').textContent = listo;
+
+        const ordered = rows.sort((a, b) => String(b.updated_at || b.fecha_hora || '').localeCompare(String(a.updated_at || a.fecha_hora || '')));
+        list.innerHTML = ordered.length ? ordered.map(order => {
+          const status = String(order.estado || order.status || 'nuevo').toLowerCase();
+          const items = Array.isArray(order.items) ? order.items : [];
+          const address = order.direccion || order.address || '';
+          const phone = order.telefono || order.phone || '';
+          const customer = order.cliente || order.customer || '';
+          const totalMoney = Number(order.total || 0).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
+          return `
+            <article class="card">
+              <div class="top">
+                <div>
+                  <div class="folio">#${String(order.id).slice(-4)}</div>
+                  <div class="meta"><strong>${customer || 'Sin cliente'}</strong><br>${phone || 'Sin teléfono'}</div>
+                </div>
+                ${badge(status)}
+              </div>
+              <div class="meta" style="margin-top:10px">${address || 'Sin dirección'}</div>
+              <div class="items">
+                ${items.length ? items.map(i => `<div class="item"><span>${i.qty || i.cantidad || 1} x ${i.name || i.nombre || i.concepto || 'Producto'}</span><span>${Number(i.price || i.precio || 0).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' })}</span></div>`).join('') : '<div class="item"><span>Pedido sin detalle cargado</span><span>---</span></div>'}
+              </div>
+              <div class="meta" style="margin-top:12px"><strong>Total:</strong> ${totalMoney}</div>
+              <div class="actions">
+                <button class="primary" onclick="acceptOrder('${order.id}')">Aceptar</button>
+                <button class="success" onclick="sendToHieleras('${order.id}')">A hieleras</button>
+                ${phone ? `<button class="secondary" onclick="window.open('${waLink(order)}','_blank')">WhatsApp</button>` : ''}
+              </div>
+            </article>
+          `;
+        }).join('') : '<div class="empty">No hay solicitudes en este momento.</div>';
+      } catch (e) {
+        list.innerHTML = `<div class="empty">Error al cargar solicitudes: ${e.message}</div>`;
+      }
+    }
+
+    document.getElementById('btn-refresh').addEventListener('click', () => load(true));
+    load(true);
+    pollTimer = setInterval(() => load(false), 15000);
   </script>
 </body>
 </html>
