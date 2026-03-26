@@ -23,11 +23,11 @@ function doPost(e) {
 }
 
 function doPatch(e) {
-  return jsonResponse(handleRequest('PATCH', e));
+  return jsonResponse({ ok: false, error: 'PATCH no soportado en Apps Script Web App' });
 }
 
 function doDelete(e) {
-  return jsonResponse(handleRequest('DELETE', e));
+  return jsonResponse({ ok: false, error: 'DELETE no soportado en Apps Script Web App' });
 }
 
 function setup() {
@@ -239,16 +239,21 @@ function createPedido(body, token) {
     const id = Utilities.getUuid();
     const now = new Date().toISOString();
     const items = parseItems(body.items);
+    const cliente = String(body.cliente || '').trim() || 'Sin nombre';
+    const telefono = String(body.telefono || '').trim();
+    const direccion = String(body.direccion || '').trim() || 'Entrega en sucursal';
+    const total = Number(body.total || 0);
+    const metodoPago = String(body.metodo_pago || 'efectivo').trim() || 'efectivo';
     const row = [
       id,
       now,
-      String(body.cliente || 'Sin nombre'),
-      String(body.telefono || ''),
-      String(body.direccion || 'Entrega en sucursal'),
-      Number(body.total || 0),
+      cliente,
+      telefono,
+      direccion,
+      total,
       'nuevo',
       '',
-      String(body.metodo_pago || 'efectivo'),
+      metodoPago,
       now,
       session.rol,
     ];
@@ -285,18 +290,22 @@ function createPedido(body, token) {
 
 function updatePedidoStatus(id, estado, body, token) {
   const session = requireAuth(token, ['admin', 'caja', 'hieleras', 'repartidor']);
+  const pedidoId = String(id || '').trim();
+  const nuevoEstado = String(estado || '').trim();
+  if (!pedidoId) throw new Error('Pedido no encontrado');
+  if (!nuevoEstado) throw new Error('Estado inválido');
   const sheet = getSheet(SHEETS.pedidos);
   const data = sheet.getDataRange().getValues();
   const headers = data.shift();
   const idx = headers.indexOf('id');
   const estadoIdx = headers.indexOf('estado');
   const updatedIdx = headers.indexOf('updated_at');
-  const rowIndex = data.findIndex(r => String(r[idx]) === String(id));
+  const rowIndex = data.findIndex(r => String(r[idx]) === pedidoId);
   if (rowIndex < 0) throw new Error('Pedido no encontrado');
-  sheet.getRange(rowIndex + 2, estadoIdx + 1).setValue(estado);
+  sheet.getRange(rowIndex + 2, estadoIdx + 1).setValue(nuevoEstado);
   if (updatedIdx >= 0) sheet.getRange(rowIndex + 2, updatedIdx + 1).setValue(new Date().toISOString());
-  if (body && body.justificacion) saveJustificacion({ pedido_id: id, texto: body.justificacion, usuario: session.nombre, rol: session.rol }, token);
-  return { ok: true, id, estado };
+  if (body && body.justificacion) saveJustificacion({ pedido_id: pedidoId, texto: body.justificacion, usuario: session.nombre, rol: session.rol }, token);
+  return { ok: true, id: pedidoId, estado: nuevoEstado };
 }
 
 function parseItems(rawItems) {
@@ -311,47 +320,57 @@ function parseItems(rawItems) {
 }
 
 function archivePedido(body, token) {
-  const session = requireAuth(token, ['admin', 'caja']);
-  const id = String(body.id || '').trim();
-  if (!id) throw new Error('Pedido no encontrado');
+  return withDocumentLock(function() {
+    const session = requireAuth(token, ['admin', 'caja']);
+    const id = String(body.id || '').trim();
+    if (!id) throw new Error('Pedido no encontrado');
 
-  const sheet = getSheet(SHEETS.pedidos);
-  const data = sheet.getDataRange().getValues();
-  const headers = data.shift();
-  const rowIndex = data.findIndex(r => String(r[headers.indexOf('id')]) === id);
-  if (rowIndex < 0) throw new Error('Pedido no encontrado');
+    const sheet = getSheet(SHEETS.pedidos);
+    const data = sheet.getDataRange().getValues();
+    const headers = data.shift();
+    const idIdx = headers.indexOf('id');
+    const estadoIdx = headers.indexOf('estado');
+    const updatedIdx = headers.indexOf('updated_at');
+    const rowIndex = data.findIndex(r => String(r[idIdx]) === id);
+    if (rowIndex < 0) throw new Error('Pedido no encontrado');
 
-  const pedidoRow = data[rowIndex];
-  const archivo = getSheet(SHEETS.archivoPedidos);
-  if (archivo.getLastRow() === 0) {
-    archivo.appendRow(['id', 'fecha_hora', 'cliente', 'telefono', 'direccion', 'total', 'estado', 'repartidor_id', 'metodo_pago', 'closed_at', 'detalle_json']);
-  }
+    const pedidoRow = data[rowIndex];
+    const estadoActual = String(pedidoRow[estadoIdx] || '').toLowerCase();
+    if (estadoActual === 'archivado') {
+      return { ok: true, id, archived: true };
+    }
 
-  const detalle = (listSheet(SHEETS.detallePedidos).data || []).filter(d => String(d.pedido_id || '') === id);
-  archivo.appendRow([
-    id,
-    pedidoRow[headers.indexOf('fecha_hora')] || new Date().toISOString(),
-    pedidoRow[headers.indexOf('cliente')] || '',
-    pedidoRow[headers.indexOf('telefono')] || '',
-    pedidoRow[headers.indexOf('direccion')] || '',
-    pedidoRow[headers.indexOf('total')] || 0,
-    'archivado',
-    pedidoRow[headers.indexOf('repartidor_id')] || '',
-    pedidoRow[headers.indexOf('metodo_pago')] || '',
-    new Date().toISOString(),
-    JSON.stringify(detalle)
-  ]);
+    const archivo = getSheet(SHEETS.archivoPedidos);
+    if (archivo.getLastRow() === 0) {
+      archivo.appendRow(['id', 'fecha_hora', 'cliente', 'telefono', 'direccion', 'total', 'estado', 'repartidor_id', 'metodo_pago', 'closed_at', 'detalle_json']);
+    }
 
-  sheet.getRange(rowIndex + 2, headers.indexOf('estado') + 1).setValue('archivado');
-  sheet.getRange(rowIndex + 2, headers.indexOf('updated_at') + 1).setValue(new Date().toISOString());
-  saveJustificacion({
-    pedido_id: id,
-    texto: body.justificacion || 'Pedido archivado',
-    usuario: session.nombre,
-    rol: session.rol,
-    pdf_url: ''
-  }, token);
-  return { ok: true, id };
+    const detalle = obtenerDetallePedido(id);
+    archivo.appendRow([
+      id,
+      pedidoRow[headers.indexOf('fecha_hora')] || new Date().toISOString(),
+      pedidoRow[headers.indexOf('cliente')] || '',
+      pedidoRow[headers.indexOf('telefono')] || '',
+      pedidoRow[headers.indexOf('direccion')] || '',
+      Number(pedidoRow[headers.indexOf('total')] || 0),
+      'archivado',
+      pedidoRow[headers.indexOf('repartidor_id')] || '',
+      pedidoRow[headers.indexOf('metodo_pago')] || '',
+      new Date().toISOString(),
+      JSON.stringify(detalle)
+    ]);
+
+    sheet.getRange(rowIndex + 2, estadoIdx + 1).setValue('archivado');
+    if (updatedIdx >= 0) sheet.getRange(rowIndex + 2, updatedIdx + 1).setValue(new Date().toISOString());
+    appendJustificacionRow({
+      pedido_id: id,
+      texto: String(body.justificacion || 'Pedido archivado').trim(),
+      usuario: session.nombre,
+      rol: session.rol,
+      pdf_url: ''
+    });
+    return { ok: true, id };
+  }, 12000);
 }
 
 function listArchivoPedidos(params, token) {
@@ -382,21 +401,25 @@ function assignRepartidor(id, repartidorId, body, token) {
 }
 
 function saveJustificacion(body, token) {
-  const session = requireAuth(token, ['admin', 'caja']);
-  const sheet = getSheet(SHEETS.justificaciones);
-  if (sheet.getLastRow() === 0) {
-    sheet.appendRow(['id', 'pedido_id', 'texto', 'usuario', 'rol', 'created_at', 'pdf_url']);
-  }
-  const id = Utilities.getUuid();
-  sheet.appendRow([id, body.pedido_id || '', body.texto || '', session.nombre, session.rol, new Date().toISOString(), body.pdf_url || '']);
-  return { ok: true, id };
+  return withDocumentLock(function() {
+    const session = requireAuth(token, ['admin', 'caja']);
+    return appendJustificacionRow({
+      pedido_id: String(body.pedido_id || '').trim(),
+      texto: String(body.texto || '').trim(),
+      usuario: session.nombre,
+      rol: session.rol,
+      pdf_url: String(body.pdf_url || '').trim()
+    });
+  }, 12000);
 }
 
 function createJustificationPdf(body, token) {
-  const session = requireAuth(token, ['admin', 'caja']);
-  const pedido = body.pedido || {};
-  const justificacion = body.justificacion || '';
-  const html = HtmlService.createHtmlOutput(`
+  return withDocumentLock(function() {
+    const session = requireAuth(token, ['admin', 'caja']);
+    const pedido = body.pedido || {};
+    const justificacion = String(body.justificacion || '').trim();
+    if (!pedido.id) throw new Error('Pedido requerido para generar PDF');
+    const html = HtmlService.createHtmlOutput(`
     <html>
       <head>
         <style>
@@ -431,43 +454,90 @@ function createJustificationPdf(body, token) {
         </div>
       </body>
     </html>
-  `);
+    `);
 
-  const blob = html.getBlob().setName(`justificacion-${pedido.id || 'pedido'}.html`);
-  const file = DriveApp.createFile(blob);
-  const pdfBlob = file.getBlob().getAs(MimeType.PDF).setName(`justificacion-${pedido.id || 'pedido'}.pdf`);
-  const pdfFile = DriveApp.createFile(pdfBlob);
-  file.setTrashed(true);
+    const tmpName = `justificacion-${pedido.id || 'pedido'}.html`;
+    const blob = html.getBlob().setName(tmpName);
+    const file = DriveApp.createFile(blob);
+    const pdfBlob = file.getBlob().getAs(MimeType.PDF).setName(`justificacion-${pedido.id || 'pedido'}.pdf`);
+    const pdfFile = DriveApp.createFile(pdfBlob);
+    try {
+      file.setTrashed(true);
+    } catch (_) {}
 
-  saveJustificacion({
-    pedido_id: pedido.id || '',
-    texto: justificacion,
-    pdf_url: pdfFile.getUrl(),
-  }, token);
+    appendJustificacionRow({
+      pedido_id: pedido.id || '',
+      texto: justificacion,
+      pdf_url: pdfFile.getUrl(),
+      usuario: session.nombre,
+      rol: session.rol
+    });
 
-  return { ok: true, pdf_url: pdfFile.getUrl(), file_id: pdfFile.getId() };
+    return { ok: true, pdf_url: pdfFile.getUrl(), file_id: pdfFile.getId() };
+  }, 12000);
 }
 
 function saveMovimientoStock(body, token) {
-  const session = requireAuth(token, ['admin', 'caja']);
-  const sheet = getSheet(SHEETS.movimientosStock);
-  if (sheet.getLastRow() === 0) {
-    sheet.appendRow(['id', 'producto_id', 'tipo', 'cantidad', 'referencia_pedido_id', 'fecha', 'usuario', 'motivo']);
-  }
-  const id = Utilities.getUuid();
-  sheet.appendRow([id, body.producto_id || '', body.tipo || 'salida', Number(body.cantidad || 0), body.referencia_pedido_id || '', new Date().toISOString(), session.nombre, body.motivo || '']);
-  return { ok: true, id };
+  return withDocumentLock(function() {
+    const session = requireAuth(token, ['admin', 'caja']);
+    const sheet = getSheet(SHEETS.movimientosStock);
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow(['id', 'producto_id', 'tipo', 'cantidad', 'referencia_pedido_id', 'fecha', 'usuario', 'motivo']);
+    }
+    const id = Utilities.getUuid();
+    const tipo = String(body.tipo || 'salida').trim();
+    const cantidad = Number(body.cantidad || 0);
+    if (!cantidad || cantidad <= 0) throw new Error('cantidad inválida');
+    sheet.appendRow([id, String(body.producto_id || '').trim(), tipo, cantidad, String(body.referencia_pedido_id || '').trim(), new Date().toISOString(), session.nombre, String(body.motivo || '').trim()]);
+    return { ok: true, id };
+  }, 12000);
 }
 
 function saveCierreCaja(body, token) {
-  const session = requireAuth(token, ['admin', 'caja']);
-  const sheet = getSheet(SHEETS.cierresCaja);
+  return withDocumentLock(function() {
+    const session = requireAuth(token, ['admin', 'caja']);
+    const sheet = getSheet(SHEETS.cierresCaja);
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow(['id', 'fecha', 'total_efectivo', 'total_tarjeta', 'total_transferencia', 'observaciones', 'usuario']);
+    }
+    const id = Utilities.getUuid();
+    const totalEfectivo = Number(body.total_efectivo || 0);
+    const totalTarjeta = Number(body.total_tarjeta || 0);
+    const totalTransfer = Number(body.total_transferencia || 0);
+    sheet.appendRow([id, new Date().toISOString(), totalEfectivo, totalTarjeta, totalTransfer, String(body.observaciones || '').trim(), session.nombre]);
+    return { ok: true, id };
+  }, 12000);
+}
+
+function appendJustificacionRow(payload) {
+  const sheet = getSheet(SHEETS.justificaciones);
   if (sheet.getLastRow() === 0) {
-    sheet.appendRow(['id', 'fecha', 'total_efectivo', 'total_tarjeta', 'total_transferencia', 'observaciones', 'usuario']);
+    sheet.appendRow(['id', 'pedido_id', 'texto', 'usuario', 'rol', 'created_at', 'pdf_url']);
   }
   const id = Utilities.getUuid();
-  sheet.appendRow([id, new Date().toISOString(), Number(body.total_efectivo || 0), Number(body.total_tarjeta || 0), Number(body.total_transferencia || 0), body.observaciones || '', session.nombre]);
+  sheet.appendRow([
+    id,
+    String(payload.pedido_id || '').trim(),
+    String(payload.texto || '').trim(),
+    String(payload.usuario || '').trim(),
+    String(payload.rol || '').trim(),
+    new Date().toISOString(),
+    String(payload.pdf_url || '').trim()
+  ]);
   return { ok: true, id };
+}
+
+function obtenerDetallePedido(pedidoId) {
+  const id = String(pedidoId || '').trim();
+  if (!id) return [];
+  const detalleSheet = getSheet(SHEETS.detallePedidos);
+  const data = detalleSheet.getDataRange().getValues();
+  if (!data || data.length < 2) return [];
+  const headers = data[0];
+  const idx = headers.indexOf('pedido_id');
+  return data.slice(1)
+    .filter(row => String(row[idx] || '') === id)
+    .map(row => headers.reduce((acc, key, i) => (acc[key] = row[i], acc), {}));
 }
 
 function escapeHtml(text) {
