@@ -35,14 +35,14 @@ function setup() {
   const specs = [
     [SHEETS.productos, ['id', 'nombre', 'precio', 'stock', 'categoria', 'imagen_url', 'activo', 'updated_at']],
     [SHEETS.pedidos, ['id', 'fecha_hora', 'cliente', 'telefono', 'direccion', 'total', 'estado', 'repartidor_id', 'metodo_pago', 'updated_at', 'creado_por']],
-    [SHEETS.detallePedidos, ['id', 'pedido_id', 'producto_id', 'nombre_producto', 'cantidad', 'precio_unitario', 'subtotal']],
+    [SHEETS.detallePedidos, ['id', 'pedido_id', 'producto_id', 'nombre_producto', 'cantidad', 'precio_unitario', 'subtotal', 'created_at']],
     [SHEETS.repartidores, ['id', 'nombre', 'telefono', 'estado', 'lat', 'lng', 'pedido_activo', 'updated_at']],
     [SHEETS.movimientosStock, ['id', 'producto_id', 'tipo', 'cantidad', 'referencia_pedido_id', 'fecha', 'usuario', 'motivo']],
     [SHEETS.cierresCaja, ['id', 'fecha', 'total_efectivo', 'total_tarjeta', 'total_transferencia', 'observaciones', 'usuario']],
     [SHEETS.usuarios, ['id', 'nombre', 'rol', 'pin', 'activo', 'updated_at']],
     [SHEETS.justificaciones, ['id', 'pedido_id', 'texto', 'usuario', 'rol', 'created_at', 'pdf_url']],
     [SHEETS.configuracion, ['clave', 'valor']],
-    [SHEETS.archivoPedidos, ['id', 'fecha_hora', 'cliente', 'telefono', 'direccion', 'total', 'estado', 'repartidor_id', 'metodo_pago', 'closed_at']],
+    [SHEETS.archivoPedidos, ['id', 'fecha_hora', 'cliente', 'telefono', 'direccion', 'total', 'estado', 'repartidor_id', 'metodo_pago', 'closed_at', 'detalle_json']],
   ];
 
   specs.forEach(([name, headers]) => {
@@ -76,10 +76,12 @@ function handleRequest(method, e) {
       return listSheet(SHEETS.productos);
     case 'GET:pedidos':
       return listPedidos(params, token);
-    case 'GET:repartidores':
-      return listSheet(SHEETS.repartidores);
     case 'GET:justificaciones':
       return listSheet(SHEETS.justificaciones);
+    case 'GET:archivo':
+      return listArchivoPedidos(params, token);
+    case 'GET:repartidores':
+      return listSheet(SHEETS.repartidores);
     case 'POST:login':
       return login(body);
     case 'POST:pedidos':
@@ -104,6 +106,8 @@ function handleRequest(method, e) {
       return saveMovimientoStock(body, token);
     case 'POST:cierreCaja':
       return saveCierreCaja(body, token);
+    case 'POST:archivarPedido':
+      return archivePedido(body, token);
     default:
       return { ok: false, error: `Acción no soportada: ${method}:${action}` };
   }
@@ -234,6 +238,7 @@ function createPedido(body, token) {
 
     const id = Utilities.getUuid();
     const now = new Date().toISOString();
+    const items = parseItems(body.items);
     const row = [
       id,
       now,
@@ -248,6 +253,26 @@ function createPedido(body, token) {
       session.rol,
     ];
     sheet.appendRow(row);
+
+    if (items.length) {
+      const detailSheet = getSheet(SHEETS.detallePedidos);
+      if (detailSheet.getLastRow() === 0) {
+        detailSheet.appendRow(['id', 'pedido_id', 'producto_id', 'nombre_producto', 'cantidad', 'precio_unitario', 'subtotal', 'created_at']);
+      }
+      items.forEach(item => {
+        detailSheet.appendRow([
+          Utilities.getUuid(),
+          id,
+          String(item.id || item.producto_id || ''),
+          String(item.name || item.nombre || item.concepto || ''),
+          Number(item.qty || item.cantidad || 1),
+          Number(item.price || item.precio || 0),
+          Number((Number(item.qty || item.cantidad || 1) * Number(item.price || item.precio || 0)).toFixed(2)),
+          now
+        ]);
+      });
+    }
+
     return { ok: true, id };
   } catch (e) {
     return { ok: false, error: 'Error en createPedido', details: String(e) };
@@ -272,6 +297,75 @@ function updatePedidoStatus(id, estado, body, token) {
   if (updatedIdx >= 0) sheet.getRange(rowIndex + 2, updatedIdx + 1).setValue(new Date().toISOString());
   if (body && body.justificacion) saveJustificacion({ pedido_id: id, texto: body.justificacion, usuario: session.nombre, rol: session.rol }, token);
   return { ok: true, id, estado };
+}
+
+function parseItems(rawItems) {
+  if (!rawItems) return [];
+  if (Array.isArray(rawItems)) return rawItems;
+  try {
+    const parsed = typeof rawItems === 'string' ? JSON.parse(rawItems) : rawItems;
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (_) {
+    return [];
+  }
+}
+
+function archivePedido(body, token) {
+  const session = requireAuth(token, ['admin', 'caja']);
+  const id = String(body.id || '').trim();
+  if (!id) throw new Error('Pedido no encontrado');
+
+  const sheet = getSheet(SHEETS.pedidos);
+  const data = sheet.getDataRange().getValues();
+  const headers = data.shift();
+  const rowIndex = data.findIndex(r => String(r[headers.indexOf('id')]) === id);
+  if (rowIndex < 0) throw new Error('Pedido no encontrado');
+
+  const pedidoRow = data[rowIndex];
+  const archivo = getSheet(SHEETS.archivoPedidos);
+  if (archivo.getLastRow() === 0) {
+    archivo.appendRow(['id', 'fecha_hora', 'cliente', 'telefono', 'direccion', 'total', 'estado', 'repartidor_id', 'metodo_pago', 'closed_at', 'detalle_json']);
+  }
+
+  const detalle = (listSheet(SHEETS.detallePedidos).data || []).filter(d => String(d.pedido_id || '') === id);
+  archivo.appendRow([
+    id,
+    pedidoRow[headers.indexOf('fecha_hora')] || new Date().toISOString(),
+    pedidoRow[headers.indexOf('cliente')] || '',
+    pedidoRow[headers.indexOf('telefono')] || '',
+    pedidoRow[headers.indexOf('direccion')] || '',
+    pedidoRow[headers.indexOf('total')] || 0,
+    'archivado',
+    pedidoRow[headers.indexOf('repartidor_id')] || '',
+    pedidoRow[headers.indexOf('metodo_pago')] || '',
+    new Date().toISOString(),
+    JSON.stringify(detalle)
+  ]);
+
+  sheet.getRange(rowIndex + 2, headers.indexOf('estado') + 1).setValue('archivado');
+  sheet.getRange(rowIndex + 2, headers.indexOf('updated_at') + 1).setValue(new Date().toISOString());
+  saveJustificacion({
+    pedido_id: id,
+    texto: body.justificacion || 'Pedido archivado',
+    usuario: session.nombre,
+    rol: session.rol,
+    pdf_url: ''
+  }, token);
+  return { ok: true, id };
+}
+
+function listArchivoPedidos(params, token) {
+  const all = listSheet(SHEETS.archivoPedidos).data || [];
+  const estado = params.estado || '';
+  const since = params.since || '';
+  return {
+    ok: true,
+    data: all.filter(row => {
+      const matchEstado = !estado || String(row.estado || '') === estado;
+      const matchSince = !since || String(row.closed_at || row.fecha_hora || '') > since;
+      return matchEstado && matchSince;
+    }),
+  };
 }
 
 function assignRepartidor(id, repartidorId, body, token) {
