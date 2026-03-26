@@ -154,7 +154,12 @@
       </section>
       <section id="inventarioSection" class="section-content hidden">
         <div class="panel">
-          <div class="panel-header"><h3 class="panel-title"><i class="fas fa-boxes"></i> Inventario</h3></div>
+          <div class="panel-header">
+            <h3 class="panel-title"><i class="fas fa-boxes"></i> Inventario</h3>
+            <button class="btn btn-primary" onclick="openAddProductModal()">
+              <i class="fas fa-plus"></i> Agregar producto
+            </button>
+          </div>
           <table style="width:100%;border-collapse:collapse;">
             <thead><tr style="text-align:left;border-bottom:1px solid var(--glass-border);"><th style="padding:15px;">Producto</th><th style="padding:15px;">Stock</th><th style="padding:15px;">Precio</th><th style="padding:15px;">Estado</th><th style="padding:15px;">Acciones</th></tr></thead>
             <tbody id="inventoryTable"></tbody>
@@ -179,6 +184,46 @@
       <div style="background:var(--dark-lighter);padding:15px;border-radius:10px;margin-bottom:16px;"><div style="display:flex;justify-content:space-between;"><span>Subtotal</span><span id="checkoutSubtotal">$0</span></div><div style="display:flex;justify-content:space-between;font-weight:800;margin-top:8px;"><span>Total</span><span id="checkoutTotal">$0</span></div></div>
       <button type="submit" class="btn btn-primary" style="width:100%;">Confirmar</button>
     </form></div></div>
+
+  <div class="modal" id="productModal">
+    <div class="modal-content">
+      <div class="modal-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <h3 class="modal-title">Agregar producto</h3>
+        <button class="btn-icon" onclick="closeModal('productModal')"><i class="fas fa-times"></i></button>
+      </div>
+      <form id="productForm" onsubmit="saveNewProduct(event)">
+        <div class="form-group">
+          <label class="form-label">Nombre</label>
+          <input class="form-input" id="newProductName" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Precio</label>
+          <input class="form-input" id="newProductPrice" type="number" min="0" step="0.01" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Stock</label>
+          <input class="form-input" id="newProductStock" type="number" min="0" step="1" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Categoría</label>
+          <select class="form-select" id="newProductCategory" required>
+            <option value="cerveza">Cerveza</option>
+            <option value="botana">Botana</option>
+            <option value="otros">Otros</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Imagen</label>
+          <input class="form-input" id="newProductImage" placeholder="archivo.jpg" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Emoji fallback</label>
+          <input class="form-input" id="newProductIcon" placeholder="🍺" value="🍺" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;">Guardar producto</button>
+      </form>
+    </div>
+  </div>
 
   <script>
     window.DEPOSITO_GAS_URL = 'https://script.google.com/macros/s/AKfycbw8ma1Iu8XiymcBfWwy0EnrYKdcNQiGGCBnLAQMkg0wKz-dNYoWylcPIUhHmzYCo81F/exec';

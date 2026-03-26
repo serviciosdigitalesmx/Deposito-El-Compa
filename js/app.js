@@ -460,6 +460,37 @@ function editStock(productId) {
     }
 }
 
+function openAddProductModal() {
+    document.getElementById('newProductName').value = '';
+    document.getElementById('newProductPrice').value = '';
+    document.getElementById('newProductStock').value = '';
+    document.getElementById('newProductCategory').value = 'cerveza';
+    document.getElementById('newProductImage').value = '';
+    document.getElementById('newProductIcon').value = '🍺';
+    document.getElementById('productModal').classList.add('active');
+}
+
+function saveNewProduct(e) {
+    e.preventDefault();
+    const product = {
+        id: Date.now(),
+        name: document.getElementById('newProductName').value.trim(),
+        price: Number(document.getElementById('newProductPrice').value),
+        stock: Number(document.getElementById('newProductStock').value),
+        category: document.getElementById('newProductCategory').value,
+        image: document.getElementById('newProductImage').value.trim(),
+        icon: document.getElementById('newProductIcon').value.trim() || '🍺',
+    };
+
+    state.products.unshift(product);
+    renderInventory();
+    if (document.getElementById('productsGrid') && !document.getElementById('inventarioSection').classList.contains('hidden')) {
+        renderProducts();
+    }
+    closeModal('productModal');
+    showToast('Producto agregado', 'success');
+}
+
 // Reportes
 function renderReports() {
     const container = document.getElementById('topProducts');
