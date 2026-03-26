@@ -26,11 +26,15 @@ let state = {
         { id: 3, name: 'Cerveza Victoria', price: 30, category: 'cerveza', stock: 30, icon: '🍺', image: 'victoria.jpg' },
         { id: 4, name: 'Cerveza Indio', price: 32, category: 'cerveza', stock: 25, icon: '🍺', image: 'indio.jpg' },
         { id: 5, name: 'Cerveza XX Lager', price: 34, category: 'cerveza', stock: 40, icon: '🍺', image: 'xx.jpg' },
-        { id: 6, name: 'Botana Mixta', price: 50, category: 'botana', stock: 20, icon: '🥜', image: 'botana.jpg' },
-        { id: 7, name: 'Papas Fritas', price: 35, category: 'botana', stock: 30, icon: '🍟', image: 'papas.jpg' },
-        { id: 8, name: 'Cacahuates', price: 25, category: 'botana', stock: 50, icon: '🥜', image: 'cacahuates.jpg' },
-        { id: 9, name: 'Hielo 5kg', price: 40, category: 'otros', stock: 15, icon: '🧊', image: 'hielo.jpg' },
-        { id: 10, name: 'Refresco 2L', price: 28, category: 'otros', stock: 35, icon: '🥤', image: 'refresco.jpg' }
+        { id: 6, name: 'Cerveza Tecate', price: 28, category: 'cerveza', stock: 30, icon: '🍺', image: 'tecate.jpg' },
+        { id: 7, name: 'Cerveza Sol', price: 29, category: 'cerveza', stock: 30, icon: '🍺', image: 'sol.jpg' },
+        { id: 8, name: 'Botana Mixta', price: 50, category: 'botana', stock: 20, icon: '🥜', image: 'botana.jpg' },
+        { id: 9, name: 'Papas Sabritas', price: 35, category: 'botana', stock: 30, icon: '🥔', image: 'papas.jpg' },
+        { id: 10, name: 'Cacahuates Japonés', price: 25, category: 'botana', stock: 50, icon: '🥜', image: 'cacahuates.jpg' },
+        { id: 11, name: 'Hielo 5kg', price: 40, category: 'otros', stock: 15, icon: '🧊', image: 'hielo.jpg' },
+        { id: 12, name: 'Coca Cola 2L', price: 28, category: 'otros', stock: 35, icon: '🥤', image: 'refresco.jpg' },
+        { id: 13, name: 'Six Pack Modelo', price: 180, category: 'cerveza', stock: 12, icon: '📦', image: 'sixpackmodelo.jpg' },
+        { id: 14, name: 'Cubeta 12 Modelo', price: 350, category: 'cerveza', stock: 8, icon: '🪣', image: 'cubeta12modelo.jpg' }
     ],
     soundEnabled: true,
     theme: 'dark'
@@ -240,7 +244,7 @@ function updateCart() {
         container.innerHTML = state.cart.map(item => `
             <div class="cart-item">
                 <div class="cart-item-image">
-                    <img src="assets/images/${item.image}" alt="${item.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <img src="assets/images/${item.image || ''}" alt="${item.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                     <div class="image-fallback" style="display:none;align-items:center;justify-content:center;width:100%;height:100%;font-size:2rem;">${item.icon}</div>
                 </div>
                 <div class="cart-item-details">
@@ -427,7 +431,8 @@ function renderInventory() {
         <tr style="border-bottom: 1px solid var(--glass-border);">
             <td style="padding: 15px;">
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <img src="assets/images/${p.image}" width="40" height="40" style="object-fit: cover; border-radius: 8px;" onerror="this.src='https://placehold.co/40x40?text=${p.icon}'">
+                    <img src="assets/images/${p.image || ''}" width="40" height="40" style="object-fit: contain; border-radius: 8px; background: var(--dark);" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="image-fallback" style="display:none;align-items:center;justify-content:center;width:40px;height:40px;border-radius:8px;background:var(--dark);font-size:1.2rem;">${p.icon}</div>
                     <span>${p.name}</span>
                 </div>
             </td>
@@ -499,7 +504,7 @@ function renderReports() {
     container.innerHTML = topProducts.map((p, i) => `
         <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px; padding: 15px; background: var(--dark-lighter); border-radius: 10px;">
             <div style="font-size: 1.5rem; font-weight: 800; color: var(--primary); width: 30px;">${i + 1}</div>
-            <img src="assets/images/${p.image}" width="50" height="50" style="object-fit: cover; border-radius: 8px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <img src="assets/images/${p.image || ''}" width="50" height="50" style="object-fit: contain; border-radius: 8px; background: var(--dark);" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
             <div class="image-fallback" style="display:none;align-items:center;justify-content:center;width:50px;height:50px;border-radius:8px;background:var(--dark);font-size:1.5rem;">${p.icon}</div>
             <div style="flex: 1;">
                 <div style="font-weight: 600;">${p.name}</div>
