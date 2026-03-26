@@ -23,11 +23,13 @@
     try {
       const response = await fetch(url, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token || defaultConfig.token ? { 'X-Auth-Token': token || defaultConfig.token } : {}),
+        headers: method === 'GET' ? undefined : {
+          'Content-Type': 'text/plain;charset=utf-8',
         },
-        body: body ? JSON.stringify(body) : undefined,
+        body: body ? JSON.stringify({
+          ...body,
+          token: token || defaultConfig.token || undefined,
+        }) : undefined,
         signal: controller.signal,
       });
 
