@@ -277,7 +277,12 @@ function login(body) {
   const user = users.find(u => String(u.rol || '') === role && String(u.pin || '') === pin);
   if (!user) return { ok: false, error: 'Credenciales inválidas' };
   const token = Utilities.getUuid();
-  CacheService.getScriptCache().put(`token:${token}`, JSON.stringify({ id: user.id, rol: user.rol, nombre: user.nombre }), 60 * 60 * 6);
+  // CacheService only supports short TTLs; keep sessions inside the documented limit.
+  CacheService.getScriptCache().put(
+    `token:${token}`,
+    JSON.stringify({ id: user.id, rol: user.rol, nombre: user.nombre }),
+    1500
+  );
   return { ok: true, token, user: { id: user.id, nombre: user.nombre, rol: user.rol } };
 }
 
