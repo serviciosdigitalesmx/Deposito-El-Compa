@@ -3,233 +3,39 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Depósito El Compa - Panel Interno</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+  <meta http-equiv="refresh" content="0; url=./integrador.html">
+  <title>Depósito El Compa - Interno</title>
   <style>
-    body { font-family: 'Inter', sans-serif; }
-    .content-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 25px; margin-bottom: 25px; }
-    .panel { background: var(--glass); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); border-radius: 20px; padding: 25px; }
-    .panel-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
-    .panel-title { font-size:1.3rem; font-weight:700; display:flex; align-items:center; gap:10px; }
-    .btn { padding:10px 18px; border-radius:10px; border:none; cursor:pointer; font-weight:600; }
-    .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color:#fff; }
-    .btn-secondary { background: var(--glass); color:#fff; border:1px solid var(--glass-border); }
-    .btn-success { background: linear-gradient(135deg, var(--success), #00b8d4); color:#000; }
-    .btn-small { padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; }
-    .stats-grid, .products-grid, .orders-list { gap: 15px; }
-    .products-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); }
-    .orders-list { display:flex; flex-direction:column; }
-    .stat-card, .order-card, .product-card { background: var(--dark-light); border-radius: 15px; border: 1px solid var(--glass-border); }
-    .section-content.hidden { display:none !important; }
-    .map-container { height:300px; background: var(--dark-light); border-radius:15px; position:relative; overflow:hidden; }
-    .map-grid { position:absolute; inset:0; background-image: linear-gradient(var(--glass-border) 1px, transparent 1px), linear-gradient(90deg, var(--glass-border) 1px, transparent 1px); background-size: 40px 40px; opacity: .3; }
-    .map-point { position:absolute; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:var(--primary); animation:pulse 2s infinite; color:#fff; }
-    .toast-container { position: fixed; top:20px; right:20px; z-index:3000; display:flex; flex-direction:column; gap:10px; }
-    .toast { background: var(--dark-light); border-left: 4px solid var(--primary); padding: 15px 20px; border-radius: 10px; box-shadow: var(--shadow); min-width: 300px; }
-    .login-overlay { position:fixed; inset:0; background:var(--dark); display:flex; align-items:center; justify-content:center; z-index:5000; }
-    .pin-pad { display:grid; grid-template-columns: repeat(3, 80px); gap:15px; justify-content:center; }
-    .pin-btn { width:80px; height:80px; border-radius:20px; border:1px solid var(--glass-border); background:var(--glass); color:#fff; font-size:1.4rem; }
-    .role-selector { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; margin-bottom:20px; }
-    .role-btn { padding:12px 18px; border-radius:14px; border:2px solid transparent; background:var(--glass); color:#fff; }
-    .role-btn.active { border-color:var(--primary); }
-    .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.8); z-index:2000; align-items:center; justify-content:center; }
-    .modal.active { display:flex; }
-    .modal-content { background:var(--dark-light); border:1px solid var(--glass-border); border-radius:20px; padding:30px; max-width:520px; width:92%; max-height:90vh; overflow:auto; }
-    .form-group { margin-bottom: 16px; }
-    .form-label { display:block; margin-bottom:8px; font-weight:600; }
-    .form-input, .form-select, .form-textarea { width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--glass-border); background:var(--dark-lighter); color:#fff; }
-    .sidebar .badge { margin-left:auto; }
-    @media (max-width: 1024px){ .app-container{grid-template-columns:1fr;} .sidebar{transform:translateX(-100%);} .main-content{margin-left:0;} .content-grid{grid-template-columns:1fr;} }
+    :root { color-scheme: dark; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: #17172a;
+      color: #fff;
+      font-family: Inter, system-ui, sans-serif;
+    }
+    .card {
+      text-align: center;
+      padding: 24px 28px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 18px;
+      background: rgba(255,255,255,.04);
+      max-width: 420px;
+    }
+    a {
+      color: #ff6b6b;
+      text-decoration: none;
+      font-weight: 700;
+    }
   </style>
 </head>
 <body>
-  <div class="login-overlay" id="loginOverlay">
-    <div class="pin-container" style="text-align:center; max-width: 760px; padding: 20px;">
-      <h1 style="font-size:2.4rem; margin-bottom:8px;">🍻 Depósito El Compa</h1>
-      <p style="opacity:.7; margin-bottom:6px;">Panel interno del depósito</p>
-      <p style="opacity:.55; margin-bottom:22px; font-size:.92rem;">Caja, hieleras, reparto, inventario y archivo</p>
-      <div class="role-selector">
-        <button class="role-btn active" data-role="admin" onclick="selectRole('admin')"><i class="fas fa-user-shield"></i><div>Admin</div></button>
-        <button class="role-btn" data-role="hieleras" onclick="selectRole('hieleras')"><i class="fas fa-box-open"></i><div>Hieleras</div></button>
-        <button class="role-btn" data-role="repartidor" onclick="selectRole('repartidor')"><i class="fas fa-motorcycle"></i><div>Repartidor</div></button>
-        <button class="role-btn" data-role="caja" onclick="selectRole('caja')"><i class="fas fa-cash-register"></i><div>Caja</div></button>
-      </div>
-      <div class="pin-display" id="pinDisplay" style="display:flex; gap:14px; justify-content:center; margin: 20px 0;">
-        <div class="pin-dot" style="width:18px;height:18px;border-radius:50%;border:2px solid var(--primary)"></div>
-        <div class="pin-dot" style="width:18px;height:18px;border-radius:50%;border:2px solid var(--primary)"></div>
-        <div class="pin-dot" style="width:18px;height:18px;border-radius:50%;border:2px solid var(--primary)"></div>
-        <div class="pin-dot" style="width:18px;height:18px;border-radius:50%;border:2px solid var(--primary)"></div>
-      </div>
-      <div class="pin-pad">
-        <button class="pin-btn" onclick="enterPin(1)">1</button><button class="pin-btn" onclick="enterPin(2)">2</button><button class="pin-btn" onclick="enterPin(3)">3</button>
-        <button class="pin-btn" onclick="enterPin(4)">4</button><button class="pin-btn" onclick="enterPin(5)">5</button><button class="pin-btn" onclick="enterPin(6)">6</button>
-        <button class="pin-btn" onclick="enterPin(7)">7</button><button class="pin-btn" onclick="enterPin(8)">8</button><button class="pin-btn" onclick="enterPin(9)">9</button>
-        <button class="pin-btn" onclick="clearPin()">C</button><button class="pin-btn" onclick="enterPin(0)">0</button><button class="pin-btn" onclick="deletePin()"><i class="fas fa-backspace"></i></button>
-      </div>
-    </div>
+  <div class="card">
+    <h1>🍻 Depósito El Compa</h1>
+    <p>Redirigiendo al integrador interno...</p>
+    <p>Si no carga solo, entra aquí: <a href="./integrador.html">Abrir integrador</a></p>
   </div>
-
-  <div class="toast-container" id="toastContainer"></div>
-  <div class="app-container" id="appContainer" style="display:none;">
-    <aside class="sidebar" id="sidebar">
-      <div class="logo"><div class="logo-icon">🍻</div><div class="logo-text"><h1>El Compa</h1><p>Sistema Interno</p></div></div>
-      <div class="nav-section">
-        <div class="nav-title">Principal</div>
-        <div class="nav-item active" onclick="showSection('dashboard')"><i class="fas fa-chart-line"></i><span>Dashboard</span></div>
-        <div class="nav-item" onclick="showSection('pedidos')"><i class="fas fa-clipboard-list"></i><span>Solicitudes</span><span class="badge warning" id="ordersBadge">0</span></div>
-        <div class="nav-item" onclick="showSection('hieleras')"><i class="fas fa-box-open"></i><span>Hieleras</span><span class="badge" id="kitchenBadge">0</span></div>
-      </div>
-      <div class="nav-section" id="adminNav" style="display:none;">
-        <div class="nav-title">Operación</div>
-        <div class="nav-item" onclick="showSection('reparto')"><i class="fas fa-motorcycle"></i><span>Reparto</span></div>
-        <div class="nav-item" onclick="showSection('inventario')"><i class="fas fa-boxes"></i><span>Inventario</span></div>
-        <div class="nav-item" onclick="showSection('reportes')"><i class="fas fa-chart-pie"></i><span>Reportes</span></div>
-      </div>
-      <div class="nav-section">
-        <div class="nav-title">Sistema</div>
-        <div class="nav-item" onclick="toggleSound()"><i class="fas fa-volume-up"></i><span>Sonido</span></div>
-        <div class="nav-item" onclick="toggleTheme()"><i class="fas fa-moon"></i><span>Tema</span></div>
-        <div class="nav-item" onclick="logout()"><i class="fas fa-sign-out-alt"></i><span>Cerrar Sesión</span></div>
-      </div>
-    </aside>
-
-    <main class="main-content">
-      <header class="header">
-        <div class="header-left"><h2 id="pageTitle">Dashboard</h2><p id="currentDate">Cargando...</p></div>
-        <div class="header-actions">
-          <button class="btn-icon" id="soundBtn" onclick="toggleSound()"><i class="fas fa-volume-up"></i></button>
-          <button class="btn-icon" onclick="showNotifications()"><i class="fas fa-bell"></i></button>
-          <div class="user-profile" style="display:flex;gap:10px;align-items:center;padding:8px 14px;background:var(--glass);border:1px solid var(--glass-border);border-radius:12px;">
-            <div class="user-avatar" id="userAvatar" style="width:35px;height:35px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--primary),var(--secondary));font-weight:700;">A</div>
-            <div><div id="userName" style="font-weight:700;">Admin</div><div id="userRole" style="font-size:.8rem;opacity:.7;">Administrador</div></div>
-          </div>
-        </div>
-      </header>
-
-      <section id="dashboardSection" class="section-content">
-        <div class="stats-grid">
-          <div class="stat-card" style="padding:20px;"><div style="font-size:.85rem;opacity:.7;">Ventas hoy</div><div id="totalVentas" style="font-size:2rem;font-weight:800;">$0</div></div>
-          <div class="stat-card" style="padding:20px;"><div style="font-size:.85rem;opacity:.7;">Pedidos hoy</div><div id="totalPedidos" style="font-size:2rem;font-weight:800;">0</div></div>
-          <div class="stat-card" style="padding:20px;"><div style="font-size:.85rem;opacity:.7;">Tiempo promedio</div><div id="tiempoPromedio" style="font-size:2rem;font-weight:800;">18m</div></div>
-          <div class="stat-card" style="padding:20px;"><div style="font-size:.85rem;opacity:.7;">Calificación</div><div style="font-size:2rem;font-weight:800;">4.8</div></div>
-        </div>
-        <div class="content-grid">
-          <div class="panel">
-            <div class="panel-header"><h3 class="panel-title"><i class="fas fa-chart-bar"></i> Ventas por Hora</h3></div>
-            <div class="chart-container" id="salesChart" style="height:220px;display:flex;align-items:flex-end;gap:10px;padding:20px 0;"></div>
-          </div>
-          <div class="panel">
-            <div class="panel-header"><h3 class="panel-title"><i class="fas fa-map-marker-alt"></i> Estado Operativo</h3></div>
-            <div class="map-container">
-              <div class="map-grid"></div>
-              <div class="map-point" style="top:30%;left:20%;"><i class="fas fa-warehouse"></i></div>
-              <div class="map-point" style="top:60%;left:65%;background:var(--secondary);"><i class="fas fa-motorcycle"></i></div>
-            </div>
-          </div>
-        </div>
-        <div class="panel">
-          <div class="panel-header"><h3 class="panel-title"><i class="fas fa-list"></i> Solicitudes recientes</h3></div>
-          <div class="orders-list" id="recentOrders"></div>
-        </div>
-      </section>
-
-      <section id="pedidosSection" class="section-content hidden">
-        <div class="panel"><div class="panel-header"><h3 class="panel-title"><i class="fas fa-clipboard-list"></i> Solicitudes</h3></div><div class="orders-list" id="allOrdersList"></div></div>
-      </section>
-      <section id="hielerasSection" class="section-content hidden">
-        <div class="panel">
-          <div class="panel-header"><h3 class="panel-title"><i class="fas fa-box-open"></i> Hieleras</h3></div>
-          <div class="cooking-animation" style="display:flex;justify-content:center;gap:6px;margin:20px 0;"><div class="bubble" style="width:15px;height:15px;background:var(--secondary);border-radius:50%;"></div><div class="bubble" style="width:15px;height:15px;background:var(--secondary);border-radius:50%;"></div><div class="bubble" style="width:15px;height:15px;background:var(--secondary);border-radius:50%;"></div></div>
-          <div class="orders-list" id="kitchenOrders"></div>
-        </div>
-      </section>
-      <section id="repartoSection" class="section-content hidden">
-        <div class="content-grid">
-          <div class="panel"><div class="panel-header"><h3 class="panel-title"><i class="fas fa-route"></i> Ruta</h3></div><div class="map-container" style="height:400px;"><div class="map-grid"></div><div class="map-point" style="top:20%;left:15%;background:var(--warning);"><i class="fas fa-warehouse"></i></div></div></div>
-          <div class="panel"><div class="panel-header"><h3 class="panel-title"><i class="fas fa-motorcycle"></i> Entregas pendientes</h3></div><div class="orders-list" id="deliveryOrders"></div></div>
-        </div>
-      </section>
-      <section id="inventarioSection" class="section-content hidden">
-        <div class="panel">
-          <div class="panel-header">
-            <h3 class="panel-title"><i class="fas fa-boxes"></i> Inventario</h3>
-            <button class="btn btn-primary" onclick="openAddProductModal()">
-              <i class="fas fa-plus"></i> Agregar producto
-            </button>
-          </div>
-          <table style="width:100%;border-collapse:collapse;">
-            <thead><tr style="text-align:left;border-bottom:1px solid var(--glass-border);"><th style="padding:15px;">Producto</th><th style="padding:15px;">Stock</th><th style="padding:15px;">Precio</th><th style="padding:15px;">Estado</th><th style="padding:15px;">Acciones</th></tr></thead>
-            <tbody id="inventoryTable"></tbody>
-          </table>
-        </div>
-      </section>
-      <section id="reportesSection" class="section-content hidden">
-        <div class="content-grid">
-          <div class="panel"><div class="panel-header"><h3 class="panel-title"><i class="fas fa-chart-line"></i> Resumen</h3></div><div class="chart-container" id="salesChartReport" style="height:250px;display:flex;align-items:flex-end;gap:10px;padding:20px 0;"></div></div>
-          <div class="panel"><div class="panel-header"><h3 class="panel-title"><i class="fas fa-trophy"></i> Productos más vendidos</h3></div><div id="topProducts"></div></div>
-        </div>
-      </section>
-    </main>
-  </div>
-
-  <div class="modal" id="checkoutModal"><div class="modal-content"><div class="modal-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;"><h3 class="modal-title">Finalizar pedido</h3><button class="btn-icon" onclick="closeModal('checkoutModal')"><i class="fas fa-times"></i></button></div>
-    <form id="checkoutForm" onsubmit="processOrder(event)">
-      <div class="form-group"><label class="form-label">Nombre del cliente</label><input class="form-input" id="customerName" required></div>
-      <div class="form-group"><label class="form-label">Teléfono</label><input class="form-input" id="customerPhone" required></div>
-      <div class="form-group"><label class="form-label">Dirección</label><textarea class="form-textarea" id="customerAddress" rows="2" required></textarea></div>
-      <div class="form-group"><label class="form-label">Método de pago</label><select class="form-select" id="paymentMethod"><option value="efectivo">Efectivo</option><option value="tarjeta">Tarjeta</option><option value="transferencia">Transferencia</option></select></div>
-      <div style="background:var(--dark-lighter);padding:15px;border-radius:10px;margin-bottom:16px;"><div style="display:flex;justify-content:space-between;"><span>Subtotal</span><span id="checkoutSubtotal">$0</span></div><div style="display:flex;justify-content:space-between;font-weight:800;margin-top:8px;"><span>Total</span><span id="checkoutTotal">$0</span></div></div>
-      <button type="submit" class="btn btn-primary" style="width:100%;">Confirmar</button>
-    </form></div></div>
-
-  <div class="modal" id="productModal">
-    <div class="modal-content">
-      <div class="modal-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-        <h3 class="modal-title">Agregar producto</h3>
-        <button class="btn-icon" onclick="closeModal('productModal')"><i class="fas fa-times"></i></button>
-      </div>
-      <form id="productForm" onsubmit="saveNewProduct(event)">
-        <div class="form-group">
-          <label class="form-label">Nombre</label>
-          <input class="form-input" id="newProductName" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Precio</label>
-          <input class="form-input" id="newProductPrice" type="number" min="0" step="0.01" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Stock</label>
-          <input class="form-input" id="newProductStock" type="number" min="0" step="1" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Categoría</label>
-          <select class="form-select" id="newProductCategory" required>
-            <option value="cerveza">Cerveza</option>
-            <option value="botana">Botana</option>
-            <option value="otros">Otros</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Imagen</label>
-          <input class="form-input" id="newProductImage" placeholder="archivo.jpg" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Emoji fallback</label>
-          <input class="form-input" id="newProductIcon" placeholder="🍺" value="🍺" required>
-        </div>
-        <button type="submit" class="btn btn-primary" style="width:100%;">Guardar producto</button>
-      </form>
-    </div>
-  </div>
-
-  <script>
-    window.DEPOSITO_GAS_URL = 'https://script.google.com/macros/s/AKfycbw36LgiUW3Mp7ezvsQKcaDOAITZSryrMLdOXf0zu-8AtORq8l_0lwWkMu8RLYaS24ZZ/exec';
-  </script>
-  <script src="js/deposito-api.js"></script>
-  <script src="js/admin-app.js"></script>
 </body>
 </html>
