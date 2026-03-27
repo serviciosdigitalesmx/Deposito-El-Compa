@@ -172,6 +172,7 @@
           <option value="otros">Otros</option>
         </select>
         <input id="pImagen" class="input" placeholder="imagen.png">
+        <input id="pImageFile" class="input" type="file" accept="image/*" style="padding:10px 12px;">
         <input id="pIcono" class="input" placeholder="Icono fallback">
       </div>
       <div style="display:flex;gap:10px;margin-top:12px;">
@@ -197,6 +198,40 @@
 
     function api() {
       return window.DEPOSITO_API;
+    }
+
+    function postThroughForm(action, payload) {
+      return new Promise((resolve) => {
+        let frame = document.getElementById('adminPostFrame');
+        if (!frame) {
+          frame = document.createElement('iframe');
+          frame.id = 'adminPostFrame';
+          frame.name = 'adminPostFrame';
+          frame.style.display = 'none';
+          document.body.appendChild(frame);
+        }
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = window.DEPOSITO_GAS_URL;
+        form.target = 'adminPostFrame';
+        form.style.display = 'none';
+        const actionField = document.createElement('input');
+        actionField.type = 'hidden';
+        actionField.name = 'action';
+        actionField.value = action;
+        form.appendChild(actionField);
+        Object.entries(payload).forEach(([key, value]) => {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = key;
+          input.value = typeof value === 'string' ? value : JSON.stringify(value);
+          form.appendChild(input);
+        });
+        document.body.appendChild(form);
+        frame.onload = () => resolve({ ok: true });
+        form.submit();
+        setTimeout(() => resolve({ ok: true }), 1500);
+      });
     }
 
     function setAuth(token) {
@@ -321,20 +356,30 @@
     }
 
     async function saveProduct() {
+      let imageValue = document.getElementById('pImagen').value.trim();
+      const fileInput = document.getElementById('pImageFile');
+      if (fileInput && fileInput.files && fileInput.files[0]) {
+        imageValue = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result || ''));
+          reader.onerror = () => reject(new Error('No se pudo leer la imagen'));
+          reader.readAsDataURL(fileInput.files[0]);
+        });
+      }
       const payload = {
         nombre: document.getElementById('pNombre').value.trim(),
         precio: Number(document.getElementById('pPrecio').value || 0),
         stock: Number(document.getElementById('pStock').value || 0),
         categoria: document.getElementById('pCategoria').value,
-        imagen_url: document.getElementById('pImagen').value.trim(),
+        imagen_url: imageValue,
         icon: document.getElementById('pIcono').value.trim(),
         activo: true
       };
       const editId = modal.dataset.editId;
       if (editId) {
-        await api().post('?action=productoActualizar', { id: editId, ...payload });
+        await postThroughForm('productoActualizar', { id: editId, ...payload, token: localStorage.getItem(TOKEN_KEY) || '' });
       } else {
-        await api().post('?action=productoGuardar', payload);
+        await postThroughForm('productoGuardar', { ...payload, token: localStorage.getItem(TOKEN_KEY) || '' });
       }
       modal.dataset.editId = '';
       closeModal();
@@ -342,7 +387,7 @@
     }
 
     async function toggleProduct(id) {
-      await api().post('?action=productoToggle', { id });
+      await postThroughForm('productoToggle', { id, token: localStorage.getItem(TOKEN_KEY) || '' });
       await loadData();
     }
 
@@ -356,6 +401,8 @@
       document.getElementById('pStock').value = '';
       document.getElementById('pCategoria').value = 'cerveza';
       document.getElementById('pImagen').value = '';
+      const fileInput = document.getElementById('pImageFile');
+      if (fileInput) fileInput.value = '';
       document.getElementById('pIcono').value = '🍺';
       openModal();
     });
