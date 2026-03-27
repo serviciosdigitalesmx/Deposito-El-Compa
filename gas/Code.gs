@@ -260,7 +260,8 @@ function jsonResponse(payload) {
 }
 
 function getHeaderToken(e) {
-  return e && e.parameter && e.parameter.header_token ? e.parameter.header_token : '';
+  if (!e || !e.parameter) return '';
+  return e.parameter.header_token || e.parameter.token || '';
 }
 
 function getSpreadsheet() {
