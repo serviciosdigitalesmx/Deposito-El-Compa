@@ -294,9 +294,30 @@
                 showToast('Pedido enviado a caja', 'success');
                 showSection('orders', document.querySelectorAll('.nav-item')[2]);
                 renderOrders();
+                setTimeout(() => {
+                    const text = buildWhatsAppOrderMessage(order, state.user, total, payload.metodo_pago);
+                    const url = `https://wa.me/5218131590917?text=${encodeURIComponent(text)}`;
+                    window.open(url, '_blank');
+                }, 450);
             } catch (error) {
                 showToast(`No se pudo enviar el pedido: ${error.message}`, 'error');
             }
+        }
+        function buildWhatsAppOrderMessage(order, user, total, method) {
+            const items = (order.items || []).map(item => `${item.qty} x ${item.name}`).join('%0A');
+            return [
+                `Hola Depósito El Compa, acabo de hacer un pedido.`,
+                ``,
+                `Pedido: #${String(order.id).slice(-4)}`,
+                `Cliente: ${user.name || ''}`,
+                `Teléfono: ${user.phone || ''}`,
+                `Dirección: ${user.address || ''}`,
+                `Método de pago: ${method || 'efectivo'}`,
+                `Total: $${Number(total || 0).toLocaleString('es-MX')}`,
+                ``,
+                `Productos:`,
+                items
+            ].join('%0A');
         }
         function applyTrackingState(order) { if (!order) return; const status = order.status || order.estado || 'nuevo'; const map = { nuevo: { label: 'Pedido recibido', desc: 'Caja aún no lo marca como listo', progress: 25, icon: '📥' }, aceptado: { label: 'Pedido aceptado', desc: 'Caja lo confirmó y pasa a hieleras', progress: 25, icon: '✅' }, en_hieleras: { label: 'En hieleras', desc: 'Se está armando el pedido', progress: 50, icon: '🧊' }, preparado: { label: 'Pedido listo', desc: 'Caja ya lo marcó como listo', progress: 75, icon: '📦' }, asignado: { label: 'Asignado a reparto', desc: 'Esperando salida', progress: 75, icon: '🛵' }, en_ruta: { label: 'En camino', desc: 'El repartidor ya salió', progress: 90, icon: '🚚' }, entregado: { label: 'Pedido entregado', desc: 'Pedido entregado. ¡Disfruta!', progress: 100, icon: '✅' } }; const current = map[status] || map.nuevo; const activeOrder = document.getElementById('activeOrder'); if (activeOrder) activeOrder.style.display = 'block'; const trackingOrderId = document.getElementById('trackingOrderId'); if (trackingOrderId) trackingOrderId.textContent = `#${String(order.id).slice(-4)}`; const trackingStatus = document.getElementById('trackingStatus'); if (trackingStatus) trackingStatus.textContent = current.label; const trackingDesc = document.getElementById('trackingDesc'); if (trackingDesc) trackingDesc.textContent = current.desc; const trackingIcon = document.getElementById('trackingIcon'); if (trackingIcon) trackingIcon.textContent = current.icon; const progressFill = document.getElementById('progressFill'); if (progressFill) progressFill.style.width = `${current.progress}%`; document.querySelectorAll('.progress-step').forEach((s, i) => { s.classList.remove('active', 'completed'); if (i < current.progress / 25) s.classList.add('completed'); if (i === current.progress / 25) s.classList.add('active'); }); }
         function renderOrders() { const container = document.getElementById('ordersHistory'); const active = state.activeOrderId ? state.orders.find(o => String(o.id) === String(state.activeOrderId)) : state.activeOrder; if (active) { state.activeOrder = active; applyTrackingState(active); } if (!container) return; if (state.orders.length === 0 && !active) { container.innerHTML = `<div class="empty-state"><div class="empty-icon">📦</div><div class="empty-title">No tienes pedidos aún</div><div class="empty-desc">Haz tu primer pedido y tracking real desde caja</div><button class="btn-primary" onclick="showSection('home', document.querySelectorAll('.nav-item')[0])">Hacer pedido</button></div>`; return; } container.innerHTML = state.orders.map(order => `<div class="order-history-item"><div class="history-header"><div><div class="history-id">#${String(order.id).slice(-4)}</div><div class="history-date">${new Date(order.date || order.fecha_hora || Date.now()).toLocaleDateString()}</div></div><span class="history-status ${((order.status || order.estado) === 'entregado') ? 'status-delivered' : 'status-cancelled'}">${order.status || order.estado || 'nuevo'}</span></div><div class="history-products">${(order.items || []).map(i => `<div class="history-product">${i.icon || '🍺'}</div>`).join('')}</div><div class="history-footer"><div class="history-total">$${order.total}</div><button class="btn-reorder" onclick="reorder(${order.id})"><i class="fas fa-redo"></i> Reordenar</button></div></div>`).join(''); if (active) applyTrackingState(active); }
