@@ -33,47 +33,31 @@
 
   function postViaForm(url, body, token) {
     return new Promise((resolve, reject) => {
-      const iframeName = `deposito_iframe_${Date.now()}`;
-      const iframe = document.createElement('iframe');
-      iframe.name = iframeName;
-      iframe.style.display = 'none';
-
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = url;
-      form.target = iframeName;
-      form.style.display = 'none';
-
       const payload = {
         ...body,
         token: token || defaultConfig.token || '',
         header_token: token || defaultConfig.token || '',
       };
+      const raw = JSON.stringify(payload);
 
-      Object.entries(payload).forEach(([key, value]) => {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = key;
-        input.value = typeof value === 'string' ? value : JSON.stringify(value);
-        form.appendChild(input);
-      });
-
-      iframe.onload = () => {
-        try {
-          resolve({ ok: true });
-        } catch (error) {
-          reject(error);
-        } finally {
-          setTimeout(() => {
-            form.remove();
-            iframe.remove();
-          }, 0);
+      try {
+        if (navigator.sendBeacon) {
+          const ok = navigator.sendBeacon(url, new Blob([raw], { type: 'text/plain;charset=utf-8' }));
+          if (ok) {
+            setTimeout(() => resolve({ ok: true }), 0);
+            return;
+          }
         }
-      };
+      } catch (error) {
+        // fall through to fetch
+      }
 
-      document.body.appendChild(iframe);
-      document.body.appendChild(form);
-      form.submit();
+      fetch(url, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: raw,
+      }).then(() => resolve({ ok: true })).catch(reject);
     });
   }
 
