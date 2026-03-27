@@ -11,83 +11,69 @@
   <link rel="stylesheet" href="css/deposito-unified.css">
   <style>
     :root{
-      --bg:#0f1020;--panel:#171930;--panel-2:#1e2140;--text:#eef2ff;--muted:#98a2c3;--accent:#ff6b6b;--accent-2:#4ecdc4;--warn:#fbbf24;--bad:#fb7185;--good:#34d399;
-      --shadow:0 18px 50px rgba(0,0,0,.35);--border:1px solid rgba(255,255,255,.08)
+      --bg:#0e1020;--panel:#171a31;--panel-2:#202544;--text:#eef2ff;--muted:#98a2c3;--accent:#ff6b6b;--accent-2:#4ecdc4;
+      --shadow:0 18px 50px rgba(0,0,0,.35);--border:1px solid rgba(255,255,255,.08);--good:#34d399;--warn:#fbbf24;--bad:#fb7185
     }
-    *{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,sans-serif;background:radial-gradient(circle at top,#1b1e38 0,#0f1020 55%);color:var(--text);min-height:100vh}
-    .shell{max-width:1400px;margin:0 auto;padding:24px}
-    .topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:22px}
-    .hero{display:grid;grid-template-columns:1.2fr .8fr;gap:16px;margin-bottom:20px}
-    .hero-card{position:relative;overflow:hidden;background:linear-gradient(135deg,rgba(255,107,107,.18),rgba(78,205,196,.1));border:var(--border);border-radius:24px;padding:24px;box-shadow:var(--shadow)}
-    .hero-card:before{content:"";position:absolute;inset:-40% auto auto -10%;width:220px;height:220px;background:radial-gradient(circle,rgba(255,107,107,.25),transparent 70%);filter:blur(10px)}
-    .hero-card:after{content:"";position:absolute;right:-40px;bottom:-50px;width:220px;height:220px;background:radial-gradient(circle,rgba(78,205,196,.16),transparent 72%);filter:blur(10px)}
-    .hero-title{position:relative;z-index:1;display:flex;flex-direction:column;gap:10px}
-    .hero-title h2{margin:0;font-size:2.2rem;line-height:1.02}
-    .hero-title p{margin:0;color:var(--muted);max-width:58ch}
-    .hero-chips{position:relative;z-index:1;display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
-    .chip{display:inline-flex;align-items:center;gap:8px;padding:10px 13px;border-radius:999px;background:rgba(255,255,255,.06);border:var(--border);color:var(--text);font-weight:800;font-size:.85rem}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,sans-serif;background:radial-gradient(circle at top,#1b1e38 0,#0e1020 60%);color:var(--text);min-height:100vh}
+    .shell{max-width:1380px;margin:0 auto;padding:24px}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:20px;flex-wrap:wrap}
     .brand{display:flex;align-items:center;gap:12px}
-    .brand .logo{width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,var(--accent),#ff8f6b);display:grid;place-items:center;font-size:22px;box-shadow:var(--shadow)}
+    .logo{width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,var(--accent),#ff8f6b);display:grid;place-items:center;box-shadow:var(--shadow);font-size:22px}
     .brand h1{margin:0;font-size:1.4rem}
-    .brand p{margin:2px 0 0;color:var(--muted);font-size:.9rem}
-    .actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
-    .btn{border:0;border-radius:14px;padding:12px 14px;font-weight:800;cursor:pointer;transition:.18s ease;box-shadow:0 8px 22px rgba(0,0,0,.14)}
+    .brand p{margin:3px 0 0;color:var(--muted);font-size:.92rem}
+    .actions{display:flex;gap:10px;flex-wrap:wrap}
+    .btn{border:0;border-radius:14px;padding:12px 14px;font-weight:900;cursor:pointer;transition:.18s ease;box-shadow:0 8px 22px rgba(0,0,0,.14);text-decoration:none;display:inline-flex;align-items:center;gap:8px}
     .btn:hover{transform:translateY(-1px)}
     .btn-primary{background:linear-gradient(135deg,var(--accent),#ff7d7d);color:#fff}
     .btn-secondary{background:rgba(255,255,255,.06);color:var(--text);border:var(--border)}
-    .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:18px}
-    .card{background:linear-gradient(180deg,var(--panel),var(--panel-2));border:var(--border);border-radius:20px;padding:18px;box-shadow:var(--shadow);transition:.18s ease}
-    .card:hover{transform:translateY(-2px)}
-    .kpi .label{color:var(--muted);font-size:.85rem}
+    .hero{display:grid;grid-template-columns:1.3fr .8fr;gap:16px;margin-bottom:18px}
+    .card{background:linear-gradient(180deg,var(--panel),var(--panel-2));border:var(--border);border-radius:20px;padding:18px;box-shadow:var(--shadow)}
+    .hero-main{position:relative;overflow:hidden}
+    .hero-main:before{content:"";position:absolute;inset:auto auto -80px -80px;width:240px;height:240px;background:radial-gradient(circle,rgba(255,107,107,.2),transparent 72%)}
+    .hero-main h2{margin:0 0 10px;font-size:2rem}
+    .hero-main p{margin:0;color:var(--muted);max-width:66ch;line-height:1.55}
+    .chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+    .chip{padding:9px 12px;border-radius:999px;background:rgba(255,255,255,.06);border:var(--border);font-weight:800;font-size:.85rem}
+    .summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px}
+    .kpi .label{color:var(--muted);font-size:.82rem}
     .kpi .value{font-size:2rem;font-weight:900;margin-top:8px}
     .kpi .hint{margin-top:6px;font-size:.82rem;color:var(--muted)}
-    .layout{display:grid;grid-template-columns:1.3fr .9fr;gap:18px}
-    .section{background:linear-gradient(180deg,var(--panel),var(--panel-2));border:var(--border);border-radius:20px;padding:18px;box-shadow:var(--shadow);overflow:hidden;position:relative}
-    .section::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(255,255,255,.04),transparent 32%)}
-    .section h2{margin:0 0 14px;font-size:1.05rem;display:flex;align-items:center;gap:10px;position:relative;z-index:1}
-    .chart{display:flex;gap:10px;align-items:flex-end;height:220px;padding:12px 0 4px}
-    .bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px}
-    .bar{width:100%;min-height:24px;border-radius:12px 12px 6px 6px;background:linear-gradient(180deg,#ff8a6b,#ff5f6b);box-shadow:0 8px 18px rgba(255,107,107,.25)}
-    .bar small{display:block;padding-top:4px;color:var(--muted);font-size:.72rem}
-    .inventory-toolbar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
-    .input{background:rgba(255,255,255,.04);border:var(--border);border-radius:12px;padding:11px 12px;color:var(--text);outline:none}
-    table{width:100%;border-collapse:collapse}
-    th,td{padding:12px 10px;text-align:left;border-bottom:1px solid rgba(255,255,255,.06)}
-    th{color:var(--muted);font-size:.8rem;text-transform:uppercase;letter-spacing:.04em}
+    .layout{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}
+    .section h3{margin:0 0 14px;display:flex;align-items:center;gap:10px}
+    .chart{display:flex;gap:10px;align-items:flex-end;height:220px;padding:8px 0}
+    .bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px}
+    .bar{width:100%;min-height:20px;border-radius:12px 12px 6px 6px;background:linear-gradient(180deg,#ff8a6b,#ff5f6b)}
+    .order-list{display:grid;gap:10px}
+    .order{background:rgba(255,255,255,.04);border:var(--border);border-radius:14px;padding:14px}
+    .order-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
     .pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;font-size:.78rem;font-weight:800}
     .pill.good{background:rgba(52,211,153,.14);color:var(--good)}
     .pill.warn{background:rgba(251,191,36,.14);color:var(--warn)}
     .pill.bad{background:rgba(251,113,133,.14);color:var(--bad)}
-    .mini-btn{border:0;border-radius:10px;padding:9px 10px;font-weight:800;cursor:pointer}
-    .mini-edit{background:rgba(255,255,255,.08);color:var(--text)}
-    .mini-off{background:rgba(251,113,133,.16);color:#ffd8df}
-    .mini-on{background:rgba(52,211,153,.16);color:#d6ffef}
-    .order-list{display:grid;gap:10px}
-    .order{background:rgba(255,255,255,.04);border:var(--border);border-radius:14px;padding:14px;transition:.16s ease}
-    .order:hover{transform:translateY(-1px);background:rgba(255,255,255,.06)}
-    .order-top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
-    table tbody tr:hover{background:rgba(255,255,255,.03)}
     .muted{color:var(--muted)}
     .login{position:fixed;inset:0;background:rgba(5,6,14,.94);display:flex;align-items:center;justify-content:center;z-index:20;padding:16px}
     .login-card{width:min(420px,100%);background:linear-gradient(180deg,var(--panel),var(--panel-2));border:var(--border);border-radius:20px;padding:24px;box-shadow:var(--shadow)}
     .login-card h2{margin:0 0 8px;font-size:1.55rem}
     .login-card p{margin:0 0 14px;color:var(--muted);font-size:.95rem}
-    .login-error{min-height:20px;color:var(--bad);font-size:.9rem;margin-top:8px}
-    .hero, .layout, .grid { animation: fadeIn .45s ease both; }
-    @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+    .input{width:100%;background:rgba(255,255,255,.04);border:var(--border);border-radius:12px;padding:11px 12px;color:var(--text);outline:none}
+    .input:focus{border-color:rgba(255,107,107,.42);box-shadow:0 0 0 3px rgba(255,107,107,.12)}
+    .err{min-height:18px;color:#ff8f9b;font-size:13px;margin-top:8px}
     .hidden{display:none!important}
-    @media(max-width:1100px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.layout{grid-template-columns:1fr}}
-    @media(max-width:640px){.grid{grid-template-columns:1fr}.topbar{flex-direction:column;align-items:flex-start}}
+    .layout,.summary,.hero{animation:fadeIn .35s ease both}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+    @media(max-width:1100px){.hero,.layout{grid-template-columns:1fr}.summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:640px){.summary{grid-template-columns:1fr}.topbar{flex-direction:column;align-items:flex-start}}
   </style>
 </head>
 <body>
   <div id="loginOverlay" class="login">
     <div class="login-card">
       <h2>🍻 Depósito El Compa</h2>
-      <p>Acceso del dueño: KPIs, inventario, precios y resultados en vivo.</p>
+      <p>Acceso del dueño: métricas, resultados y navegación al integrador operativo.</p>
       <input id="pin" class="input" type="password" placeholder="PIN de admin" autocomplete="current-password">
       <button id="loginBtn" class="btn btn-primary" style="width:100%;margin-top:10px;">Entrar</button>
-      <div id="loginError" class="login-error"></div>
+      <div id="loginError" class="err"></div>
     </div>
   </div>
 
@@ -97,94 +83,47 @@
         <div class="logo">🍻</div>
         <div>
           <h1>Depósito El Compa · Admin</h1>
-          <p>Dueño / métricas / inventario / control</p>
+          <p>Dueño / métricas / resultados / visión general</p>
         </div>
       </div>
       <div class="actions">
         <button class="btn btn-secondary" id="refreshBtn"><i class="fa-solid fa-rotate"></i> Refrescar</button>
-        <a class="btn btn-secondary" href="./integrador.html" style="text-decoration:none;display:inline-flex;align-items:center;gap:8px;"><i class="fa-solid fa-grid-2"></i> Ir al integrador</a>
+        <a class="btn btn-secondary" href="./integrador.html"><i class="fa-solid fa-grid-2"></i> Ir al integrador</a>
       </div>
     </div>
 
     <div class="hero">
-      <div class="hero-card">
-        <div class="hero-title">
-          <h2>Control total del depósito</h2>
-          <p>Ventas, inventario y solicitudes en una sola vista. El diseño ahora prioriza lectura rápida y acciones claras para caja, hieleras y reparto.</p>
-        </div>
-        <div class="hero-chips">
-          <span class="chip"><i class="fa-solid fa-bolt"></i> Acciones rápidas</span>
+      <div class="card hero-main">
+        <h2>Control total del depósito</h2>
+        <p>Este panel quedó solo para dirección: ventas, pedidos, alertas e inventario resumido. La operación diaria ahora vive en el integrador interno.</p>
+        <div class="chips">
           <span class="chip"><i class="fa-solid fa-chart-line"></i> KPIs en vivo</span>
-          <span class="chip"><i class="fa-solid fa-boxes-stacked"></i> Inventario real</span>
+          <span class="chip"><i class="fa-solid fa-layer-group"></i> Vista ejecutiva</span>
+          <span class="chip"><i class="fa-solid fa-arrow-right"></i> Operación en integrador</span>
         </div>
       </div>
       <div class="card">
-        <div class="label" style="color:var(--muted);font-size:.85rem;">Acceso actual</div>
-        <div style="font-size:1.4rem;font-weight:900;margin-top:8px;">Admin / Dueño</div>
-        <div style="margin-top:10px;color:var(--muted);line-height:1.5;">
-          Este panel concentra el resumen del negocio y los accesos al integrador.
-        </div>
+        <div class="muted" style="font-size:.86rem;">Acceso actual</div>
+        <div style="font-size:1.45rem;font-weight:900;margin-top:8px;">Admin / Dueño</div>
+        <div class="muted" style="margin-top:10px;line-height:1.55;">El mantenimiento de productos y repartidores se movió al panel interno para no mezclar operación con dirección.</div>
       </div>
     </div>
 
-    <div class="grid">
-      <div class="card kpi"><div class="label">Pedidos hoy</div><div class="value" id="kpiPedidos">0</div><div class="hint">Entradas reales desde Apps Script</div></div>
-      <div class="card kpi"><div class="label">Ventas hoy</div><div class="value" id="kpiVentas">$0</div><div class="hint">Sólo pedidos entregados</div></div>
+    <div class="summary">
+      <div class="card kpi"><div class="label">Pedidos hoy</div><div class="value" id="kpiPedidos">0</div><div class="hint">Pedidos entrantes y activos</div></div>
+      <div class="card kpi"><div class="label">Ventas hoy</div><div class="value" id="kpiVentas">$0</div><div class="hint">Solo entregados / cerrados</div></div>
       <div class="card kpi"><div class="label">Inventario total</div><div class="value" id="kpiStock">0</div><div class="hint">Unidades disponibles</div></div>
-      <div class="card kpi"><div class="label">Alertas</div><div class="value" id="kpiAlertas">0</div><div class="hint">Agotados + bajo stock</div></div>
+      <div class="card kpi"><div class="label">Alertas</div><div class="value" id="kpiAlertas">0</div><div class="hint">Bajo stock + agotados</div></div>
     </div>
 
     <div class="layout">
-      <div class="section">
-        <h2><i class="fa-solid fa-chart-column"></i> Ventas por estado</h2>
-        <div class="chart" id="statusChart"></div>
+      <div class="card section">
+        <h3><i class="fa-solid fa-chart-column"></i> Ventas por estado</h3>
+        <div id="statusChart" class="chart"></div>
       </div>
-      <div class="section">
-        <h2><i class="fa-solid fa-list-check"></i> Solicitudes recientes</h2>
-        <div class="order-list" id="recentOrders"></div>
-      </div>
-    </div>
-
-    <div class="section" style="margin-top:18px;">
-      <div class="inventory-toolbar">
-        <h2 style="margin:0"><i class="fa-solid fa-boxes-stacked"></i> Inventario</h2>
-        <button class="btn btn-primary" id="addProductBtn"><i class="fa-solid fa-plus"></i> Agregar producto</button>
-      </div>
-      <table>
-        <thead>
-          <tr>
-            <th>Producto</th>
-            <th>Precio</th>
-            <th>Stock</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="inventoryTable"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <div id="productModal" class="login hidden" style="z-index:30;">
-    <div class="login-card" style="max-width:520px;width:min(520px,100%);">
-      <h2>Nuevo producto</h2>
-      <p>Se guardará en el inventario real del depósito.</p>
-      <div style="display:grid;gap:10px;">
-        <input id="pNombre" class="input" placeholder="Nombre">
-        <input id="pPrecio" class="input" type="number" min="0" step="0.01" placeholder="Precio">
-        <input id="pStock" class="input" type="number" min="0" step="1" placeholder="Stock">
-        <select id="pCategoria" class="input">
-          <option value="cerveza">Cerveza</option>
-          <option value="botana">Botana</option>
-          <option value="otros">Otros</option>
-        </select>
-        <input id="pImagen" class="input" placeholder="imagen.png">
-        <input id="pImageFile" class="input" type="file" accept="image/*" style="padding:10px 12px;">
-        <input id="pIcono" class="input" placeholder="Icono fallback">
-      </div>
-      <div style="display:flex;gap:10px;margin-top:12px;">
-        <button id="saveProductBtn" class="btn btn-primary" style="flex:1;">Guardar</button>
-        <button id="closeProductBtn" class="btn btn-secondary" style="flex:1;">Cancelar</button>
+      <div class="card section">
+        <h3><i class="fa-solid fa-list-check"></i> Pedidos recientes</h3>
+        <div id="recentOrders" class="order-list"></div>
       </div>
     </div>
   </div>
@@ -196,49 +135,27 @@
   <script>
     const PIN = '1234';
     const TOKEN_KEY = 'DEPOSITO_ADMIN_TOKEN';
-    const modal = document.getElementById('productModal');
     const loginOverlay = document.getElementById('loginOverlay');
     const loginError = document.getElementById('loginError');
     const pinInput = document.getElementById('pin');
-    let dashboard = null;
-    let products = [];
 
-    function api() {
-      return window.DEPOSITO_API;
-    }
+    function api() { return window.DEPOSITO_API; }
+    function money(v) { return Number(v || 0).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' }); }
 
-    function postThroughForm(action, payload) {
-      return new Promise((resolve) => {
-        let frame = document.getElementById('adminPostFrame');
-        if (!frame) {
-          frame = document.createElement('iframe');
-          frame.id = 'adminPostFrame';
-          frame.name = 'adminPostFrame';
-          frame.style.display = 'none';
-          document.body.appendChild(frame);
-        }
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = window.DEPOSITO_GAS_URL;
-        form.target = 'adminPostFrame';
-        form.style.display = 'none';
-        const actionField = document.createElement('input');
-        actionField.type = 'hidden';
-        actionField.name = 'action';
-        actionField.value = action;
-        form.appendChild(actionField);
-        Object.entries(payload).forEach(([key, value]) => {
-          const input = document.createElement('input');
-          input.type = 'hidden';
-          input.name = key;
-          input.value = typeof value === 'string' ? value : JSON.stringify(value);
-          form.appendChild(input);
-        });
-        document.body.appendChild(form);
-        frame.onload = () => resolve({ ok: true });
-        form.submit();
-        setTimeout(() => resolve({ ok: true }), 1500);
-      });
+    function statusBadge(status) {
+      const s = String(status || 'nuevo').toLowerCase();
+      const map = {
+        nuevo: ['Nuevo', 'warn'],
+        aceptado: ['Aceptado', 'good'],
+        en_hieleras: ['En hieleras', 'warn'],
+        listo: ['Listo', 'good'],
+        en_ruta: ['En ruta', 'warn'],
+        pendiente_corte: ['Pend. corte', 'warn'],
+        archivado: ['Archivado', 'bad'],
+        cancelado: ['Cancelado', 'bad']
+      };
+      const [label, tone] = map[s] || [s, 'warn'];
+      return `<span class="pill ${tone}">${label}</span>`;
     }
 
     function setAuth(token) {
@@ -259,8 +176,8 @@
         return null;
       }
       const res = await api().get(`?action=login&role=admin&pin=${encodeURIComponent(PIN)}&t=${Date.now()}`);
-      if (!res.ok || !res.token) {
-        loginError.textContent = res.error || 'No se pudo autenticar';
+      if (!res || !res.ok || !res.token) {
+        loginError.textContent = res && res.error ? res.error : 'No se pudo autenticar';
         return null;
       }
       setAuth(res.token);
@@ -268,47 +185,11 @@
       return res.token;
     }
 
-    function money(v) {
-      return Number(v || 0).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
-    }
-
-    function statusBadge(status) {
-      const s = String(status || 'nuevo').toLowerCase();
-      const map = {
-        nuevo: ['Nuevo', 'warn'],
-        aceptado: ['Aceptado', 'good'],
-        listo: ['Listo', 'good'],
-        en_hieleras: ['En hieleras', 'warn'],
-        en_ruta: ['En ruta', 'warn'],
-        entregado: ['Entregado', 'good'],
-        archivado: ['Archivado', 'bad'],
-        cancelado: ['Cancelado', 'bad']
-      };
-      const [label, tone] = map[s] || [s, 'warn'];
-      return `<span class="pill ${tone}">${label}</span>`;
-    }
-
-    async function loadData() {
-      const token = await login();
-      if (!token) return;
-      dashboard = await api().get(`?action=dashboard&t=${Date.now()}`);
-      products = await api().get(`?action=productos&t=${Date.now()}`);
-      const dash = dashboard.data || {};
-      const pedidos = dash.recientes || [];
-      document.getElementById('kpiPedidos').textContent = dash.pedidosHoy || 0;
-      document.getElementById('kpiVentas').textContent = money(dash.ventasHoy || 0);
-      document.getElementById('kpiStock').textContent = dash.inventarioTotal || 0;
-      document.getElementById('kpiAlertas').textContent = Number(dash.agotados || 0) + Number(dash.bajos || 0);
-      renderChart(dash.estadoPedidos || {});
-      renderRecent(pedidos);
-      renderInventory((products.data || []));
-    }
-
     function renderChart(states) {
       const chart = document.getElementById('statusChart');
-      const pairs = Object.entries(states);
+      const pairs = Object.entries(states || {});
       chart.innerHTML = pairs.length ? pairs.map(([k, v]) => {
-        const height = Math.max(14, Math.min(100, v * 20));
+        const height = Math.max(14, Math.min(100, Number(v || 0) * 20));
         return `<div class="bar-wrap"><div class="bar" style="height:${height}%"></div><small>${k.replaceAll('_',' ')}</small><small>${v}</small></div>`;
       }).join('') : '<div class="muted">Sin pedidos todavía</div>';
     }
@@ -330,92 +211,22 @@
       `).join('') : '<div class="muted">No hay pedidos recientes.</div>';
     }
 
-    function renderInventory(rows) {
-      const tbody = document.getElementById('inventoryTable');
-      tbody.innerHTML = rows.map(p => {
-        const stock = Number(p.stock || 0);
-        const tone = stock <= 0 ? 'bad' : stock < 20 ? 'warn' : 'good';
-        return `<tr>
-          <td><strong>${p.nombre || ''}</strong><div class="muted" style="font-size:.85rem;">${p.categoria || ''}</div></td>
-          <td>${money(p.precio)}</td>
-          <td>${stock}</td>
-          <td><span class="pill ${tone}">${stock <= 0 ? 'Agotado' : stock < 20 ? 'Bajo stock' : 'Disponible'}</span></td>
-          <td style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button class="mini-btn mini-edit" onclick='editProduct(${JSON.stringify(p).replace(/'/g, "&apos;")})'>Editar</button>
-            <button class="mini-btn ${String(p.activo).toLowerCase() === "true" ? "mini-off" : "mini-on"}" onclick='toggleProduct("${p.id}")'>${String(p.activo).toLowerCase() === "true" ? "Desactivar" : "Activar"}</button>
-          </td>
-        </tr>`;
-      }).join('');
-    }
-
-    function openModal() { modal.classList.remove('hidden'); }
-    function closeModal() { modal.classList.add('hidden'); }
-
-    function editProduct(p) {
-      openModal();
-      document.getElementById('pNombre').value = p.nombre || '';
-      document.getElementById('pPrecio').value = p.precio || 0;
-      document.getElementById('pStock').value = p.stock || 0;
-      document.getElementById('pCategoria').value = p.categoria || 'otros';
-      document.getElementById('pImagen').value = p.imagen_url || '';
-      document.getElementById('pIcono').value = p.icon || '';
-      modal.dataset.editId = p.id;
-    }
-
-    async function saveProduct() {
-      let imageValue = document.getElementById('pImagen').value.trim();
-      const fileInput = document.getElementById('pImageFile');
-      if (fileInput && fileInput.files && fileInput.files[0]) {
-        imageValue = await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(String(reader.result || ''));
-          reader.onerror = () => reject(new Error('No se pudo leer la imagen'));
-          reader.readAsDataURL(fileInput.files[0]);
-        });
-      }
-      const payload = {
-        nombre: document.getElementById('pNombre').value.trim(),
-        precio: Number(document.getElementById('pPrecio').value || 0),
-        stock: Number(document.getElementById('pStock').value || 0),
-        categoria: document.getElementById('pCategoria').value,
-        imagen_url: imageValue,
-        icon: document.getElementById('pIcono').value.trim(),
-        activo: true
-      };
-      const editId = modal.dataset.editId;
-      if (editId) {
-        await postThroughForm('productoActualizar', { id: editId, ...payload, token: localStorage.getItem(TOKEN_KEY) || '' });
-      } else {
-        await postThroughForm('productoGuardar', { ...payload, token: localStorage.getItem(TOKEN_KEY) || '' });
-      }
-      modal.dataset.editId = '';
-      closeModal();
-      await loadData();
-    }
-
-    async function toggleProduct(id) {
-      await postThroughForm('productoToggle', { id, token: localStorage.getItem(TOKEN_KEY) || '' });
-      await loadData();
+    async function loadData() {
+      const token = await login();
+      if (!token) return;
+      const dash = await api().get(`?action=dashboard&t=${Date.now()}`);
+      const data = dash.data || {};
+      document.getElementById('kpiPedidos').textContent = data.pedidosHoy || 0;
+      document.getElementById('kpiVentas').textContent = money(data.ventasHoy || 0);
+      document.getElementById('kpiStock').textContent = data.inventarioTotal || 0;
+      document.getElementById('kpiAlertas').textContent = Number(data.agotados || 0) + Number(data.bajos || 0);
+      renderChart(data.estadoPedidos || {});
+      renderRecent(Array.isArray(data.recientes) ? data.recientes : []);
     }
 
     document.getElementById('loginBtn').addEventListener('click', loadData);
     pinInput.addEventListener('keydown', e => { if (e.key === 'Enter') loadData(); });
     document.getElementById('refreshBtn').addEventListener('click', loadData);
-    document.getElementById('addProductBtn').addEventListener('click', () => {
-      modal.dataset.editId = '';
-      document.getElementById('pNombre').value = '';
-      document.getElementById('pPrecio').value = '';
-      document.getElementById('pStock').value = '';
-      document.getElementById('pCategoria').value = 'cerveza';
-      document.getElementById('pImagen').value = '';
-      const fileInput = document.getElementById('pImageFile');
-      if (fileInput) fileInput.value = '';
-      document.getElementById('pIcono').value = '🍺';
-      openModal();
-    });
-    document.getElementById('closeProductBtn').addEventListener('click', closeModal);
-    document.getElementById('saveProductBtn').addEventListener('click', async e => { e.preventDefault(); await saveProduct(); });
-    modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
     if (localStorage.getItem(TOKEN_KEY)) {
       loginOverlay.classList.add('hidden');
       api().setConfig({ endpoint: window.DEPOSITO_GAS_URL, token: localStorage.getItem(TOKEN_KEY) });

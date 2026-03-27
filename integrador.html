@@ -40,7 +40,7 @@
   <div id="login-screen" class="login">
     <div class="card">
       <h2>Acceso interno</h2>
-      <p>Un solo acceso para Caja, Hieleras, Reparto y Archivo</p>
+      <p>Un solo acceso para Caja, Productos, Repartidores, Hieleras, Reparto y Archivo</p>
       <input id="master-password" class="input" type="password" placeholder="Contraseña" autocomplete="current-password">
       <button id="master-login-btn" class="btn" type="button">Entrar</button>
       <div id="master-error" class="err"></div>
@@ -54,6 +54,8 @@
     </div>
     <nav class="tabs">
       <button id="tab-operativo" class="tab active" type="button">Caja / Operativo</button>
+      <button id="tab-productos" class="tab" type="button">Productos</button>
+      <button id="tab-repartidores" class="tab" type="button">Repartidores</button>
       <button id="tab-hieleras" class="tab" type="button">Hieleras</button>
       <button id="tab-solicitudes" class="tab" type="button">Solicitudes</button>
       <button id="tab-repartidor" class="tab" type="button">Repartidor</button>
@@ -64,6 +66,8 @@
 
   <div class="wrap">
     <section id="panel-operativo" class="panel active"><iframe id="frame-operativo" src="about:blank" title="Operativo"></iframe></section>
+    <section id="panel-productos" class="panel"><iframe id="frame-productos" src="about:blank" title="Productos"></iframe></section>
+    <section id="panel-repartidores" class="panel"><iframe id="frame-repartidores" src="about:blank" title="Repartidores"></iframe></section>
     <section id="panel-hieleras" class="panel"><iframe id="frame-hieleras" src="about:blank" title="Hieleras"></iframe></section>
     <section id="panel-solicitudes" class="panel"><iframe id="frame-solicitudes" src="about:blank" title="Solicitudes"></iframe></section>
     <section id="panel-repartidor" class="panel"><iframe id="frame-repartidor" src="about:blank" title="Repartidor"></iframe></section>
@@ -74,6 +78,8 @@
   <div class="fallback">
     Si algo falla:
     <a href="./panel-operativo.html" target="_blank">Caja / Operativo</a> |
+    <a href="./panel-productos.html" target="_blank">Productos</a> |
+    <a href="./panel-repartidores.html" target="_blank">Repartidores</a> |
     <a href="./panel-tecnico.html" target="_blank">Hieleras</a> |
     <a href="./panel-solicitudes.html" target="_blank">Solicitudes</a> |
     <a href="./panel-repartidor.html" target="_blank">Repartidor</a> |
@@ -89,17 +95,23 @@
     const PANEL_RE = document.getElementById('panel-repartidor');
     const PANEL_CO = document.getElementById('panel-corte');
     const PANEL_AR = document.getElementById('panel-archivo');
+    const PANEL_PR = document.getElementById('panel-productos');
+    const PANEL_RP = document.getElementById('panel-repartidores');
     const FRAME_OP = document.getElementById('frame-operativo');
     const FRAME_HI = document.getElementById('frame-hieleras');
     const FRAME_SO = document.getElementById('frame-solicitudes');
     const FRAME_RE = document.getElementById('frame-repartidor');
     const FRAME_CO = document.getElementById('frame-corte');
     const FRAME_AR = document.getElementById('frame-archivo');
+    const FRAME_PR = document.getElementById('frame-productos');
+    const FRAME_RP = document.getElementById('frame-repartidores');
     const LOGIN = document.getElementById('login-screen');
     const PASS = document.getElementById('master-password');
     const ERR = document.getElementById('master-error');
     const SRC = {
       operativo: './panel-operativo.html',
+      productos: './panel-productos.html',
+      repartidores: './panel-repartidores.html',
       hieleras: './panel-tecnico.html',
       solicitudes: './panel-solicitudes.html',
       repartidor: './panel-repartidor.html',
@@ -108,12 +120,12 @@
     };
 
     function loadFrame(name) {
-      const map = { operativo: FRAME_OP, hieleras: FRAME_HI, solicitudes: FRAME_SO, repartidor: FRAME_RE, corte: FRAME_CO, archivo: FRAME_AR };
+      const map = { operativo: FRAME_OP, productos: FRAME_PR, repartidores: FRAME_RP, hieleras: FRAME_HI, solicitudes: FRAME_SO, repartidor: FRAME_RE, corte: FRAME_CO, archivo: FRAME_AR };
       const frame = map[name];
       if (frame && frame.src === 'about:blank') frame.src = `${SRC[name]}?v=${Date.now()}`;
     }
     function show(name) {
-      ['operativo','hieleras','solicitudes','repartidor','corte','archivo'].forEach(n => {
+      ['operativo','productos','repartidores','hieleras','solicitudes','repartidor','corte','archivo'].forEach(n => {
         document.getElementById(`panel-${n}`).classList.toggle('active', n === name);
         document.getElementById(`tab-${n}`).classList.toggle('active', n === name);
         if (n === name) loadFrame(n);
@@ -131,6 +143,8 @@
     document.getElementById('master-login-btn').addEventListener('click', unlock);
     PASS.addEventListener('keydown', (e) => { if (e.key === 'Enter') unlock(); });
     document.getElementById('tab-operativo').addEventListener('click', () => show('operativo'));
+    document.getElementById('tab-productos').addEventListener('click', () => show('productos'));
+    document.getElementById('tab-repartidores').addEventListener('click', () => show('repartidores'));
     document.getElementById('tab-hieleras').addEventListener('click', () => show('hieleras'));
     document.getElementById('tab-solicitudes').addEventListener('click', () => show('solicitudes'));
     document.getElementById('tab-repartidor').addEventListener('click', () => show('repartidor'));

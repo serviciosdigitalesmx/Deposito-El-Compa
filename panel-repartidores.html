@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Depósito El Compa - Repartidores</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/deposito-unified.css">
+  <style>
+    :root{--bg:#121423;--panel:#1b1f33;--panel-2:#252a44;--text:#f4f7ff;--muted:#97a0b3;--accent:#ff6b6b;--good:#34d399;--warn:#fbbf24;--bad:#fb7185;--shadow:0 14px 32px rgba(0,0,0,.28)}
+    *{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,sans-serif;background:radial-gradient(circle at top,#1b1f37 0,#121423 60%);color:var(--text)}
+    header{position:sticky;top:0;z-index:10;padding:16px 20px;background:rgba(12,14,24,.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.08)}
+    .bar{max-width:1400px;margin:0 auto;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+    .title{display:flex;flex-direction:column;gap:4px}.title strong{font-size:20px}.title span{color:var(--muted);font-size:13px}
+    main{max-width:1400px;margin:0 auto;padding:18px 20px 28px}
+    .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:18px 0}
+    .card{background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:16px;box-shadow:var(--shadow)}
+    .stat .label{color:var(--muted);font-size:.82rem}.stat .value{font-size:2rem;font-weight:900;margin-top:8px}
+    .toolbar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;margin:18px 0}
+    .input,.select{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:11px 12px;color:var(--text);outline:none}
+    .input:focus,.select:focus{border-color:rgba(255,107,107,.42);box-shadow:0 0 0 3px rgba(255,107,107,.12)}
+    .btn{border:0;border-radius:12px;padding:11px 14px;font-weight:900;cursor:pointer;transition:.18s ease;display:inline-flex;align-items:center;gap:8px;text-decoration:none}
+    .btn:hover{transform:translateY(-1px)} .btn.primary{background:var(--accent);color:#fff} .btn.secondary{background:rgba(255,255,255,.08);color:var(--text)}
+    table{width:100%;border-collapse:collapse}.table-wrap{overflow:auto}
+    th,td{padding:12px 10px;text-align:left;border-bottom:1px solid rgba(255,255,255,.06);vertical-align:top}
+    th{color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.05em}
+    .pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;font-size:.78rem;font-weight:800}
+    .good{background:rgba(52,211,153,.14);color:var(--good)} .warn{background:rgba(251,191,36,.14);color:var(--warn)} .bad{background:rgba(251,113,133,.14);color:var(--bad)}
+    .mini{border:0;border-radius:10px;padding:8px 10px;font-weight:800;cursor:pointer}.mini.edit{background:rgba(255,255,255,.08);color:var(--text)} .mini.off{background:rgba(251,113,133,.16);color:#ffd8df}.mini.on{background:rgba(52,211,153,.16);color:#d6ffef}
+    .login{position:fixed;inset:0;background:rgba(5,6,14,.94);display:flex;align-items:center;justify-content:center;z-index:20;padding:16px}
+    .login-card{width:min(420px,100%);background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:24px;box-shadow:var(--shadow)}
+    .login-card h2{margin:0 0 8px;font-size:1.55rem}.login-card p{margin:0 0 14px;color:var(--muted);font-size:.95rem}.err{min-height:18px;color:#ff8f9b;font-size:13px;margin-top:8px}
+    .modal{position:fixed;inset:0;background:rgba(5,6,14,.82);display:flex;align-items:center;justify-content:center;z-index:30;padding:16px}
+    .modal.hidden,.login.hidden{display:none!important}
+    .modal-card{width:min(720px,100%);max-height:88vh;overflow:auto;background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:20px;box-shadow:var(--shadow)}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.grid .full{grid-column:1/-1}
+    .payments{margin-top:18px;display:grid;grid-template-columns:1fr;gap:12px}
+    .pay-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+    @media(max-width:980px){.stats,.grid,.pay-grid{grid-template-columns:1fr 1fr}.toolbar{align-items:stretch}}
+    @media(max-width:640px){.stats,.grid,.pay-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div id="loginOverlay" class="login">
+    <div class="login-card">
+      <h2>🚚 Repartidores</h2>
+      <p>Alta, edición y activación de repartidores desde el integrador.</p>
+      <input id="pin" class="input" type="password" placeholder="PIN de admin">
+      <button id="loginBtn" class="btn primary" style="width:100%;margin-top:10px;">Entrar</button>
+      <div id="loginError" class="err"></div>
+    </div>
+  </div>
+
+  <div class="modal hidden" id="modal">
+    <div class="modal-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap;">
+        <div>
+          <h2 style="margin:0 0 4px;">Repartidor</h2>
+          <div class="muted">Crear o editar repartidor</div>
+        </div>
+        <button class="btn secondary" id="closeModal" type="button">Cerrar</button>
+      </div>
+      <div class="grid">
+        <input class="input" id="rNombre" placeholder="Nombre">
+        <input class="input" id="rTelefono" placeholder="Teléfono">
+        <select class="input" id="rEstado">
+          <option value="activo">Activo</option>
+          <option value="inactivo">Inactivo</option>
+        </select>
+        <input class="input" id="rPedido" placeholder="Pedido activo" disabled>
+        <input class="input" id="rLat" placeholder="Latitud">
+        <input class="input" id="rLng" placeholder="Longitud">
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;">
+        <button class="btn primary" id="saveRepartidor" type="button">Guardar</button>
+        <button class="btn secondary" id="cancelRepartidor" type="button">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <header>
+    <div class="bar">
+      <div class="title">
+        <strong><i class="fa-solid fa-motorcycle"></i> Integrador · Repartidores</strong>
+        <span>Alta, edición y activación de repartidores.</span>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <a class="btn secondary" href="./integrador.html"><i class="fa-solid fa-grid-2"></i> Integrador</a>
+        <button id="addBtn" class="btn primary" type="button"><i class="fa-solid fa-plus"></i> Nuevo repartidor</button>
+        <button id="refreshBtn" class="btn secondary" type="button"><i class="fa-solid fa-rotate"></i> Refrescar</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="stats">
+      <div class="card stat"><div class="label">Repartidores</div><div class="value" id="m-total">0</div></div>
+      <div class="card stat"><div class="label">Activos</div><div class="value" id="m-activos">0</div></div>
+      <div class="card stat"><div class="label">Inactivos</div><div class="value" id="m-inactivos">0</div></div>
+      <div class="card stat"><div class="label">Con pedido</div><div class="value" id="m-ocupados">0</div></div>
+    </section>
+
+    <div class="toolbar">
+      <input id="search" class="input" style="min-width:260px;" placeholder="Buscar repartidor...">
+      <select id="filter" class="select">
+        <option value="todos">Todos</option>
+        <option value="activo">Activos</option>
+        <option value="inactivo">Inactivos</option>
+      </select>
+    </div>
+
+    <div class="card table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Repartidor</th>
+            <th>Teléfono</th>
+            <th>Estado</th>
+            <th>Pedido</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+
+    <section class="payments">
+      <div class="card">
+        <h3 style="margin:0 0 14px;display:flex;align-items:center;gap:10px;"><i class="fa-solid fa-money-bill-wave"></i> Registrar pago</h3>
+        <div class="pay-grid">
+          <select class="input" id="payRepartidor"></select>
+          <input class="input" id="payMonto" type="number" min="1" step="1" placeholder="Monto">
+          <input class="input" id="payConcepto" placeholder="Concepto">
+          <button class="btn primary" id="payBtn" type="button">Guardar pago</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3 style="margin:0 0 14px;display:flex;align-items:center;gap:10px;"><i class="fa-solid fa-receipt"></i> Pagos recientes</h3>
+        <div id="paymentsList" class="table-wrap"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    window.DEPOSITO_GAS_URL = 'https://script.google.com/macros/s/AKfycbw36LgiUW3Mp7ezvsQKcaDOAITZSryrMLdOXf0zu-8AtORq8l_0lwWkMu8RLYaS24ZZ/exec';
+  </script>
+  <script src="./js/deposito-api.js"></script>
+  <script>
+    const AUTH_PIN = '1234';
+    const AUTH_ROLE = 'admin';
+    const TOKEN_KEY = 'DEPOSITO_GAS_TOKEN_REPARTIDORES';
+    const loginOverlay = document.getElementById('loginOverlay');
+    const loginError = document.getElementById('loginError');
+    const modal = document.getElementById('modal');
+    let repartidores = [];
+    let pagos = [];
+    let editId = '';
+
+    function api(){ return window.DEPOSITO_API; }
+    function setAuth(token){ localStorage.setItem(TOKEN_KEY, token); api().setConfig({ endpoint: window.DEPOSITO_GAS_URL, token }); }
+
+    async function login(){
+      const cached = localStorage.getItem(TOKEN_KEY);
+      if (cached){ setAuth(cached); loginOverlay.classList.add('hidden'); return cached; }
+      const pin = (document.getElementById('pin').value || '').trim();
+      if (pin !== AUTH_PIN){ loginError.textContent = 'PIN incorrecto'; return null; }
+      const res = await api().get(`?action=login&role=${AUTH_ROLE}&pin=${AUTH_PIN}&t=${Date.now()}`);
+      if (!res || !res.ok || !res.token){ loginError.textContent = (res && res.error) || 'No se pudo autenticar'; return null; }
+      setAuth(res.token); loginOverlay.classList.add('hidden'); return res.token;
+    }
+
+    function stateTone(r){
+      const active = String(r.estado || 'activo').toLowerCase() === 'activo';
+      if (!active) return ['Inactivo','bad'];
+      if (String(r.pedido_activo || '').trim()) return ['Ocupado','warn'];
+      return ['Activo','good'];
+    }
+
+    function render(){
+      const q = (document.getElementById('search').value || '').trim().toLowerCase();
+      const filter = document.getElementById('filter').value;
+      const filtered = repartidores.filter(r => {
+        const name = `${r.nombre || ''} ${r.telefono || ''}`.toLowerCase();
+        const active = String(r.estado || 'activo').toLowerCase() === 'activo';
+        if (filter === 'activo' && !active) return false;
+        if (filter === 'inactivo' && active) return false;
+        return !q || name.includes(q);
+      });
+      document.getElementById('m-total').textContent = repartidores.length;
+      document.getElementById('m-activos').textContent = repartidores.filter(r => String(r.estado || 'activo').toLowerCase() === 'activo').length;
+      document.getElementById('m-inactivos').textContent = repartidores.filter(r => String(r.estado || 'activo').toLowerCase() !== 'activo').length;
+      document.getElementById('m-ocupados').textContent = repartidores.filter(r => String(r.pedido_activo || '').trim()).length;
+      const rows = document.getElementById('rows');
+      rows.innerHTML = filtered.length ? filtered.map(r => {
+        const [label, tone] = stateTone(r);
+        const active = String(r.estado || 'activo').toLowerCase() === 'activo';
+        return `<tr>
+          <td><strong>${r.nombre || ''}</strong></td>
+          <td>${r.telefono || ''}</td>
+          <td><span class="pill ${tone}">${label}</span></td>
+          <td>${r.pedido_activo || '—'}</td>
+          <td style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="mini edit" type="button" data-edit="${r.id}">Editar</button>
+            <button class="mini ${active ? 'off' : 'on'}" type="button" data-toggle="${r.id}">${active ? 'Desactivar' : 'Activar'}</button>
+          </td>
+        </tr>`;
+      }).join('') : '<tr><td colspan="5" class="muted">Sin repartidores.</td></tr>';
+      rows.querySelectorAll('[data-edit]').forEach(btn => btn.addEventListener('click', () => openEdit(btn.dataset.edit)));
+      rows.querySelectorAll('[data-toggle]').forEach(btn => btn.addEventListener('click', () => toggle(btn.dataset.toggle)));
+      renderPaymentSelect();
+      renderPayments();
+    }
+
+    function openModal(){ modal.classList.remove('hidden'); }
+    function closeModal(){ modal.classList.add('hidden'); editId = ''; }
+    function fillForm(r = {}){
+      document.getElementById('rNombre').value = r.nombre || '';
+      document.getElementById('rTelefono').value = r.telefono || '';
+      document.getElementById('rEstado').value = r.estado || 'activo';
+      document.getElementById('rPedido').value = r.pedido_activo || '';
+      document.getElementById('rLat').value = r.lat || '';
+      document.getElementById('rLng').value = r.lng || '';
+    }
+    function openNew(){ editId = ''; fillForm({ estado:'activo' }); openModal(); }
+    function openEdit(id){ editId = id; fillForm(repartidores.find(r => String(r.id) === String(id)) || {}); openModal(); }
+
+    async function load(){
+      await login();
+      const res = await api().get(`?action=repartidores&t=${Date.now()}`);
+      const payRes = await api().get(`?action=repartidorPagos&t=${Date.now()}`);
+      repartidores = Array.isArray(res.data) ? res.data : [];
+      pagos = Array.isArray(payRes.data) ? payRes.data : [];
+      render();
+    }
+
+    function renderPaymentSelect() {
+      const sel = document.getElementById('payRepartidor');
+      if (!sel) return;
+      sel.innerHTML = repartidores.map(r => `<option value="${r.id}">${r.nombre || ''}</option>`).join('');
+      if (!sel.value && repartidores.length) sel.value = repartidores[0].id;
+    }
+
+    function renderPayments() {
+      const box = document.getElementById('paymentsList');
+      const list = (pagos || []).slice().reverse().slice(0, 8);
+      box.innerHTML = list.length ? list.map(p => `
+        <div class="order" style="margin-bottom:10px;">
+          <div class="order-top">
+            <div>
+              <strong>${p.repartidor_nombre || p.repartidor_id || 'Sin repartidor'}</strong>
+              <div class="muted">${p.concepto || ''}</div>
+            </div>
+            <span class="pill good">$${Number(p.monto || 0).toLocaleString('es-MX')}</span>
+          </div>
+          <div class="muted" style="margin-top:8px;">${p.fecha || ''}</div>
+        </div>
+      `).join('') : '<div class="muted">Aún no hay pagos registrados.</div>';
+    }
+
+    async function save(){
+      const payload = {
+        nombre: document.getElementById('rNombre').value.trim(),
+        telefono: document.getElementById('rTelefono').value.trim(),
+        estado: document.getElementById('rEstado').value,
+        pedido_activo: document.getElementById('rPedido').value.trim(),
+        lat: document.getElementById('rLat').value.trim(),
+        lng: document.getElementById('rLng').value.trim(),
+      };
+      if (editId) await api().post('?action=repartidorActualizar', { id: editId, ...payload });
+      else await api().post('?action=repartidorGuardar', payload);
+      closeModal();
+      await load();
+    }
+
+    async function savePayment(){
+      const sel = document.getElementById('payRepartidor');
+      const repartidorId = sel && sel.value ? sel.value : '';
+      const repartidorNombre = sel && sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].text : '';
+      const monto = Number(document.getElementById('payMonto').value || 0);
+      const concepto = document.getElementById('payConcepto').value.trim();
+      if (!repartidorId) {
+        alert('Selecciona un repartidor');
+        return;
+      }
+      if (!monto || monto <= 0) {
+        alert('Captura un monto válido');
+        return;
+      }
+      await api().post('?action=repartidorPagar', { repartidor_id: repartidorId, repartidor_nombre: repartidorNombre, monto, concepto });
+      document.getElementById('payMonto').value = '';
+      document.getElementById('payConcepto').value = '';
+      await load();
+    }
+
+    async function toggle(id){
+      await api().post('?action=repartidorToggle', { id });
+      await load();
+    }
+
+    document.getElementById('loginBtn').addEventListener('click', load);
+    document.getElementById('refreshBtn').addEventListener('click', load);
+    document.getElementById('addBtn').addEventListener('click', openNew);
+    document.getElementById('closeModal').addEventListener('click', closeModal);
+    document.getElementById('cancelRepartidor').addEventListener('click', closeModal);
+    document.getElementById('saveRepartidor').addEventListener('click', save);
+    document.getElementById('payBtn').addEventListener('click', savePayment);
+    document.getElementById('search').addEventListener('input', render);
+    document.getElementById('filter').addEventListener('change', render);
+    modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+    if (localStorage.getItem(TOKEN_KEY)) {
+      loginOverlay.classList.add('hidden');
+      api().setConfig({ endpoint: window.DEPOSITO_GAS_URL, token: localStorage.getItem(TOKEN_KEY) });
+      load();
+    }
+  </script>
+</body>
+</html>

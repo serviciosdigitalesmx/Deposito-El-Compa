@@ -6,6 +6,7 @@ const SHEETS = {
   pedidos: 'pedidos',
   detallePedidos: 'detalle_pedidos',
   repartidores: 'repartidores',
+  pagosRepartidores: 'pagos_repartidores',
   movimientosStock: 'movimientos_stock',
   stock: 'stock',
   cierresCaja: 'cierres_caja',
@@ -60,6 +61,7 @@ function setup() {
     [SHEETS.pedidos, ['id', 'fecha_hora', 'cliente', 'telefono', 'direccion', 'total', 'estado', 'repartidor_id', 'metodo_pago', 'updated_at', 'creado_por']],
     [SHEETS.detallePedidos, ['id', 'pedido_id', 'producto_id', 'nombre_producto', 'cantidad', 'precio_unitario', 'subtotal', 'created_at']],
     [SHEETS.repartidores, ['id', 'nombre', 'telefono', 'estado', 'lat', 'lng', 'pedido_activo', 'updated_at']],
+    [SHEETS.pagosRepartidores, ['id', 'repartidor_id', 'repartidor_nombre', 'monto', 'concepto', 'fecha', 'usuario']],
     [SHEETS.movimientosStock, ['id', 'producto_id', 'tipo', 'cantidad', 'referencia_pedido_id', 'fecha', 'usuario', 'motivo']],
     [SHEETS.stock, ['id', 'producto_id', 'tipo', 'cantidad', 'referencia_pedido_id', 'fecha', 'usuario', 'motivo']],
     [SHEETS.cierresCaja, ['id', 'fecha', 'total_efectivo', 'total_tarjeta', 'total_transferencia', 'observaciones', 'usuario']],
@@ -188,6 +190,8 @@ function handleRequest(method, e) {
       return listArchivoPedidos(params, token);
     case 'GET:repartidores':
       return listSheet(SHEETS.repartidores);
+    case 'GET:repartidorPagos':
+      return listSheet(SHEETS.pagosRepartidores);
     case 'GET:login':
       return login({ role: params.role, pin: params.pin });
     case 'POST:login':
@@ -200,6 +204,14 @@ function handleRequest(method, e) {
       return updateProduct(body, token);
     case 'POST:productoToggle':
       return toggleProduct(body, token);
+    case 'POST:repartidorGuardar':
+      return saveRepartidor(body, token);
+    case 'POST:repartidorActualizar':
+      return updateRepartidor(body, token);
+    case 'POST:repartidorToggle':
+      return toggleRepartidor(body, token);
+    case 'POST:repartidorPagar':
+      return saveRepartidorPago(body, token);
     case 'POST:aceptarPedido':
       return updatePedidoStatus(body.id, 'aceptado', body, token);
     case 'POST:rechazarPedido':
@@ -543,6 +555,110 @@ function toggleProduct(body, token) {
     sheet.getRange(sheetRow, activeIdx).setValue(current ? 'false' : 'true');
     sheet.getRange(sheetRow, headers.indexOf('updated_at') + 1).setValue(new Date().toISOString());
     return { ok: true, id, activo: !current };
+  }, 12000);
+}
+
+function ensureRepartidorHeaders(sheet) {
+  const headers = ['id', 'nombre', 'telefono', 'estado', 'lat', 'lng', 'pedido_activo', 'updated_at'];
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(headers);
+    return;
+  }
+  if (sheet.getLastRow() === 1) {
+    const existing = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    if (existing.join('|') !== headers.join('|')) {
+      sheet.clear();
+      sheet.appendRow(headers);
+    }
+  }
+}
+
+function normalizeRepartidorBody(body) {
+  return {
+    nombre: String(body.nombre || body.name || '').trim(),
+    telefono: String(body.telefono || body.phone || '').trim(),
+    estado: String(body.estado || body.status || 'activo').trim(),
+    lat: String(body.lat || '').trim(),
+    lng: String(body.lng || '').trim(),
+    pedido_activo: String(body.pedido_activo || body.pedidoActivo || '').trim(),
+  };
+}
+
+function saveRepartidor(body, token) {
+  return withDocumentLock(function() {
+    requireAuth(token, ['admin']);
+    const row = normalizeRepartidorBody(body);
+    if (!row.nombre) throw new Error('nombre requerido');
+    const sheet = getSheet(SHEETS.repartidores);
+    ensureRepartidorHeaders(sheet);
+    const id = Utilities.getUuid();
+    sheet.appendRow([id, row.nombre, row.telefono, row.estado || 'activo', row.lat, row.lng, row.pedido_activo, new Date().toISOString()]);
+    return { ok: true, id };
+  }, 12000);
+}
+
+function updateRepartidor(body, token) {
+  return withDocumentLock(function() {
+    requireAuth(token, ['admin']);
+    const id = String(body.id || '').trim();
+    if (!id) throw new Error('id requerido');
+    const row = normalizeRepartidorBody(body);
+    const sheet = getSheet(SHEETS.repartidores);
+    ensureRepartidorHeaders(sheet);
+    const data = sheet.getDataRange().getValues();
+    const headers = data.shift();
+    const idx = headers.indexOf('id');
+    const rowIndex = data.findIndex(r => String(r[idx]) === id);
+    if (rowIndex < 0) throw new Error('Repartidor no encontrado');
+    const sheetRow = rowIndex + 2;
+    sheet.getRange(sheetRow, headers.indexOf('nombre') + 1).setValue(row.nombre);
+    sheet.getRange(sheetRow, headers.indexOf('telefono') + 1).setValue(row.telefono);
+    sheet.getRange(sheetRow, headers.indexOf('estado') + 1).setValue(row.estado || 'activo');
+    sheet.getRange(sheetRow, headers.indexOf('lat') + 1).setValue(row.lat);
+    sheet.getRange(sheetRow, headers.indexOf('lng') + 1).setValue(row.lng);
+    sheet.getRange(sheetRow, headers.indexOf('pedido_activo') + 1).setValue(row.pedido_activo);
+    sheet.getRange(sheetRow, headers.indexOf('updated_at') + 1).setValue(new Date().toISOString());
+    return { ok: true, id };
+  }, 12000);
+}
+
+function toggleRepartidor(body, token) {
+  return withDocumentLock(function() {
+    requireAuth(token, ['admin']);
+    const id = String(body.id || '').trim();
+    if (!id) throw new Error('id requerido');
+    const sheet = getSheet(SHEETS.repartidores);
+    ensureRepartidorHeaders(sheet);
+    const data = sheet.getDataRange().getValues();
+    const headers = data.shift();
+    const idx = headers.indexOf('id');
+    const rowIndex = data.findIndex(r => String(r[idx]) === id);
+    if (rowIndex < 0) throw new Error('Repartidor no encontrado');
+    const sheetRow = rowIndex + 2;
+    const activeIdx = headers.indexOf('estado') + 1;
+    const current = String(sheet.getRange(sheetRow, activeIdx).getValue() || 'activo').toLowerCase() === 'activo';
+    sheet.getRange(sheetRow, activeIdx).setValue(current ? 'inactivo' : 'activo');
+    sheet.getRange(sheetRow, headers.indexOf('updated_at') + 1).setValue(new Date().toISOString());
+    return { ok: true, id, activo: !current };
+  }, 12000);
+}
+
+function saveRepartidorPago(body, token) {
+  return withDocumentLock(function() {
+    const session = requireAuth(token, ['admin', 'caja']);
+    const repartidorId = String(body.repartidor_id || body.repartidorId || '').trim();
+    const repartidorNombre = String(body.repartidor_nombre || body.repartidorNombre || '').trim();
+    const monto = Number(body.monto || 0);
+    const concepto = String(body.concepto || body.motivo || 'Pago de reparto').trim();
+    if (!repartidorId && !repartidorNombre) throw new Error('repartidor requerido');
+    if (!monto || monto <= 0) throw new Error('monto inválido');
+    const sheet = getSheet(SHEETS.pagosRepartidores);
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow(['id', 'repartidor_id', 'repartidor_nombre', 'monto', 'concepto', 'fecha', 'usuario']);
+    }
+    const id = Utilities.getUuid();
+    sheet.appendRow([id, repartidorId, repartidorNombre, monto, concepto, new Date().toISOString(), session.nombre]);
+    return { ok: true, id };
   }, 12000);
 }
 
