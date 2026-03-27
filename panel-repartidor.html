@@ -94,7 +94,8 @@
   <script>
     const AUTH_ROLE = 'repartidor';
     const AUTH_PIN = '2222';
-    const AUTH_TOKEN_KEY = 'DEPOSITO_GAS_TOKEN';
+    const AUTH_TOKEN_KEY = 'DEPOSITO_GAS_TOKEN_REPARTIDOR';
+    const AUTH_USER_KEY = 'DEPOSITO_GAS_USER_REPARTIDOR';
     const list = document.getElementById('list');
     const toast = document.getElementById('toast');
     let lastSignature = '';
@@ -113,7 +114,7 @@
       if (cached) {
         setApiAuth(cached);
         try {
-          currentUser = JSON.parse(localStorage.getItem('DEPOSITO_GAS_USER') || 'null');
+          currentUser = JSON.parse(localStorage.getItem(AUTH_USER_KEY) || 'null');
         } catch (_) {
           currentUser = null;
         }
@@ -125,7 +126,7 @@
       }
       localStorage.setItem(AUTH_TOKEN_KEY, res.token);
       if (res.user) {
-        localStorage.setItem('DEPOSITO_GAS_USER', JSON.stringify(res.user));
+        localStorage.setItem(AUTH_USER_KEY, JSON.stringify(res.user));
       }
       setApiAuth(res.token);
       currentUser = res.user || null;
@@ -196,6 +197,7 @@
       await withButtonFeedback(button, 'Marcando...', async () => {
         await window.DEPOSITO_API.post('?action=enRuta', { id, estado: 'en_ruta' });
         showToast('Pedido marcado en ruta');
+        await new Promise(resolve => setTimeout(resolve, 250));
         await load(true);
       });
     }
@@ -204,6 +206,7 @@
       await withButtonFeedback(button, 'Entregando...', async () => {
         await window.DEPOSITO_API.post('?action=entregado', { id, estado: 'entregado' });
         showToast('Pedido entregado');
+        await new Promise(resolve => setTimeout(resolve, 350));
         await load(true);
       });
     }
@@ -212,6 +215,7 @@
       await withButtonFeedback(button, 'Archivando...', async () => {
         await window.DEPOSITO_API.post('?action=archivarPedido', { id });
         showToast('Pedido archivado');
+        await new Promise(resolve => setTimeout(resolve, 350));
         await load(true);
       });
     }
