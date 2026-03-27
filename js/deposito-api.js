@@ -47,6 +47,7 @@
       const payload = {
         ...body,
         token: token || defaultConfig.token || '',
+        header_token: token || defaultConfig.token || '',
       };
 
       Object.entries(payload).forEach(([key, value]) => {
