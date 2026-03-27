@@ -48,6 +48,7 @@
       <button id="tab-operativo" class="tab active" type="button">Caja / Operativo</button>
       <button id="tab-hieleras" class="tab" type="button">Hieleras</button>
       <button id="tab-solicitudes" class="tab" type="button">Solicitudes</button>
+      <button id="tab-repartidor" class="tab" type="button">Repartidor</button>
       <button id="tab-archivo" class="tab" type="button">Archivo</button>
     </nav>
   </header>
@@ -56,6 +57,7 @@
     <section id="panel-operativo" class="panel active"><iframe id="frame-operativo" src="about:blank" title="Operativo"></iframe></section>
     <section id="panel-hieleras" class="panel"><iframe id="frame-hieleras" src="about:blank" title="Hieleras"></iframe></section>
     <section id="panel-solicitudes" class="panel"><iframe id="frame-solicitudes" src="about:blank" title="Solicitudes"></iframe></section>
+    <section id="panel-repartidor" class="panel"><iframe id="frame-repartidor" src="about:blank" title="Repartidor"></iframe></section>
     <section id="panel-archivo" class="panel"><iframe id="frame-archivo" src="about:blank" title="Archivo"></iframe></section>
   </div>
 
@@ -64,6 +66,7 @@
     <a href="./panel-operativo.html" target="_blank">Caja / Operativo</a> |
     <a href="./panel-tecnico.html" target="_blank">Hieleras</a> |
     <a href="./panel-solicitudes.html" target="_blank">Solicitudes</a> |
+    <a href="./panel-repartidor.html" target="_blank">Repartidor</a> |
     <a href="./panel-archivo.html" target="_blank">Archivo</a>
   </div>
 
@@ -72,10 +75,12 @@
     const PANEL_OP = document.getElementById('panel-operativo');
     const PANEL_HI = document.getElementById('panel-hieleras');
     const PANEL_SO = document.getElementById('panel-solicitudes');
+    const PANEL_RE = document.getElementById('panel-repartidor');
     const PANEL_AR = document.getElementById('panel-archivo');
     const FRAME_OP = document.getElementById('frame-operativo');
     const FRAME_HI = document.getElementById('frame-hieleras');
     const FRAME_SO = document.getElementById('frame-solicitudes');
+    const FRAME_RE = document.getElementById('frame-repartidor');
     const FRAME_AR = document.getElementById('frame-archivo');
     const LOGIN = document.getElementById('login-screen');
     const PASS = document.getElementById('master-password');
@@ -84,16 +89,17 @@
       operativo: './panel-operativo.html',
       hieleras: './panel-tecnico.html',
       solicitudes: './panel-solicitudes.html',
+      repartidor: './panel-repartidor.html',
       archivo: './panel-archivo.html'
     };
 
     function loadFrame(name) {
-      const map = { operativo: FRAME_OP, hieleras: FRAME_HI, solicitudes: FRAME_SO, archivo: FRAME_AR };
+      const map = { operativo: FRAME_OP, hieleras: FRAME_HI, solicitudes: FRAME_SO, repartidor: FRAME_RE, archivo: FRAME_AR };
       const frame = map[name];
       if (frame && frame.src === 'about:blank') frame.src = `${SRC[name]}?v=${Date.now()}`;
     }
     function show(name) {
-      ['operativo','hieleras','solicitudes','archivo'].forEach(n => {
+      ['operativo','hieleras','solicitudes','repartidor','archivo'].forEach(n => {
         document.getElementById(`panel-${n}`).classList.toggle('active', n === name);
         document.getElementById(`tab-${n}`).classList.toggle('active', n === name);
         if (n === name) loadFrame(n);
@@ -106,7 +112,7 @@
         return;
       }
       LOGIN.style.display = 'none';
-      ['operativo','hieleras','solicitudes','archivo'].forEach(loadFrame);
+      ['operativo','hieleras','solicitudes','repartidor','archivo'].forEach(loadFrame);
       show('operativo');
     }
     document.getElementById('master-login-btn').addEventListener('click', unlock);
@@ -114,6 +120,7 @@
     document.getElementById('tab-operativo').addEventListener('click', () => show('operativo'));
     document.getElementById('tab-hieleras').addEventListener('click', () => show('hieleras'));
     document.getElementById('tab-solicitudes').addEventListener('click', () => show('solicitudes'));
+    document.getElementById('tab-repartidor').addEventListener('click', () => show('repartidor'));
     document.getElementById('tab-archivo').addEventListener('click', () => show('archivo'));
   </script>
 </body>
