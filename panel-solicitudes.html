@@ -66,9 +66,8 @@
         <span>El flujo de entrada que aprueba, rechaza y manda a hieleras</span>
       </div>
       <div class="stats">
-        <div class="stat"><span class="refresh"><span class="pulse"></span> vivo</span><b id="count-total">0</b><small>Total</small></div>
-        <div class="stat"><b id="count-nuevo">0</b><small>Nuevas</small></div>
-        <div class="stat"><b id="count-aceptado">0</b><small>Aceptadas</small></div>
+        <div class="stat"><span class="refresh"><span class="pulse"></span> vivo</span><b id="count-total">0</b><small>Nuevas</small></div>
+        <div class="stat"><b id="count-proceso">0</b><small>En proceso</small></div>
         <div class="stat"><b id="count-listo">0</b><small>Listas</small></div>
       </div>
     </div>
@@ -163,15 +162,7 @@
       return `https://wa.me/52${phone}?text=${encodeURIComponent(msg)}`;
     }
 
-    async function acceptOrder(id, button) {
-      await withButtonFeedback(button, 'Aceptando...', async () => {
-        await window.DEPOSITO_API.post('?action=aceptarPedido', { id, estado: 'aceptado' });
-        showToast('Pedido aceptado');
-        await load(true);
-      });
-    }
-
-    async function sendToHieleras(id, button) {
+    async function moveToHieleras(id, button) {
       await withButtonFeedback(button, 'Enviando...', async () => {
         await window.DEPOSITO_API.post('?action=pedidoListo', { id, estado: 'en_hieleras' });
         showToast('Pedido enviado a hieleras');
@@ -184,20 +175,18 @@
         await ensureAuth();
         const res = await window.DEPOSITO_API.get('?action=pedidos&t=' + Date.now());
         const rows = Array.isArray(res.data) ? res.data : [];
-        const sig = signature(rows);
+        const visible = rows.filter(r => String(r.estado || r.status || 'nuevo').toLowerCase() === 'nuevo');
+        const sig = signature(visible);
         if (!force && sig === lastSignature) return;
         lastSignature = sig;
 
-        const total = rows.length;
-        const nuevo = rows.filter(r => String(r.estado || r.status || 'nuevo').toLowerCase() === 'nuevo').length;
-        const aceptado = rows.filter(r => String(r.estado || r.status || '').toLowerCase() === 'aceptado').length;
+        const proceso = rows.filter(r => ['aceptado', 'en_hieleras'].includes(String(r.estado || r.status || '').toLowerCase())).length;
         const listo = rows.filter(r => ['listo', 'en_hieleras'].includes(String(r.estado || r.status || '').toLowerCase())).length;
-        document.getElementById('count-total').textContent = total;
-        document.getElementById('count-nuevo').textContent = nuevo;
-        document.getElementById('count-aceptado').textContent = aceptado;
+        document.getElementById('count-total').textContent = visible.length;
+        document.getElementById('count-proceso').textContent = proceso;
         document.getElementById('count-listo').textContent = listo;
 
-        const ordered = rows.sort((a, b) => String(b.updated_at || b.fecha_hora || '').localeCompare(String(a.updated_at || a.fecha_hora || '')));
+        const ordered = visible.sort((a, b) => String(b.updated_at || b.fecha_hora || '').localeCompare(String(a.updated_at || a.fecha_hora || '')));
         list.innerHTML = ordered.length ? ordered.map(order => {
           const status = String(order.estado || order.status || 'nuevo').toLowerCase();
           const items = Array.isArray(order.items) ? order.items : [];
@@ -220,8 +209,7 @@
               </div>
               <div class="meta" style="margin-top:12px"><strong>Total:</strong> ${totalMoney}</div>
               <div class="actions">
-                <button class="primary" onclick="acceptOrder('${order.id}', this)">Aceptar</button>
-                <button class="success" onclick="sendToHieleras('${order.id}', this)">A hieleras</button>
+                <button class="primary" onclick="moveToHieleras('${order.id}', this)">Aceptar y mandar a hieleras</button>
                 ${phone ? `<button class="secondary" onclick="window.open('${waLink(order)}','_blank')">WhatsApp</button>` : ''}
               </div>
             </article>
