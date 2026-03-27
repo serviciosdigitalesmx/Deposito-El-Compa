@@ -46,9 +46,52 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(updateDate, 60000);
     const savedTheme = localStorage.getItem('theme') || 'dark';
     if (savedTheme === 'light') toggleTheme();
+    loadProductsFromApi();
+    setInterval(loadProductsFromApi, 15000);
     loadOrdersFromApi();
     setInterval(loadOrdersFromApi, 10000);
 });
+
+function normalizeImageRef(value) {
+    const raw = String(value || '').trim();
+    if (!raw) return '';
+    try {
+        if (/^https?:\/\//i.test(raw) || raw.startsWith('data:')) return raw;
+        return raw.replace(/^\.\/?/, '');
+    } catch (_) {
+        return raw;
+    }
+}
+
+function normalizeProductFromApi(product, index = 0) {
+    return {
+        id: Number(product.id || index + 1),
+        name: String(product.nombre || product.name || '').trim(),
+        price: Number(product.precio || product.price || 0),
+        category: String(product.categoria || product.category || 'otros').trim(),
+        stock: Number(product.stock || 0),
+        icon: String(product.icon || '🍺').trim() || '🍺',
+        image: normalizeImageRef(product.imagen_url || product.image || ''),
+        activo: String(product.activo || 'true').toLowerCase() === 'true',
+    };
+}
+
+async function loadProductsFromApi() {
+    try {
+        const api = window.DEPOSITO_API;
+        if (!api) return;
+        const response = await api.get(`?action=productos&t=${Date.now()}`);
+        const rows = Array.isArray(response.data) ? response.data : [];
+        if (!rows.length) return;
+        state.products = rows.map((p, idx) => normalizeProductFromApi(p, idx)).filter(p => p.activo !== false && p.name);
+    } catch (_) {}
+    const productsGrid = document.getElementById('productsGrid');
+    if (productsGrid) renderProducts();
+    const inventoryTable = document.getElementById('inventoryTable');
+    if (inventoryTable) renderInventory();
+    const topProducts = document.getElementById('topProducts');
+    if (topProducts) renderReports();
+}
 
 async function loadOrdersFromApi() {
     try {
