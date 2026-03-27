@@ -25,6 +25,17 @@
     .links{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
     a.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;text-decoration:none;font-weight:800;background:rgba(255,255,255,.08);color:var(--text)}
     a.btn.primary{background:var(--accent);color:#fff}
+    .manual{margin-top:18px;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:16px;box-shadow:var(--shadow)}
+    .manual h3{margin:0 0 12px;font-size:17px}
+    .manual-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .manual input,.manual select,.manual textarea{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:11px 12px;color:var(--text);outline:none}
+    .manual textarea{min-height:86px;resize:vertical}
+    .manual-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    .manual-list{margin-top:10px;display:grid;gap:8px}
+    .manual-item{display:flex;justify-content:space-between;gap:10px;align-items:center;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:10px 12px}
+    .manual-item small{color:var(--muted)}
+    .mini{padding:8px 12px;border:0;border-radius:10px;font-weight:800;cursor:pointer;background:rgba(255,255,255,.08);color:var(--text)}
+    .mini.primary{background:var(--accent);color:#fff}
   </style>
 </head>
 <body>
@@ -55,6 +66,30 @@
       <a class="btn" href="./panel-tecnico.html" target="_blank"><i class="fa-solid fa-icicles"></i> Hieleras</a>
       <a class="btn" href="./panel-archivo.html" target="_blank"><i class="fa-solid fa-box-archive"></i> Archivo</a>
     </div>
+
+    <section class="manual">
+      <h3><i class="fa-solid fa-receipt"></i> Alta manual de pedido</h3>
+      <div class="manual-grid">
+        <input id="mpCliente" placeholder="Nombre del cliente">
+        <input id="mpTelefono" placeholder="Teléfono">
+        <input id="mpDireccion" placeholder="Dirección">
+        <select id="mpMetodo">
+          <option value="efectivo">Efectivo</option>
+          <option value="transferencia">Transferencia</option>
+          <option value="tarjeta">Tarjeta</option>
+        </select>
+      </div>
+      <div class="manual-grid" style="margin-top:12px;align-items:end;">
+        <select id="mpProducto"></select>
+        <input id="mpCantidad" type="number" min="1" step="1" value="1" placeholder="Cantidad">
+      </div>
+      <div class="manual-actions">
+        <button class="mini" id="mpAddItem" type="button">Agregar producto</button>
+        <button class="mini primary" id="mpCreate" type="button">Crear pedido manual</button>
+      </div>
+      <div id="mpItems" class="manual-list"></div>
+      <div class="muted" id="mpTotal" style="margin-top:10px;font-weight:800;">Total: $0</div>
+    </section>
   </main>
   <script>
     window.DEPOSITO_GAS_URL = 'https://script.google.com/macros/s/AKfycbw36LgiUW3Mp7ezvsQKcaDOAITZSryrMLdOXf0zu-8AtORq8l_0lwWkMu8RLYaS24ZZ/exec';
@@ -64,6 +99,8 @@
     const AUTH_ROLE = 'admin';
     const AUTH_PIN = '1234';
     const AUTH_TOKEN_KEY = 'DEPOSITO_GAS_TOKEN';
+    let manualProducts = [];
+    let manualItems = [];
     function setApiAuth(token) {
       window.DEPOSITO_API.setConfig({
         endpoint: window.DEPOSITO_GAS_URL,
@@ -86,16 +123,86 @@
       try {
         await ensureAuth();
         const res = await window.DEPOSITO_API.get('?action=pedidos&t=' + Date.now());
+        const productsRes = await window.DEPOSITO_API.get('?action=productos&t=' + Date.now());
         const rows = Array.isArray(res.data) ? res.data : [];
+        manualProducts = Array.isArray(productsRes.data) ? productsRes.data : [];
         document.getElementById('m-pedidos').textContent = rows.length;
         document.getElementById('m-nuevos').textContent = rows.filter(r => String(r.estado || r.status || 'nuevo').toLowerCase() === 'nuevo').length;
         document.getElementById('m-aceptados').textContent = rows.filter(r => String(r.estado || r.status || '').toLowerCase() === 'aceptado').length;
         document.getElementById('m-ruta').textContent = rows.filter(r => String(r.estado || r.status || '').toLowerCase() === 'en_ruta').length;
         document.getElementById('m-entregados').textContent = rows.filter(r => String(r.estado || r.status || '').toLowerCase() === 'entregado').length;
+        renderManualProducts();
       } catch (_) {}
+    }
+    function renderManualProducts() {
+      const sel = document.getElementById('mpProducto');
+      if (!sel) return;
+      if (!sel.options.length || sel.dataset.loaded !== '1') {
+        sel.innerHTML = manualProducts.map(p => `<option value="${p.id}">${p.nombre} - $${Number(p.precio || 0)}</option>`).join('');
+        sel.dataset.loaded = '1';
+      }
+      renderManualItems();
+    }
+    function renderManualItems() {
+      const box = document.getElementById('mpItems');
+      const total = manualItems.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+      document.getElementById('mpTotal').textContent = `Total: $${total.toLocaleString('es-MX')}`;
+      box.innerHTML = manualItems.length ? manualItems.map((item, idx) => `
+        <div class="manual-item">
+          <div><strong>${item.nombre}</strong><br><small>${item.cantidad} x $${item.precio}</small></div>
+          <button class="mini" type="button" data-remove="${idx}">Quitar</button>
+        </div>
+      `).join('') : '<div class="muted">Sin productos agregados.</div>';
+      box.querySelectorAll('[data-remove]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          manualItems.splice(Number(btn.dataset.remove), 1);
+          renderManualItems();
+        });
+      });
+    }
+    function addManualItem() {
+      const productId = String(document.getElementById('mpProducto').value || '');
+      const qty = Math.max(1, Number(document.getElementById('mpCantidad').value || 1));
+      const product = manualProducts.find(p => String(p.id) === productId);
+      if (!product) return;
+      manualItems.push({
+        id: product.id,
+        nombre: product.nombre,
+        cantidad: qty,
+        precio: Number(product.precio || 0)
+      });
+      renderManualItems();
+    }
+    async function createManualOrder() {
+      if (!manualItems.length) return alert('Agrega al menos un producto');
+      const cliente = document.getElementById('mpCliente').value.trim();
+      const telefono = document.getElementById('mpTelefono').value.trim();
+      const direccion = document.getElementById('mpDireccion').value.trim();
+      const metodo_pago = document.getElementById('mpMetodo').value;
+      const total = manualItems.reduce((sum, item) => sum + item.precio * item.cantidad, 0);
+      await window.DEPOSITO_API.post('?action=pedidos', {
+        cliente,
+        telefono,
+        direccion,
+        metodo_pago,
+        total,
+        publico: false,
+        items: manualItems
+      });
+      manualItems = [];
+      document.getElementById('mpCliente').value = '';
+      document.getElementById('mpTelefono').value = '';
+      document.getElementById('mpDireccion').value = '';
+      renderManualItems();
+      await load();
+      alert('Pedido creado y enviado a solicitudes');
     }
     load();
     setInterval(load, 20000);
+    document.addEventListener('click', (e) => {
+      if (e.target && e.target.id === 'mpAddItem') addManualItem();
+      if (e.target && e.target.id === 'mpCreate') createManualOrder();
+    });
   </script>
 </body>
 </html>
