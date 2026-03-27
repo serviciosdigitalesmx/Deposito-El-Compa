@@ -3,39 +3,336 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="refresh" content="0; url=./integrador.html">
-  <title>Depósito El Compa - Interno</title>
+  <title>Depósito El Compa - Admin</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
-    :root { color-scheme: dark; }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      background: #17172a;
-      color: #fff;
-      font-family: Inter, system-ui, sans-serif;
+    :root{
+      --bg:#0f1020;--panel:#171930;--panel-2:#1e2140;--text:#eef2ff;--muted:#98a2c3;--accent:#ff6b6b;--accent-2:#4ecdc4;--warn:#fbbf24;--bad:#fb7185;--good:#34d399;
+      --shadow:0 18px 50px rgba(0,0,0,.35);--border:1px solid rgba(255,255,255,.08)
     }
-    .card {
-      text-align: center;
-      padding: 24px 28px;
-      border: 1px solid rgba(255,255,255,.12);
-      border-radius: 18px;
-      background: rgba(255,255,255,.04);
-      max-width: 420px;
-    }
-    a {
-      color: #ff6b6b;
-      text-decoration: none;
-      font-weight: 700;
-    }
+    *{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,sans-serif;background:radial-gradient(circle at top,#1b1e38 0,#0f1020 55%);color:var(--text);min-height:100vh}
+    .shell{max-width:1400px;margin:0 auto;padding:24px}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:22px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .brand .logo{width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,var(--accent),#ff8f6b);display:grid;place-items:center;font-size:22px;box-shadow:var(--shadow)}
+    .brand h1{margin:0;font-size:1.4rem}
+    .brand p{margin:2px 0 0;color:var(--muted);font-size:.9rem}
+    .actions{display:flex;gap:10px;flex-wrap:wrap}
+    .btn{border:0;border-radius:12px;padding:12px 14px;font-weight:800;cursor:pointer}
+    .btn-primary{background:linear-gradient(135deg,var(--accent),#ff7d7d);color:#fff}
+    .btn-secondary{background:rgba(255,255,255,.06);color:var(--text);border:var(--border)}
+    .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:18px}
+    .card{background:linear-gradient(180deg,var(--panel),var(--panel-2));border:var(--border);border-radius:20px;padding:18px;box-shadow:var(--shadow)}
+    .kpi .label{color:var(--muted);font-size:.85rem}
+    .kpi .value{font-size:2rem;font-weight:900;margin-top:8px}
+    .kpi .hint{margin-top:6px;font-size:.82rem;color:var(--muted)}
+    .layout{display:grid;grid-template-columns:1.3fr .9fr;gap:18px}
+    .section{background:linear-gradient(180deg,var(--panel),var(--panel-2));border:var(--border);border-radius:20px;padding:18px;box-shadow:var(--shadow)}
+    .section h2{margin:0 0 14px;font-size:1.05rem;display:flex;align-items:center;gap:10px}
+    .chart{display:flex;gap:10px;align-items:flex-end;height:220px;padding:12px 0 4px}
+    .bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px}
+    .bar{width:100%;min-height:24px;border-radius:12px 12px 6px 6px;background:linear-gradient(180deg,#ff8a6b,#ff5f6b);box-shadow:0 8px 18px rgba(255,107,107,.25)}
+    .bar small{display:block;padding-top:4px;color:var(--muted);font-size:.72rem}
+    .inventory-toolbar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+    .input{background:rgba(255,255,255,.04);border:var(--border);border-radius:12px;padding:11px 12px;color:var(--text);outline:none}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:12px 10px;text-align:left;border-bottom:1px solid rgba(255,255,255,.06)}
+    th{color:var(--muted);font-size:.8rem;text-transform:uppercase;letter-spacing:.04em}
+    .pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;font-size:.78rem;font-weight:800}
+    .pill.good{background:rgba(52,211,153,.14);color:var(--good)}
+    .pill.warn{background:rgba(251,191,36,.14);color:var(--warn)}
+    .pill.bad{background:rgba(251,113,133,.14);color:var(--bad)}
+    .mini-btn{border:0;border-radius:10px;padding:9px 10px;font-weight:800;cursor:pointer}
+    .mini-edit{background:rgba(255,255,255,.08);color:var(--text)}
+    .mini-off{background:rgba(251,113,133,.16);color:#ffd8df}
+    .mini-on{background:rgba(52,211,153,.16);color:#d6ffef}
+    .order-list{display:grid;gap:10px}
+    .order{background:rgba(255,255,255,.04);border:var(--border);border-radius:14px;padding:14px}
+    .order-top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+    .muted{color:var(--muted)}
+    .login{position:fixed;inset:0;background:rgba(5,6,14,.94);display:flex;align-items:center;justify-content:center;z-index:20;padding:16px}
+    .login-card{width:min(420px,100%);background:var(--panel);border:var(--border);border-radius:20px;padding:22px;box-shadow:var(--shadow)}
+    .login-card h2{margin:0 0 8px}
+    .login-card p{margin:0 0 14px;color:var(--muted);font-size:.95rem}
+    .login-error{min-height:20px;color:var(--bad);font-size:.9rem;margin-top:8px}
+    .hidden{display:none!important}
+    @media(max-width:1100px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.layout{grid-template-columns:1fr}}
+    @media(max-width:640px){.grid{grid-template-columns:1fr}.topbar{flex-direction:column;align-items:flex-start}}
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>🍻 Depósito El Compa</h1>
-    <p>Redirigiendo al integrador interno...</p>
-    <p>Si no carga solo, entra aquí: <a href="./integrador.html">Abrir integrador</a></p>
+  <div id="loginOverlay" class="login">
+    <div class="login-card">
+      <h2>🍻 Depósito El Compa</h2>
+      <p>Acceso del dueño: KPIs, inventario, precios y resultados en vivo.</p>
+      <input id="pin" class="input" type="password" placeholder="PIN de admin" autocomplete="current-password">
+      <button id="loginBtn" class="btn btn-primary" style="width:100%;margin-top:10px;">Entrar</button>
+      <div id="loginError" class="login-error"></div>
+    </div>
   </div>
+
+  <div class="shell">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo">🍻</div>
+        <div>
+          <h1>Depósito El Compa · Admin</h1>
+          <p>Dueño / métricas / inventario / control</p>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-secondary" id="refreshBtn"><i class="fa-solid fa-rotate"></i> Refrescar</button>
+        <a class="btn btn-secondary" href="./integrador.html" style="text-decoration:none;display:inline-flex;align-items:center;gap:8px;"><i class="fa-solid fa-grid-2"></i> Ir al integrador</a>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card kpi"><div class="label">Pedidos hoy</div><div class="value" id="kpiPedidos">0</div><div class="hint">Entradas reales desde Apps Script</div></div>
+      <div class="card kpi"><div class="label">Ventas hoy</div><div class="value" id="kpiVentas">$0</div><div class="hint">Sólo pedidos entregados</div></div>
+      <div class="card kpi"><div class="label">Inventario total</div><div class="value" id="kpiStock">0</div><div class="hint">Unidades disponibles</div></div>
+      <div class="card kpi"><div class="label">Alertas</div><div class="value" id="kpiAlertas">0</div><div class="hint">Agotados + bajo stock</div></div>
+    </div>
+
+    <div class="layout">
+      <div class="section">
+        <h2><i class="fa-solid fa-chart-column"></i> Ventas por estado</h2>
+        <div class="chart" id="statusChart"></div>
+      </div>
+      <div class="section">
+        <h2><i class="fa-solid fa-list-check"></i> Solicitudes recientes</h2>
+        <div class="order-list" id="recentOrders"></div>
+      </div>
+    </div>
+
+    <div class="section" style="margin-top:18px;">
+      <div class="inventory-toolbar">
+        <h2 style="margin:0"><i class="fa-solid fa-boxes-stacked"></i> Inventario</h2>
+        <button class="btn btn-primary" id="addProductBtn"><i class="fa-solid fa-plus"></i> Agregar producto</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Precio</th>
+            <th>Stock</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="inventoryTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="productModal" class="login hidden" style="z-index:30;">
+    <div class="login-card" style="max-width:520px;width:min(520px,100%);">
+      <h2>Nuevo producto</h2>
+      <p>Se guardará en el inventario real del depósito.</p>
+      <div style="display:grid;gap:10px;">
+        <input id="pNombre" class="input" placeholder="Nombre">
+        <input id="pPrecio" class="input" type="number" min="0" step="0.01" placeholder="Precio">
+        <input id="pStock" class="input" type="number" min="0" step="1" placeholder="Stock">
+        <select id="pCategoria" class="input">
+          <option value="cerveza">Cerveza</option>
+          <option value="botana">Botana</option>
+          <option value="otros">Otros</option>
+        </select>
+        <input id="pImagen" class="input" placeholder="imagen.png">
+        <input id="pIcono" class="input" placeholder="Icono fallback">
+      </div>
+      <div style="display:flex;gap:10px;margin-top:12px;">
+        <button id="saveProductBtn" class="btn btn-primary" style="flex:1;">Guardar</button>
+        <button id="closeProductBtn" class="btn btn-secondary" style="flex:1;">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    window.DEPOSITO_GAS_URL = 'https://script.google.com/macros/s/AKfycbw36LgiUW3Mp7ezvsQKcaDOAITZSryrMLdOXf0zu-8AtORq8l_0lwWkMu8RLYaS24ZZ/exec';
+  </script>
+  <script src="./js/deposito-api.js"></script>
+  <script>
+    const PIN = '1234';
+    const TOKEN_KEY = 'DEPOSITO_ADMIN_TOKEN';
+    const modal = document.getElementById('productModal');
+    const loginOverlay = document.getElementById('loginOverlay');
+    const loginError = document.getElementById('loginError');
+    const pinInput = document.getElementById('pin');
+    let dashboard = null;
+    let products = [];
+
+    function api() {
+      return window.DEPOSITO_API;
+    }
+
+    function setAuth(token) {
+      localStorage.setItem(TOKEN_KEY, token);
+      api().setConfig({ endpoint: window.DEPOSITO_GAS_URL, token });
+    }
+
+    async function login() {
+      const cached = localStorage.getItem(TOKEN_KEY);
+      if (cached) {
+        setAuth(cached);
+        loginOverlay.classList.add('hidden');
+        return cached;
+      }
+      const entered = (pinInput.value || '').trim();
+      if (entered !== PIN) {
+        loginError.textContent = 'PIN incorrecto';
+        return null;
+      }
+      const res = await api().get(`?action=login&role=admin&pin=${encodeURIComponent(PIN)}&t=${Date.now()}`);
+      if (!res.ok || !res.token) {
+        loginError.textContent = res.error || 'No se pudo autenticar';
+        return null;
+      }
+      setAuth(res.token);
+      loginOverlay.classList.add('hidden');
+      return res.token;
+    }
+
+    function money(v) {
+      return Number(v || 0).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
+    }
+
+    function statusBadge(status) {
+      const s = String(status || 'nuevo').toLowerCase();
+      const map = {
+        nuevo: ['Nuevo', 'warn'],
+        aceptado: ['Aceptado', 'good'],
+        listo: ['Listo', 'good'],
+        en_hieleras: ['En hieleras', 'warn'],
+        en_ruta: ['En ruta', 'warn'],
+        entregado: ['Entregado', 'good'],
+        archivado: ['Archivado', 'bad'],
+        cancelado: ['Cancelado', 'bad']
+      };
+      const [label, tone] = map[s] || [s, 'warn'];
+      return `<span class="pill ${tone}">${label}</span>`;
+    }
+
+    async function loadData() {
+      const token = await login();
+      if (!token) return;
+      dashboard = await api().get(`?action=dashboard&t=${Date.now()}`);
+      products = await api().get(`?action=productos&t=${Date.now()}`);
+      const dash = dashboard.data || {};
+      const pedidos = dash.recientes || [];
+      document.getElementById('kpiPedidos').textContent = dash.pedidosHoy || 0;
+      document.getElementById('kpiVentas').textContent = money(dash.ventasHoy || 0);
+      document.getElementById('kpiStock').textContent = dash.inventarioTotal || 0;
+      document.getElementById('kpiAlertas').textContent = Number(dash.agotados || 0) + Number(dash.bajos || 0);
+      renderChart(dash.estadoPedidos || {});
+      renderRecent(pedidos);
+      renderInventory((products.data || []));
+    }
+
+    function renderChart(states) {
+      const chart = document.getElementById('statusChart');
+      const pairs = Object.entries(states);
+      chart.innerHTML = pairs.length ? pairs.map(([k, v]) => {
+        const height = Math.max(14, Math.min(100, v * 20));
+        return `<div class="bar-wrap"><div class="bar" style="height:${height}%"></div><small>${k.replaceAll('_',' ')}</small><small>${v}</small></div>`;
+      }).join('') : '<div class="muted">Sin pedidos todavía</div>';
+    }
+
+    function renderRecent(rows) {
+      const container = document.getElementById('recentOrders');
+      container.innerHTML = rows.length ? rows.map(r => `
+        <div class="order">
+          <div class="order-top">
+            <div>
+              <strong>#${String(r.id || '').slice(-4)}</strong>
+              <div class="muted">${r.cliente || 'Sin cliente'} · ${r.telefono || ''}</div>
+            </div>
+            ${statusBadge(r.estado)}
+          </div>
+          <div class="muted" style="margin-top:8px;">${r.direccion || ''}</div>
+          <div style="margin-top:10px;font-weight:800;">${money(r.total)}</div>
+        </div>
+      `).join('') : '<div class="muted">No hay pedidos recientes.</div>';
+    }
+
+    function renderInventory(rows) {
+      const tbody = document.getElementById('inventoryTable');
+      tbody.innerHTML = rows.map(p => {
+        const stock = Number(p.stock || 0);
+        const tone = stock <= 0 ? 'bad' : stock < 20 ? 'warn' : 'good';
+        return `<tr>
+          <td><strong>${p.nombre || ''}</strong><div class="muted" style="font-size:.85rem;">${p.categoria || ''}</div></td>
+          <td>${money(p.precio)}</td>
+          <td>${stock}</td>
+          <td><span class="pill ${tone}">${stock <= 0 ? 'Agotado' : stock < 20 ? 'Bajo stock' : 'Disponible'}</span></td>
+          <td style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="mini-btn mini-edit" onclick='editProduct(${JSON.stringify(p).replace(/'/g, "&apos;")})'>Editar</button>
+            <button class="mini-btn ${String(p.activo).toLowerCase() === "true" ? "mini-off" : "mini-on"}" onclick='toggleProduct("${p.id}")'>${String(p.activo).toLowerCase() === "true" ? "Desactivar" : "Activar"}</button>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    function openModal() { modal.classList.remove('hidden'); }
+    function closeModal() { modal.classList.add('hidden'); }
+
+    function editProduct(p) {
+      openModal();
+      document.getElementById('pNombre').value = p.nombre || '';
+      document.getElementById('pPrecio').value = p.precio || 0;
+      document.getElementById('pStock').value = p.stock || 0;
+      document.getElementById('pCategoria').value = p.categoria || 'otros';
+      document.getElementById('pImagen').value = p.imagen_url || '';
+      document.getElementById('pIcono').value = p.icon || '';
+      modal.dataset.editId = p.id;
+    }
+
+    async function saveProduct() {
+      const payload = {
+        nombre: document.getElementById('pNombre').value.trim(),
+        precio: Number(document.getElementById('pPrecio').value || 0),
+        stock: Number(document.getElementById('pStock').value || 0),
+        categoria: document.getElementById('pCategoria').value,
+        imagen_url: document.getElementById('pImagen').value.trim(),
+        icon: document.getElementById('pIcono').value.trim(),
+        activo: true
+      };
+      const editId = modal.dataset.editId;
+      if (editId) {
+        await api().post('?action=productoActualizar', { id: editId, ...payload });
+      } else {
+        await api().post('?action=productoGuardar', payload);
+      }
+      modal.dataset.editId = '';
+      closeModal();
+      await loadData();
+    }
+
+    async function toggleProduct(id) {
+      await api().post('?action=productoToggle', { id });
+      await loadData();
+    }
+
+    document.getElementById('loginBtn').addEventListener('click', loadData);
+    pinInput.addEventListener('keydown', e => { if (e.key === 'Enter') loadData(); });
+    document.getElementById('refreshBtn').addEventListener('click', loadData);
+    document.getElementById('addProductBtn').addEventListener('click', () => {
+      modal.dataset.editId = '';
+      document.getElementById('pNombre').value = '';
+      document.getElementById('pPrecio').value = '';
+      document.getElementById('pStock').value = '';
+      document.getElementById('pCategoria').value = 'cerveza';
+      document.getElementById('pImagen').value = '';
+      document.getElementById('pIcono').value = '🍺';
+      openModal();
+    });
+    document.getElementById('closeProductBtn').addEventListener('click', closeModal);
+    document.getElementById('saveProductBtn').addEventListener('click', async e => { e.preventDefault(); await saveProduct(); });
+    modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+    if (localStorage.getItem(TOKEN_KEY)) {
+      loginOverlay.classList.add('hidden');
+      api().setConfig({ endpoint: window.DEPOSITO_GAS_URL, token: localStorage.getItem(TOKEN_KEY) });
+      loadData();
+    }
+  </script>
 </body>
 </html>

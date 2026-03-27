@@ -25,10 +25,14 @@ Este archivo contiene el backend base para pegar en un proyecto de Apps Script.
 
 - `GET action=health`
 - `GET action=productos`
+- `GET action=dashboard`
 - `GET action=pedidos`
 - `GET action=repartidores`
 - `POST action=login`
 - `POST action=pedidos`
+- `POST action=productoGuardar`
+- `POST action=productoActualizar`
+- `POST action=productoToggle`
 - `POST action=aceptarPedido`
 - `POST action=rechazarPedido`
 - `POST action=pedidoListo`

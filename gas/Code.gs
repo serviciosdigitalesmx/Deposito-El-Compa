@@ -164,6 +164,8 @@ function handleRequest(method, e) {
       return setup();
     case 'GET:productos':
       return listSheet(SHEETS.productos);
+    case 'GET:dashboard':
+      return getDashboard(params);
     case 'GET:pedidos':
       return listPedidos(params, token);
     case 'GET:justificaciones':
@@ -178,6 +180,12 @@ function handleRequest(method, e) {
       return login(body);
     case 'POST:pedidos':
       return createPedido(body, token);
+    case 'POST:productoGuardar':
+      return saveProduct(body, token);
+    case 'POST:productoActualizar':
+      return updateProduct(body, token);
+    case 'POST:productoToggle':
+      return toggleProduct(body, token);
     case 'POST:aceptarPedido':
       return updatePedidoStatus(body.id, 'aceptado', body, token);
     case 'POST:rechazarPedido':
@@ -307,6 +315,49 @@ function listPedidos(params) {
   };
 }
 
+function getDashboard(params) {
+  const pedidos = listSheet(SHEETS.pedidos).data || [];
+  const products = listSheet(SHEETS.productos).data || [];
+  const archivados = listSheet(SHEETS.archivoPedidos).data || [];
+  const hoy = new Date();
+  const todayKey = hoy.toISOString().slice(0, 10);
+  const pedidosHoy = pedidos.filter(p => String(p.fecha_hora || '').slice(0, 10) === todayKey);
+  const vendidosHoy = pedidosHoy.filter(p => String(p.estado || '').toLowerCase() === 'entregado').reduce((sum, p) => sum + Number(p.total || 0), 0);
+  const inventarioTotal = products.reduce((sum, p) => sum + Number(p.stock || 0), 0);
+  const agotados = products.filter(p => Number(p.stock || 0) <= 0).length;
+  const bajos = products.filter(p => Number(p.stock || 0) > 0 && Number(p.stock || 0) < 20).length;
+  const byState = pedidos.reduce((acc, p) => {
+    const key = String(p.estado || 'nuevo').toLowerCase();
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
+  const recentOrders = pedidos
+    .slice()
+    .sort((a, b) => String(b.updated_at || b.fecha_hora || '').localeCompare(String(a.updated_at || a.fecha_hora || '')))
+    .slice(0, 8);
+  const topProducts = products
+    .slice()
+    .sort((a, b) => Number(b.stock || 0) - Number(a.stock || 0))
+    .slice(0, 5);
+
+  return {
+    ok: true,
+    data: {
+      pedidosHoy: pedidosHoy.length,
+      ventasHoy: Number(vendidosHoy.toFixed(2)),
+      inventarioTotal,
+      agotados,
+      bajos,
+      estadoPedidos: byState,
+      recientes: recentOrders,
+      productos: products,
+      topProducts,
+      archivados: archivados.length,
+      since: params.since || ''
+    }
+  };
+}
+
 function login(body) {
   const role = String(body.role || '').trim();
   const pin = String(body.pin || '').trim();
@@ -410,6 +461,74 @@ function createPedido(body, token) {
       lock.releaseLock();
     } catch (_) {}
   }
+}
+
+function saveProduct(body, token) {
+  return withDocumentLock(function() {
+    requireAuth(token, ['admin']);
+    const sheet = getSheet(SHEETS.productos);
+    ensureProductHeaders(sheet);
+    const id = Utilities.getUuid();
+    const now = new Date().toISOString();
+    const row = normalizeProductBody(body);
+    sheet.appendRow([
+      id,
+      row.nombre,
+      row.precio,
+      row.stock,
+      row.categoria,
+      row.imagen_url,
+      row.activo,
+      now
+    ]);
+    return { ok: true, id };
+  }, 12000);
+}
+
+function updateProduct(body, token) {
+  return withDocumentLock(function() {
+    requireAuth(token, ['admin']);
+    const id = String(body.id || '').trim();
+    if (!id) throw new Error('id requerido');
+    const sheet = getSheet(SHEETS.productos);
+    ensureProductHeaders(sheet);
+    const data = sheet.getDataRange().getValues();
+    const headers = data.shift();
+    const idx = headers.indexOf('id');
+    const rowIndex = data.findIndex(r => String(r[idx]) === id);
+    if (rowIndex < 0) throw new Error('Producto no encontrado');
+    const row = normalizeProductBody(body);
+    const sheetRow = rowIndex + 2;
+    sheet.getRange(sheetRow, headers.indexOf('nombre') + 1).setValue(row.nombre);
+    sheet.getRange(sheetRow, headers.indexOf('precio') + 1).setValue(row.precio);
+    sheet.getRange(sheetRow, headers.indexOf('stock') + 1).setValue(row.stock);
+    sheet.getRange(sheetRow, headers.indexOf('categoria') + 1).setValue(row.categoria);
+    sheet.getRange(sheetRow, headers.indexOf('imagen_url') + 1).setValue(row.imagen_url);
+    sheet.getRange(sheetRow, headers.indexOf('activo') + 1).setValue(row.activo);
+    sheet.getRange(sheetRow, headers.indexOf('updated_at') + 1).setValue(new Date().toISOString());
+    return { ok: true, id };
+  }, 12000);
+}
+
+function toggleProduct(body, token) {
+  return withDocumentLock(function() {
+    requireAuth(token, ['admin']);
+    const id = String(body.id || '').trim();
+    if (!id) throw new Error('id requerido');
+    const sheet = getSheet(SHEETS.productos);
+    ensureProductHeaders(sheet);
+    const data = sheet.getDataRange().getValues();
+    const headers = data.shift();
+    const idx = headers.indexOf('id');
+    const rowIndex = data.findIndex(r => String(r[idx]) === id);
+    if (rowIndex < 0) throw new Error('Producto no encontrado');
+    const sheetRow = rowIndex + 2;
+    const activeIdx = headers.indexOf('activo') + 1;
+    const current = String(sheet.getRange(sheetRow, activeIdx).getValue() || 'true').toLowerCase() === 'true';
+    sheet.getRange(sheetRow, activeIdx).setValue(current ? 'false' : 'true');
+    sheet.getRange(sheetRow, headers.indexOf('updated_at') + 1).setValue(new Date().toISOString());
+    return { ok: true, id, activo: !current };
+  }, 12000);
 }
 
 function updatePedidoStatus(id, estado, body, token) {
@@ -631,6 +750,32 @@ function saveCierreCaja(body, token) {
     sheet.appendRow([id, new Date().toISOString(), totalEfectivo, totalTarjeta, totalTransfer, String(body.observaciones || '').trim(), session.nombre]);
     return { ok: true, id };
   }, 12000);
+}
+
+function ensureProductHeaders(sheet) {
+  const headers = ['id', 'nombre', 'precio', 'stock', 'categoria', 'imagen_url', 'activo', 'updated_at'];
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(headers);
+    return;
+  }
+  if (sheet.getLastRow() === 1) {
+    const existing = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    if (existing.join('|') !== headers.join('|')) {
+      sheet.clear();
+      sheet.appendRow(headers);
+    }
+  }
+}
+
+function normalizeProductBody(body) {
+  return {
+    nombre: String(body.nombre || body.name || '').trim(),
+    precio: Number(body.precio || body.price || 0),
+    stock: Number(body.stock || 0),
+    categoria: String(body.categoria || body.category || 'otros').trim(),
+    imagen_url: String(body.imagen_url || body.image || '').trim(),
+    activo: String(body.activo !== undefined ? body.activo : true).toLowerCase()
+  };
 }
 
 function appendJustificacionRow(payload) {
