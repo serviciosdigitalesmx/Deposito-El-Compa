@@ -32,32 +32,29 @@
   }
 
   function postViaForm(url, body, token) {
-    return new Promise((resolve, reject) => {
-      const payload = {
-        ...body,
-        token: token || defaultConfig.token || '',
-        header_token: token || defaultConfig.token || '',
-      };
-      const raw = JSON.stringify(payload);
+    const payload = {
+      ...body,
+      token: token || defaultConfig.token || '',
+      header_token: token || defaultConfig.token || '',
+    };
+    const raw = JSON.stringify(payload);
 
-      try {
-        if (navigator.sendBeacon) {
-          const ok = navigator.sendBeacon(url, new Blob([raw], { type: 'text/plain;charset=utf-8' }));
-          if (ok) {
-            setTimeout(() => resolve({ ok: true }), 0);
-            return;
-          }
-        }
-      } catch (error) {
-        // fall through to fetch
+    return fetch(url, {
+      method: 'POST',
+      mode: 'cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: raw,
+      credentials: 'omit',
+    }).then(async (response) => {
+      const contentType = response.headers.get('content-type') || '';
+      const data = contentType.includes('application/json')
+        ? await response.json()
+        : await response.text();
+      if (!response.ok) {
+        const message = typeof data === 'string' ? data : data.error || data.message || `HTTP ${response.status}`;
+        throw new Error(message);
       }
-
-      fetch(url, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: raw,
-      }).then(() => resolve({ ok: true })).catch(reject);
+      return data;
     });
   }
 
