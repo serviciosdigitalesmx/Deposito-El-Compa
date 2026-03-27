@@ -207,6 +207,14 @@
       });
     }
 
+    async function archiveOrder(id, button) {
+      await withButtonFeedback(button, 'Archivando...', async () => {
+        await window.DEPOSITO_API.post('?action=archivarPedido', { id });
+        showToast('Pedido archivado');
+        await load(true);
+      });
+    }
+
     function userFilter(row) {
       const estado = String(row.estado || row.status || '').toLowerCase();
       const assigned = String(row.repartidor_id || '').trim();
@@ -254,6 +262,7 @@
               <div class="actions">
                 <button class="primary" onclick="markRoute('${order.id}', this)">En ruta</button>
                 <button class="success" onclick="markDelivered('${order.id}', this)">Entregado</button>
+                <button class="secondary" onclick="archiveOrder('${order.id}', this)">Archivar</button>
                 ${phone ? `<button class="secondary" onclick="window.open('${waLink(order)}','_blank')">WhatsApp</button>` : ''}
               </div>
             </article>
