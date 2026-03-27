@@ -97,6 +97,8 @@
     const AUTH_PIN = '2222';
     const AUTH_TOKEN_KEY = 'DEPOSITO_GAS_TOKEN_REPARTIDOR';
     const AUTH_USER_KEY = 'DEPOSITO_GAS_USER_REPARTIDOR';
+    const OFFLINE_CACHE_KEY = 'DEPOSITO_REPARTIDOR_CACHE_V1';
+    const OFFLINE_PATCH_KEY = 'DEPOSITO_REPARTIDOR_PATCHES_V1';
     const list = document.getElementById('list');
     const toast = document.getElementById('toast');
     let lastSignature = '';
@@ -187,6 +189,34 @@
       return rows.map(r => `${r.id}|${r.estado || r.status || ''}|${r.updated_at || ''}`).join('||');
     }
 
+    function loadOfflinePatches() {
+      try {
+        return JSON.parse(localStorage.getItem(OFFLINE_PATCH_KEY) || '[]');
+      } catch (_) {
+        return [];
+      }
+    }
+
+    function saveOfflinePatches(patches) {
+      localStorage.setItem(OFFLINE_PATCH_KEY, JSON.stringify(patches || []));
+    }
+
+    function upsertOfflinePatch(orderId, estado) {
+      const patches = loadOfflinePatches().filter(p => String(p.id) !== String(orderId));
+      patches.push({ id: String(orderId), estado: String(estado), updated_at: new Date().toISOString() });
+      saveOfflinePatches(patches);
+    }
+
+    function applyOfflinePatches(rows) {
+      const patches = loadOfflinePatches();
+      if (!patches.length) return rows;
+      const map = new Map(patches.map(p => [String(p.id), p]));
+      return rows.map(row => {
+        const patch = map.get(String(row.id));
+        return patch ? { ...row, estado: patch.estado, updated_at: patch.updated_at || row.updated_at } : row;
+      });
+    }
+
     function waLink(order) {
       const phone = String(order.telefono || order.phone || '').replace(/\D/g, '');
       if (!phone) return '';
@@ -196,8 +226,13 @@
 
     async function markRoute(id, button) {
       await withButtonFeedback(button, 'Marcando...', async () => {
-        await window.DEPOSITO_API.post('?action=enRuta', { id, estado: 'en_ruta' });
-        showToast('Pedido marcado en ruta');
+        const res = await window.DEPOSITO_API.post('?action=enRuta', { id, estado: 'en_ruta' });
+        if (res && res.queued) {
+          upsertOfflinePatch(id, 'en_ruta');
+          showToast('Guardado sin conexión. Se sincronizará cuando vuelva Internet.');
+        } else {
+          showToast('Pedido marcado en ruta');
+        }
         await new Promise(resolve => setTimeout(resolve, 250));
         await load(true);
       });
@@ -205,8 +240,13 @@
 
     async function markDelivered(id, button) {
       await withButtonFeedback(button, 'Entregando...', async () => {
-        await window.DEPOSITO_API.post('?action=entregado', { id, estado: 'entregado' });
-        showToast('Pedido entregado');
+        const res = await window.DEPOSITO_API.post('?action=entregado', { id, estado: 'entregado' });
+        if (res && res.queued) {
+          upsertOfflinePatch(id, 'pendiente_corte');
+          showToast('Guardado sin conexión. Se sincronizará cuando vuelva Internet.');
+        } else {
+          showToast('Pedido entregado');
+        }
         await new Promise(resolve => setTimeout(resolve, 350));
         await load(true);
       });
@@ -223,8 +263,20 @@
       try {
         await ensureAuth();
         document.getElementById('login-screen').style.display = 'none';
-        const res = await window.DEPOSITO_API.get('?action=pedidos&t=' + Date.now());
-        const rows = Array.isArray(res.data) ? res.data : [];
+        let rows = [];
+        try {
+          const res = await window.DEPOSITO_API.get('?action=pedidos&t=' + Date.now());
+          rows = Array.isArray(res.data) ? res.data : [];
+          localStorage.setItem(OFFLINE_CACHE_KEY, JSON.stringify(rows));
+        } catch (error) {
+          try {
+            rows = JSON.parse(localStorage.getItem(OFFLINE_CACHE_KEY) || '[]');
+            if (rows.length) showToast('Sin internet: mostrando último estado guardado');
+          } catch (_) {
+            rows = [];
+          }
+        }
+        rows = applyOfflinePatches(rows);
         currentUser = currentUser || JSON.parse(localStorage.getItem('DEPOSITO_GAS_USER') || 'null');
         const filtered = rows.filter(userFilter);
         const sig = signature(filtered);
@@ -272,6 +324,15 @@
     document.getElementById('master-login-btn').addEventListener('click', unlock);
     document.getElementById('master-password').addEventListener('keydown', (e) => { if (e.key === 'Enter') unlock(); });
     document.getElementById('btn-refresh').addEventListener('click', () => load(true));
+    window.addEventListener('online', async () => {
+      try {
+        const sync = await window.DEPOSITO_API.syncQueue();
+        if (sync && sync.flushed) {
+          showToast(`Sincronizad${sync.flushed === 1 ? 'o' : 'os'}: ${sync.flushed} envío${sync.flushed === 1 ? '' : 's'}`);
+        }
+      } catch (_) {}
+      load(true);
+    });
     setInterval(() => load(false), 15000);
   </script>
 </body>

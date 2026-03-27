@@ -4,6 +4,74 @@
     token: global.DEPOSITO_GAS_TOKEN || '',
     timeoutMs: 12000,
   };
+  const QUEUE_KEY = 'DEPOSITO_API_POST_QUEUE_V1';
+
+  function loadQueue() {
+    try {
+      const raw = global.localStorage ? global.localStorage.getItem(QUEUE_KEY) : '[]';
+      const parsed = JSON.parse(raw || '[]');
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  function saveQueue(queue) {
+    try {
+      if (global.localStorage) {
+        global.localStorage.setItem(QUEUE_KEY, JSON.stringify(queue || []));
+      }
+    } catch (_) {}
+  }
+
+  function enqueuePost(url, body, token) {
+    const queue = loadQueue();
+    const item = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      url,
+      body,
+      token: token || defaultConfig.token || '',
+      createdAt: new Date().toISOString(),
+    };
+    queue.push(item);
+    saveQueue(queue);
+    return item;
+  }
+
+  async function flushQueue() {
+    const queue = loadQueue();
+    if (!queue.length) return { ok: true, flushed: 0 };
+    const remaining = [];
+    let flushed = 0;
+    for (const item of queue) {
+      try {
+        const response = await fetch(item.url, {
+          method: 'POST',
+          mode: 'cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            ...(item.body || {}),
+            token: item.token,
+            header_token: item.token,
+            __offline_sync: true,
+          }),
+          credentials: 'omit',
+        });
+        const contentType = response.headers.get('content-type') || '';
+        const data = contentType.includes('application/json') ? await response.json() : await response.text();
+        if (!response.ok) {
+          throw new Error(typeof data === 'string' ? data : data.error || data.message || `HTTP ${response.status}`);
+        }
+        flushed += 1;
+      } catch (error) {
+        remaining.push(item);
+        // Stop on first failure to preserve ordering.
+        break;
+      }
+    }
+    saveQueue(remaining.concat(queue.slice(flushed + remaining.length)));
+    return { ok: true, flushed, remaining: loadQueue().length };
+  }
 
   function buildUrl(path) {
     const base = (global.DEPOSITO_API && global.DEPOSITO_API.endpoint) || defaultConfig.endpoint;
@@ -39,6 +107,11 @@
     };
     const raw = JSON.stringify(payload);
 
+    if (global.navigator && global.navigator.onLine === false) {
+      enqueuePost(url, body, token);
+      return Promise.resolve({ ok: true, queued: true, offline: true });
+    }
+
     return fetch(url, {
       method: 'POST',
       mode: 'cors',
@@ -55,6 +128,13 @@
         throw new Error(message);
       }
       return data;
+    }).catch((error) => {
+      const isNetworkLike = !error || /network|fetch|failed to fetch|load failed|connection/i.test(String(error.message || error));
+      if (isNetworkLike) {
+        enqueuePost(url, body, token);
+        return { ok: true, queued: true, offline: true };
+      }
+      throw error;
     });
   }
 
@@ -76,5 +156,15 @@
     del(path, opts) {
       return request(path, { ...opts, method: 'DELETE' });
     },
+    syncQueue: flushQueue,
+    queueLength() {
+      return loadQueue().length;
+    },
   };
+
+  if (global.addEventListener) {
+    global.addEventListener('online', () => {
+      flushQueue().catch(() => {});
+    });
+  }
 })(window);
