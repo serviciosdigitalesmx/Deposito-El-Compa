@@ -3,9 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#ff6b6b">
   <title>Depósito El Compa - Solicitudes</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="css/deposito-unified.css">
+  <link rel="manifest" href="manifest.json">
   <style>
     :root{--bg:#12141f;--panel:#1b1f2f;--panel-2:#262a3d;--text:#f3f4f6;--muted:#97a0b3;--accent:#ff6b6b;--accent-2:#4ecdc4;--warn:#fbbf24;--danger:#f87171;--shadow:0 12px 30px rgba(0,0,0,.25)}
     *{box-sizing:border-box}
@@ -84,6 +86,7 @@
     window.DEPOSITO_GAS_URL = 'https://script.google.com/macros/s/AKfycbw36LgiUW3Mp7ezvsQKcaDOAITZSryrMLdOXf0zu-8AtORq8l_0lwWkMu8RLYaS24ZZ/exec';
   </script>
   <script src="./js/deposito-api.js"></script>
+  <script src="./js/deposito-notifications.js"></script>
   <script>
     const AUTH_ROLE = 'caja';
     const AUTH_PIN = '3333';
@@ -92,6 +95,7 @@
     const toast = document.getElementById('toast');
     let pollTimer = null;
     let lastSignature = '';
+    let lastVisibleCount = 0;
     let busyCount = 0;
 
     function setApiAuth(token) {
@@ -121,6 +125,12 @@
       toast.classList.add('show');
       clearTimeout(showToast._t);
       showToast._t = setTimeout(() => toast.classList.remove('show'), ms);
+    }
+
+    function pingNewOrder() {
+      if (window.DepositoPWA) {
+        window.DepositoPWA.notifyUser('Pedido nuevo', 'Llegó una solicitud nueva a caja.', 'urgent');
+      }
     }
 
     function setBusy(on) {
@@ -177,9 +187,14 @@
         const res = await window.DEPOSITO_API.get('?action=pedidos&t=' + Date.now());
         const rows = Array.isArray(res.data) ? res.data : [];
         const visible = rows.filter(r => String(r.estado || r.status || 'nuevo').toLowerCase() === 'nuevo');
+        const previousVisibleCount = lastVisibleCount;
         const sig = signature(visible);
         if (!force && sig === lastSignature) return;
+        if (lastSignature && sig !== lastSignature && visible.length > previousVisibleCount) {
+          pingNewOrder();
+        }
         lastSignature = sig;
+        lastVisibleCount = visible.length;
 
         const proceso = rows.filter(r => ['aceptado', 'en_hieleras'].includes(String(r.estado || r.status || '').toLowerCase())).length;
         const listo = rows.filter(r => ['listo', 'en_hieleras'].includes(String(r.estado || r.status || '').toLowerCase())).length;
@@ -222,6 +237,10 @@
     }
 
     document.getElementById('btn-refresh').addEventListener('click', () => load(true));
+    if (window.DepositoPWA) {
+      window.DepositoPWA.registerSW();
+      window.DepositoPWA.requestPermission();
+    }
     load(true);
     pollTimer = setInterval(() => load(false), 15000);
   </script>

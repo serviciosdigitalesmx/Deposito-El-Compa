@@ -1,0 +1,22 @@
+{
+  "name": "Depósito El Compa",
+  "short_name": "El Compa",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#12141f",
+  "theme_color": "#ff6b6b",
+  "description": "Pedidos, caja, hieleras y reparto para Depósito El Compa.",
+  "icons": [
+    {
+      "src": "./assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

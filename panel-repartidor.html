@@ -92,6 +92,7 @@
     window.DEPOSITO_GAS_URL = 'https://script.google.com/macros/s/AKfycbw36LgiUW3Mp7ezvsQKcaDOAITZSryrMLdOXf0zu-8AtORq8l_0lwWkMu8RLYaS24ZZ/exec';
   </script>
   <script src="./js/deposito-api.js"></script>
+  <script src="./js/deposito-notifications.js"></script>
   <script>
     const AUTH_ROLE = 'repartidor';
     const AUTH_PIN = '2222';
@@ -103,6 +104,7 @@
     const toast = document.getElementById('toast');
     let lastSignature = '';
     let busyCount = 0;
+    let lastFilteredCount = 0;
     let currentUser = null;
 
     function setApiAuth(token) {
@@ -154,6 +156,12 @@
       toast.classList.add('show');
       clearTimeout(showToast._t);
       showToast._t = setTimeout(() => toast.classList.remove('show'), ms);
+    }
+
+    function pingDeliveryAlert(message, type = 'info') {
+      if (window.DepositoPWA) {
+        window.DepositoPWA.notifyUser('Repartidor', message, type);
+      }
     }
 
     function setBusy(on) {
@@ -233,6 +241,7 @@
         } else {
           showToast('Pedido marcado en ruta');
         }
+        pingDeliveryAlert('Marcaste un pedido en ruta.', 'info');
         await new Promise(resolve => setTimeout(resolve, 250));
         await load(true);
       });
@@ -247,6 +256,7 @@
         } else {
           showToast('Pedido entregado');
         }
+        pingDeliveryAlert('Pedido entregado. Pendiente de corte.', 'success');
         await new Promise(resolve => setTimeout(resolve, 350));
         await load(true);
       });
@@ -281,7 +291,11 @@
         const filtered = rows.filter(userFilter);
         const sig = signature(filtered);
         if (!force && sig === lastSignature) return;
+        if (lastSignature && sig !== lastSignature && filtered.length > lastFilteredCount) {
+          pingDeliveryAlert('Llegó o cambió un pedido asignado.', 'warn');
+        }
         lastSignature = sig;
+        lastFilteredCount = filtered.length;
 
         document.getElementById('count-total').textContent = filtered.length;
         document.getElementById('count-asignado').textContent = filtered.filter(r => String(r.estado || r.status || '').toLowerCase() === 'asignado').length;
@@ -324,6 +338,10 @@
     document.getElementById('master-login-btn').addEventListener('click', unlock);
     document.getElementById('master-password').addEventListener('keydown', (e) => { if (e.key === 'Enter') unlock(); });
     document.getElementById('btn-refresh').addEventListener('click', () => load(true));
+    if (window.DepositoPWA) {
+      window.DepositoPWA.registerSW();
+      window.DepositoPWA.requestPermission();
+    }
     window.addEventListener('online', async () => {
       try {
         const sync = await window.DEPOSITO_API.syncQueue();

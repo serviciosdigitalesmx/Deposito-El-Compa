@@ -8,6 +8,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/deposito-unified.css">
+    <link rel="manifest" href="manifest.json">
     <style>
         :root {
             --primary: #ff6b6b;
@@ -172,6 +173,7 @@
 </head>
 <body>
     <div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toastMessage">Producto agregado</span></div>
+    <script src="js/deposito-notifications.js"></script>
     <header class="app-header" id="mainHeader">
         <div class="header-top">
             <div class="logo">
@@ -317,6 +319,10 @@
         function editProfile() { document.getElementById('checkoutName').value = state.user.name || ''; document.getElementById('checkoutPhone').value = state.user.phone || ''; document.getElementById('addressModal').classList.add('active'); }
         function contactSupport() { window.open('https://wa.me/5218131590917?text=Hola%20El%20Compa,%20necesito%20ayuda', '_blank'); }
         function showNotifications() { showToast('No tienes notificaciones nuevas'); }
+        if (window.DepositoPWA) {
+            window.DepositoPWA.registerSW();
+            window.DepositoPWA.requestPermission();
+        }
         function toggleFav(btn) { const icon = btn.querySelector('i'); if (icon.classList.contains('far')) { icon.classList.remove('far'); icon.classList.add('fas'); icon.style.color = 'var(--danger)'; showToast('Agregado a favoritos'); } else { icon.classList.remove('fas'); icon.classList.add('far'); icon.style.color = 'white'; } }
         function showToast(message) { const toast = document.getElementById('toast'); document.getElementById('toastMessage').textContent = message; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 3000); }
         window.onclick = function(event) { if (event.target.classList.contains('modal')) { event.target.classList.remove('active'); } }

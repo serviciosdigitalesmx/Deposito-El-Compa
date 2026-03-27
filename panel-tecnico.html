@@ -3,9 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#4ecdc4">
   <title>Depósito El Compa - Hieleras</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="css/deposito-unified.css">
+  <link rel="manifest" href="manifest.json">
   <style>
     :root{--bg:#12141f;--panel:#1b1f2f;--panel-2:#262a3d;--text:#f3f4f6;--muted:#97a0b3;--accent:#4ecdc4;--accent-2:#60a5fa;--shadow:0 12px 30px rgba(0,0,0,.25)}
     *{box-sizing:border-box}
@@ -78,6 +80,7 @@
     window.DEPOSITO_GAS_URL = 'https://script.google.com/macros/s/AKfycbw36LgiUW3Mp7ezvsQKcaDOAITZSryrMLdOXf0zu-8AtORq8l_0lwWkMu8RLYaS24ZZ/exec';
   </script>
   <script src="./js/deposito-api.js"></script>
+  <script src="./js/deposito-notifications.js"></script>
   <script>
     const AUTH_ROLE = 'hieleras';
     const AUTH_PIN = '1111';
@@ -124,6 +127,12 @@
       toast.classList.add('show');
       clearTimeout(showToast._t);
       showToast._t = setTimeout(() => toast.classList.remove('show'), ms);
+    }
+
+    function pingKitchenAlert() {
+      if (window.DepositoPWA) {
+        window.DepositoPWA.notifyUser('Pedido en hieleras', 'Hay un pedido listo o recién aceptado en hieleras.', 'warn');
+      }
     }
 
     function setBusy(on) {
@@ -189,6 +198,9 @@
         const filtered = rows.filter(r => ['aceptado', 'en_hieleras', 'listo'].includes(String(r.estado || r.status || '').toLowerCase()));
         const sig = signature(filtered);
         if (!force && sig === lastSignature) return;
+        if (lastSignature && sig !== lastSignature && filtered.some(r => String(r.estado || r.status || '').toLowerCase() === 'en_hieleras')) {
+          pingKitchenAlert();
+        }
         lastSignature = sig;
 
         document.getElementById('count-total').textContent = filtered.length;
@@ -231,6 +243,10 @@
     }
 
     document.getElementById('btn-refresh').addEventListener('click', () => load(true));
+    if (window.DepositoPWA) {
+      window.DepositoPWA.registerSW();
+      window.DepositoPWA.requestPermission();
+    }
     load(true);
     setInterval(() => load(false), 20000);
   </script>
