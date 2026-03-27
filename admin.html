@@ -134,6 +134,7 @@
     window.DEPOSITO_GAS_URL = 'https://script.google.com/macros/s/AKfycbw36LgiUW3Mp7ezvsQKcaDOAITZSryrMLdOXf0zu-8AtORq8l_0lwWkMu8RLYaS24ZZ/exec';
   </script>
   <script src="./js/deposito-api.js"></script>
+  <script src="./js/deposito-notifications.js"></script>
   <script>
     const PIN = '1234';
     const TOKEN_KEY = 'DEPOSITO_ADMIN_TOKEN';
@@ -233,6 +234,20 @@
       loginOverlay.classList.add('hidden');
       api().setConfig({ endpoint: window.DEPOSITO_GAS_URL, token: localStorage.getItem(TOKEN_KEY) });
       loadData();
+    }
+    if (window.DepositoPWA) {
+      window.DepositoPWA.registerSW();
+      window.DepositoPWA.requestPermission();
+      window.DepositoPWA.attachOrderPolling({
+        endpoint: window.DEPOSITO_GAS_URL,
+        signatureKey: 'DEPOSITO_ADMIN_PEDIDOS_SIGNATURE',
+        intervalMs: 15000,
+        filter: row => String(row.estado || row.status || '').toLowerCase() === 'nuevo',
+        onNewItem: async ({ rows }) => {
+          const count = rows.length;
+          await window.DepositoPWA.notifyUser('Pedido nuevo', `Llegó una nueva solicitud. Tienes ${count} pendiente${count === 1 ? '' : 's'}.`, 'urgent');
+        }
+      });
     }
   </script>
 </body>

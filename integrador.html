@@ -3,15 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#ff6b6b">
   <title>Depósito El Compa - Integrador</title>
   <link rel="preconnect" href="https://cdnjs.cloudflare.com">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="css/deposito-unified.css">
+  <link rel="manifest" href="manifest.json">
   <script>
     window.DEPOSITO_GAS_URL = 'https://script.google.com/macros/s/AKfycbw36LgiUW3Mp7ezvsQKcaDOAITZSryrMLdOXf0zu-8AtORq8l_0lwWkMu8RLYaS24ZZ/exec';
   </script>
+  <script src="./js/deposito-notifications.js"></script>
   <style>
     :root{--bg:#151827;--panel:#20243a;--panel-2:#2a2f4b;--text:#f4f7ff;--muted:#9ca6c9;--primary:#ff6b6b;--accent:#4ecdc4;--shadow:0 18px 50px rgba(0,0,0,.32)}
     *{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,sans-serif;background:radial-gradient(circle at top,#222949 0,#151827 58%);color:var(--text)}
@@ -150,6 +153,20 @@
     document.getElementById('tab-repartidor').addEventListener('click', () => show('repartidor'));
     document.getElementById('tab-corte').addEventListener('click', () => show('corte'));
     document.getElementById('tab-archivo').addEventListener('click', () => show('archivo'));
+    if (window.DepositoPWA) {
+      window.DepositoPWA.registerSW();
+      window.DepositoPWA.requestPermission();
+      window.DepositoPWA.attachOrderPolling({
+        endpoint: window.DEPOSITO_GAS_URL,
+        signatureKey: 'DEPOSITO_INTEGRADOR_PEDIDOS_SIGNATURE',
+        intervalMs: 15000,
+        filter: row => String(row.estado || row.status || '').toLowerCase() === 'nuevo',
+        onNewItem: async ({ rows }) => {
+          const count = rows.length;
+          await window.DepositoPWA.notifyUser('Pedido nuevo', `Nuevo pedido detectado desde el integrador. Tienes ${count} pendiente${count === 1 ? '' : 's'}.`, 'urgent');
+        }
+      });
+    }
   </script>
 </body>
 </html>
