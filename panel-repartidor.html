@@ -83,6 +83,7 @@
       <div class="hint">Este panel solo muestra lo que caja ya asignó al repartidor.</div>
       <div class="actions">
         <button class="secondary" id="btn-refresh"><i class="fa-solid fa-rotate"></i> Refrescar</button>
+        <a class="secondary" href="./panel-corte.html" target="_blank" style="text-decoration:none;padding:11px 12px;border-radius:12px;display:inline-flex;align-items:center;gap:8px;font-weight:800;"><i class="fa-solid fa-file-invoice-dollar"></i> Corte</a>
       </div>
     </div>
     <div id="list" class="grid"></div>
@@ -211,20 +212,11 @@
       });
     }
 
-    async function archiveOrder(id, button) {
-      await withButtonFeedback(button, 'Archivando...', async () => {
-        await window.DEPOSITO_API.post('?action=archivarPedido', { id });
-        showToast('Pedido archivado');
-        await new Promise(resolve => setTimeout(resolve, 350));
-        await load(true);
-      });
-    }
-
     function userFilter(row) {
       const estado = String(row.estado || row.status || '').toLowerCase();
       const assigned = String(row.repartidor_id || '').trim();
       const currentId = String(currentUser && currentUser.id ? currentUser.id : '').trim();
-      return ['asignado', 'en_ruta', 'listo'].includes(estado) || (currentId && assigned === currentId);
+      return ['asignado', 'en_ruta'].includes(estado) || (currentId && assigned === currentId);
     }
 
     async function load(force = false) {
@@ -265,9 +257,8 @@
               </div>
               <div class="meta"><strong>Total:</strong> ${totalMoney}</div>
               <div class="actions">
-                <button class="primary" onclick="markRoute('${order.id}', this)">En ruta</button>
-                <button class="success" onclick="markDelivered('${order.id}', this)">Entregado</button>
-                <button class="secondary" onclick="archiveOrder('${order.id}', this)">Archivar</button>
+                ${status === 'asignado' ? `<button class="primary" onclick="markRoute('${order.id}', this)">En ruta</button>` : ''}
+                ${status === 'en_ruta' ? `<button class="success" onclick="markDelivered('${order.id}', this)">Entregado</button>` : ''}
                 ${phone ? `<button class="secondary" onclick="window.open('${waLink(order)}','_blank')">WhatsApp</button>` : ''}
               </div>
             </article>

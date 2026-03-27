@@ -57,6 +57,7 @@
       <button id="tab-hieleras" class="tab" type="button">Hieleras</button>
       <button id="tab-solicitudes" class="tab" type="button">Solicitudes</button>
       <button id="tab-repartidor" class="tab" type="button">Repartidor</button>
+      <button id="tab-corte" class="tab" type="button">Pendiente corte</button>
       <button id="tab-archivo" class="tab" type="button">Archivo</button>
     </nav>
   </header>
@@ -66,6 +67,7 @@
     <section id="panel-hieleras" class="panel"><iframe id="frame-hieleras" src="about:blank" title="Hieleras"></iframe></section>
     <section id="panel-solicitudes" class="panel"><iframe id="frame-solicitudes" src="about:blank" title="Solicitudes"></iframe></section>
     <section id="panel-repartidor" class="panel"><iframe id="frame-repartidor" src="about:blank" title="Repartidor"></iframe></section>
+    <section id="panel-corte" class="panel"><iframe id="frame-corte" src="about:blank" title="Pendiente de corte"></iframe></section>
     <section id="panel-archivo" class="panel"><iframe id="frame-archivo" src="about:blank" title="Archivo"></iframe></section>
   </div>
 
@@ -75,6 +77,7 @@
     <a href="./panel-tecnico.html" target="_blank">Hieleras</a> |
     <a href="./panel-solicitudes.html" target="_blank">Solicitudes</a> |
     <a href="./panel-repartidor.html" target="_blank">Repartidor</a> |
+    <a href="./panel-corte.html" target="_blank">Pendiente corte</a> |
     <a href="./panel-archivo.html" target="_blank">Archivo</a>
   </div>
 
@@ -84,11 +87,13 @@
     const PANEL_HI = document.getElementById('panel-hieleras');
     const PANEL_SO = document.getElementById('panel-solicitudes');
     const PANEL_RE = document.getElementById('panel-repartidor');
+    const PANEL_CO = document.getElementById('panel-corte');
     const PANEL_AR = document.getElementById('panel-archivo');
     const FRAME_OP = document.getElementById('frame-operativo');
     const FRAME_HI = document.getElementById('frame-hieleras');
     const FRAME_SO = document.getElementById('frame-solicitudes');
     const FRAME_RE = document.getElementById('frame-repartidor');
+    const FRAME_CO = document.getElementById('frame-corte');
     const FRAME_AR = document.getElementById('frame-archivo');
     const LOGIN = document.getElementById('login-screen');
     const PASS = document.getElementById('master-password');
@@ -98,16 +103,17 @@
       hieleras: './panel-tecnico.html',
       solicitudes: './panel-solicitudes.html',
       repartidor: './panel-repartidor.html',
+      corte: './panel-corte.html',
       archivo: './panel-archivo.html'
     };
 
     function loadFrame(name) {
-      const map = { operativo: FRAME_OP, hieleras: FRAME_HI, solicitudes: FRAME_SO, repartidor: FRAME_RE, archivo: FRAME_AR };
+      const map = { operativo: FRAME_OP, hieleras: FRAME_HI, solicitudes: FRAME_SO, repartidor: FRAME_RE, corte: FRAME_CO, archivo: FRAME_AR };
       const frame = map[name];
       if (frame && frame.src === 'about:blank') frame.src = `${SRC[name]}?v=${Date.now()}`;
     }
     function show(name) {
-      ['operativo','hieleras','solicitudes','repartidor','archivo'].forEach(n => {
+      ['operativo','hieleras','solicitudes','repartidor','corte','archivo'].forEach(n => {
         document.getElementById(`panel-${n}`).classList.toggle('active', n === name);
         document.getElementById(`tab-${n}`).classList.toggle('active', n === name);
         if (n === name) loadFrame(n);
@@ -128,6 +134,7 @@
     document.getElementById('tab-hieleras').addEventListener('click', () => show('hieleras'));
     document.getElementById('tab-solicitudes').addEventListener('click', () => show('solicitudes'));
     document.getElementById('tab-repartidor').addEventListener('click', () => show('repartidor'));
+    document.getElementById('tab-corte').addEventListener('click', () => show('corte'));
     document.getElementById('tab-archivo').addEventListener('click', () => show('archivo'));
   </script>
 </body>

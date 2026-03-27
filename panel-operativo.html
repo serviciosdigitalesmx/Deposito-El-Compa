@@ -66,6 +66,7 @@
       <div class="metric"><span class="muted">Aceptados</span><b id="m-aceptados">0</b></div>
       <div class="metric"><span class="muted">En ruta</span><b id="m-ruta">0</b></div>
       <div class="metric"><span class="muted">Entregados</span><b id="m-entregados">0</b></div>
+      <div class="metric"><span class="muted">Pend. corte</span><b id="m-corte">0</b></div>
     </section>
     <section class="grid">
       <div class="card"><h3>Operación</h3><p>La caja decide aceptación, avisa a hieleras, asigna reparto y cierra el pedido.</p></div>
@@ -76,6 +77,7 @@
     <div class="links">
       <a class="btn primary" href="./panel-solicitudes.html" target="_blank"><i class="fa-solid fa-file-lines"></i> Solicitudes</a>
       <a class="btn" href="./panel-tecnico.html" target="_blank"><i class="fa-solid fa-icicles"></i> Hieleras</a>
+      <a class="btn" href="./panel-corte.html" target="_blank"><i class="fa-solid fa-file-invoice-dollar"></i> Pendiente corte</a>
       <a class="btn" href="./panel-archivo.html" target="_blank"><i class="fa-solid fa-box-archive"></i> Archivo</a>
     </div>
 
@@ -171,6 +173,9 @@
         document.getElementById('m-aceptados').textContent = rows.filter(r => String(r.estado || r.status || '').toLowerCase() === 'aceptado').length;
         document.getElementById('m-ruta').textContent = rows.filter(r => String(r.estado || r.status || '').toLowerCase() === 'en_ruta').length;
         document.getElementById('m-entregados').textContent = rows.filter(r => String(r.estado || r.status || '').toLowerCase() === 'entregado').length;
+        const corte = rows.filter(r => String(r.estado || r.status || '').toLowerCase() === 'pendiente_corte').length;
+        const corteEl = document.getElementById('m-corte');
+        if (corteEl) corteEl.textContent = corte;
       } catch (_) {}
       renderManualProducts();
     }

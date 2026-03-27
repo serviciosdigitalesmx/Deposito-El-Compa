@@ -81,11 +81,12 @@
   <script>
     const AUTH_ROLE = 'hieleras';
     const AUTH_PIN = '1111';
-    const AUTH_TOKEN_KEY = 'DEPOSITO_GAS_TOKEN';
+    const AUTH_TOKEN_KEY = 'DEPOSITO_GAS_TOKEN_HIELERAS';
     const list = document.getElementById('list');
     const toast = document.getElementById('toast');
     let lastSignature = '';
     let busyCount = 0;
+    let repartidores = [];
 
     function setApiAuth(token) {
       window.DEPOSITO_API.setConfig({
@@ -107,6 +108,15 @@
       localStorage.setItem(AUTH_TOKEN_KEY, res.token);
       setApiAuth(res.token);
       return res.token;
+    }
+
+    async function loadRepartidores() {
+      try {
+        const res = await window.DEPOSITO_API.get('?action=repartidores&t=' + Date.now());
+        repartidores = Array.isArray(res.data) ? res.data.filter(r => String(r.activo || 'true').toLowerCase() === 'true') : [];
+      } catch (_) {
+        repartidores = [];
+      }
     }
 
     function showToast(msg, ms = 2200) {
@@ -157,9 +167,23 @@
       });
     }
 
+    async function assignCourier(id, selectEl, button) {
+      const repartidorId = String(selectEl.value || '').trim();
+      if (!repartidorId) {
+        showToast('Selecciona un repartidor');
+        return;
+      }
+      await withButtonFeedback(button, 'Asignando...', async () => {
+        await window.DEPOSITO_API.post('?action=asignarRepartidor', { id, repartidorId });
+        showToast('Pedido asignado al repartidor');
+        await load(true);
+      });
+    }
+
     async function load(force = false) {
       try {
         await ensureAuth();
+        await loadRepartidores();
         const res = await window.DEPOSITO_API.get('?action=pedidos&t=' + Date.now());
         const rows = Array.isArray(res.data) ? res.data : [];
         const filtered = rows.filter(r => ['aceptado', 'en_hieleras', 'listo'].includes(String(r.estado || r.status || '').toLowerCase()));
@@ -176,6 +200,7 @@
           const status = String(order.estado || order.status || 'aceptado').toLowerCase();
           const items = Array.isArray(order.items) ? order.items : [];
           const totalMoney = Number(order.total || 0).toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
+          const canAssign = status === 'listo';
           return `
             <article class="card">
               <div class="top">
@@ -191,7 +216,11 @@
               </div>
               <div class="meta"><strong>Total:</strong> ${totalMoney}</div>
               <div class="actions">
-                <button class="primary" onclick="markReady('${order.id}', this)">Ya quedó</button>
+                ${status === 'en_hieleras' ? `<button class="primary" onclick="markReady('${order.id}', this)">Ya quedó</button>` : ''}
+                ${canAssign ? `<select class="secondary" style="min-width:180px;padding:11px 12px;border-radius:12px;" id="sel-${order.id}">
+                  <option value="">Asignar repartidor</option>
+                  ${repartidores.map(r => `<option value="${r.id}">${r.nombre || 'Repartidor'}${r.telefono ? ' · ' + r.telefono : ''}</option>`).join('')}
+                </select><button class="primary" onclick="assignCourier('${order.id}', document.getElementById('sel-${order.id}'), this)">Asignar</button>` : ''}
               </div>
             </article>
           `;

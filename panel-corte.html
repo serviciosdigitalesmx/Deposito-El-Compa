@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Depósito El Compa - Pendiente de Corte</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/deposito-unified.css">
+  <style>
+    body{margin:0;font-family:Inter,system-ui,sans-serif}
+    header{position:sticky;top:0;z-index:10;padding:16px 20px;background:rgba(17,20,31,.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.08)}
+    .bar{display:flex;justify-content:space-between;align-items:center;gap:14px;max-width:1400px;margin:0 auto;flex-wrap:wrap}
+    .title{display:flex;flex-direction:column;gap:4px}
+    .title strong{font-size:20px}
+    .title span{color:var(--ui-muted);font-size:13px}
+    .stats{display:flex;gap:10px;flex-wrap:wrap}
+    .stat{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:10px 14px;min-width:120px}
+    .stat b{display:block;font-size:20px}
+    main{max-width:1400px;margin:0 auto;padding:18px 20px 28px}
+    .toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+    .toolbar .hint{color:var(--ui-muted);font-size:13px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+    .card{padding:16px}
+    .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+    button{border:0;border-radius:12px;padding:11px 12px;font-weight:800;cursor:pointer}
+    .primary{background:var(--ui-primary);color:#fff}
+    .secondary{background:rgba(255,255,255,.08);color:var(--ui-text)}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="bar">
+      <div class="title">
+        <strong><i class="fa-solid fa-file-invoice-dollar"></i> Pendiente de corte</strong>
+        <span>Pedidos entregados que todavía faltan por cerrar en caja.</span>
+      </div>
+      <div class="stats">
+        <div class="stat"><b id="count-total">0</b><small>Pedidos</small></div>
+        <div class="stat"><b id="count-pending">0</b><small>Pendientes</small></div>
+        <div class="stat"><b id="count-archived">0</b><small>Archivados</small></div>
+      </div>
+    </div>
+  </header>
+  <main>
+    <div class="toolbar">
+      <div class="hint">Caja revisa aquí lo que ya fue entregado antes de mandarlo a archivo.</div>
+      <button class="secondary" id="btn-refresh"><i class="fa-solid fa-rotate"></i> Refrescar</button>
+    </div>
+    <div class="grid" id="list"></div>
+  </main>
+  <script>window.DEPOSITO_GAS_URL = 'https://script.google.com/macros/s/AKfycbw36LgiUW3Mp7ezvsQKcaDOAITZSryrMLdOXf0zu-8AtORq8l_0lwWkMu8RLYaS24ZZ/exec';</script>
+  <script src="./js/deposito-api.js"></script>
+  <script>
+    const AUTH_TOKEN_KEY = 'DEPOSITO_GAS_TOKEN_CORTE';
+    const list = document.getElementById('list');
+    async function ensureAuth() {
+      const cached = localStorage.getItem(AUTH_TOKEN_KEY);
+      if (cached) { window.DEPOSITO_API.setConfig({ endpoint: window.DEPOSITO_GAS_URL, token: cached }); return cached; }
+      const res = await window.DEPOSITO_API.get(`?action=login&role=caja&pin=3333&t=${Date.now()}`);
+      if (!res || !res.ok || !res.token) throw new Error((res && res.error) || 'No se pudo autenticar caja');
+      localStorage.setItem(AUTH_TOKEN_KEY, res.token);
+      window.DEPOSITO_API.setConfig({ endpoint: window.DEPOSITO_GAS_URL, token: res.token });
+      return res.token;
+    }
+    async function archiveOrder(id, button) {
+      const original = button.innerHTML;
+      button.disabled = true;
+      button.innerHTML = 'Archivando...';
+      try {
+        await window.DEPOSITO_API.post('?action=archivarPedido', { id });
+        await load();
+      } finally {
+        button.disabled = false;
+        button.innerHTML = original;
+      }
+    }
+    async function load() {
+      try {
+        await ensureAuth();
+        const res = await window.DEPOSITO_API.get('?action=pedidos&t=' + Date.now());
+        const rows = Array.isArray(res.data) ? res.data : [];
+        const filtered = rows.filter(r => String(r.estado || r.status || '').toLowerCase() === 'pendiente_corte');
+        document.getElementById('count-total').textContent = filtered.length;
+        document.getElementById('count-pending').textContent = filtered.length;
+        document.getElementById('count-archived').textContent = rows.filter(r => String(r.estado || r.status || '').toLowerCase() === 'archivado').length;
+        list.innerHTML = filtered.length ? filtered.map(order => `
+          <article class="card">
+            <div class="top">
+              <div><div class="folio">#${String(order.id).slice(-4)}</div><div class="meta"><strong>${order.cliente || ''}</strong></div></div>
+              <span class="badge ${String(order.estado || '').toLowerCase()}">${String(order.estado || '').replaceAll('_',' ')}</span>
+            </div>
+            <div class="meta">${order.direccion || ''}</div>
+            <div class="actions">
+              <button class="primary" onclick="archiveOrder('${order.id}', this)">Marcar corte y archivar</button>
+            </div>
+          </article>
+        `).join('') : '<div class="empty">No hay pedidos pendientes de corte.</div>';
+      } catch (e) {
+        list.innerHTML = `<div class="empty">Error al cargar corte: ${e.message}</div>`;
+      }
+    }
+    document.getElementById('btn-refresh').addEventListener('click', load);
+    load();
+    setInterval(load, 15000);
+  </script>
+</body>
+</html>

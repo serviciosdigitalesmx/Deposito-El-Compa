@@ -84,6 +84,7 @@ function setup() {
   });
 
   seedUsersIfEmpty(ss);
+  seedRepartidoresIfEmpty(ss);
   seedProductsIfEmpty(ss);
   syncAliasSheets(ss);
 
@@ -129,6 +130,19 @@ function seedProductsIfEmpty(ss) {
     sheet.appendRow(['id', 'nombre', 'precio', 'stock', 'categoria', 'imagen_url', 'activo', 'updated_at']);
   }
   products.forEach(row => sheet.appendRow(row));
+}
+
+function seedRepartidoresIfEmpty(ss) {
+  const sheet = ss.getSheetByName(SHEETS.repartidores);
+  if (!sheet) return;
+  if (sheet.getLastRow() > 1) return;
+  const now = new Date().toISOString();
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(['id', 'nombre', 'telefono', 'estado', 'lat', 'lng', 'pedido_activo', 'updated_at']);
+  }
+  [
+    ['1', 'Repartidor 1', '8111111111', 'activo', '', '', '', now],
+  ].forEach(row => sheet.appendRow(row));
 }
 
 function syncAliasSheets(ss) {
@@ -197,7 +211,7 @@ function handleRequest(method, e) {
     case 'POST:enRuta':
       return updatePedidoStatus(body.id, 'en_ruta', body, token);
     case 'POST:entregado':
-      return updatePedidoStatus(body.id, 'entregado', body, token);
+      return updatePedidoStatus(body.id, 'pendiente_corte', body, token);
     case 'POST:justificacion':
       return saveJustificacion(body, token);
     case 'POST:pdfJustificacion':
@@ -546,6 +560,8 @@ function updatePedidoStatus(id, estado, body, token) {
   const updatedIdx = headers.indexOf('updated_at');
   const rowIndex = data.findIndex(r => String(r[idx]) === pedidoId);
   if (rowIndex < 0) throw new Error('Pedido no encontrado');
+  const currentEstado = String(data[rowIndex][estadoIdx] || '').toLowerCase();
+  validateTransition(currentEstado, nuevoEstado, session.rol);
   sheet.getRange(rowIndex + 2, estadoIdx + 1).setValue(nuevoEstado);
   if (updatedIdx >= 0) sheet.getRange(rowIndex + 2, updatedIdx + 1).setValue(new Date().toISOString());
   if (body && body.justificacion) saveJustificacion({ pedido_id: pedidoId, texto: body.justificacion, usuario: session.nombre, rol: session.rol }, token);
@@ -582,6 +598,9 @@ function archivePedido(body, token) {
     const estadoActual = String(pedidoRow[estadoIdx] || '').toLowerCase();
     if (estadoActual === 'archivado') {
       return { ok: true, id, archived: true };
+    }
+    if (estadoActual !== 'pendiente_corte') {
+      throw new Error('Solo se puede archivar cuando el pedido está pendiente de corte');
     }
 
     const archivo = getSheet(SHEETS.archivoPedidos);
@@ -632,16 +651,44 @@ function listArchivoPedidos(params, token) {
 }
 
 function assignRepartidor(id, repartidorId, body, token) {
-  requireAuth(token, ['admin', 'caja']);
+  const session = requireAuth(token, ['admin', 'caja', 'hieleras']);
   const sheet = getSheet(SHEETS.pedidos);
   const data = sheet.getDataRange().getValues();
   const headers = data.shift();
   const rowIndex = data.findIndex(r => String(r[headers.indexOf('id')]) === String(id));
   if (rowIndex < 0) throw new Error('Pedido no encontrado');
+  const estadoIdx = headers.indexOf('estado');
+  const currentEstado = String(data[rowIndex][estadoIdx] || '').toLowerCase();
+  if (currentEstado !== 'listo') throw new Error('Solo se puede asignar cuando el pedido está listo');
   sheet.getRange(rowIndex + 2, headers.indexOf('repartidor_id') + 1).setValue(repartidorId);
   sheet.getRange(rowIndex + 2, headers.indexOf('estado') + 1).setValue('asignado');
   sheet.getRange(rowIndex + 2, headers.indexOf('updated_at') + 1).setValue(new Date().toISOString());
   return { ok: true, id, repartidorId };
+}
+
+function validateTransition(currentEstado, nextEstado, role) {
+  const allowed = {
+    nuevo: ['aceptado', 'en_hieleras'],
+    aceptado: ['en_hieleras'],
+    en_hieleras: ['listo'],
+    listo: ['asignado'],
+    asignado: ['en_ruta'],
+    en_ruta: ['pendiente_corte'],
+    pendiente_corte: ['archivado'],
+    entregado: ['pendiente_corte'],
+  };
+  const cur = String(currentEstado || 'nuevo').toLowerCase();
+  const next = String(nextEstado || '').toLowerCase();
+  if (!next) throw new Error('Estado inválido');
+  if (cur === next) return true;
+  const options = allowed[cur] || [];
+  if (!options.includes(next)) {
+    throw new Error(`Transición inválida: ${cur} -> ${next}`);
+  }
+  if (next === 'archivado' && !['admin', 'caja'].includes(role)) {
+    throw new Error('Solo caja/admin puede archivar');
+  }
+  return true;
 }
 
 function saveJustificacion(body, token) {
