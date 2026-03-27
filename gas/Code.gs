@@ -191,7 +191,7 @@ function handleRequest(method, e) {
     case 'POST:rechazarPedido':
       return updatePedidoStatus(body.id, 'cancelado', body, token);
     case 'POST:pedidoListo':
-      return updatePedidoStatus(body.id, 'listo', body, token);
+      return updatePedidoStatus(body.id, body.estado || 'en_hieleras', body, token);
     case 'POST:asignarRepartidor':
       return assignRepartidor(body.id, body.repartidorId, body, token);
     case 'POST:enRuta':
