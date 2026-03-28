@@ -84,7 +84,7 @@
         document.getElementById('count-total').textContent = filtered.length;
         document.getElementById('count-pending').textContent = filtered.length;
         document.getElementById('count-archived').textContent = rows.filter(r => String(r.estado || r.status || '').toLowerCase() === 'archivado').length;
-        list.innerHTML = filtered.length ? filtered.map(order => `
+      list.innerHTML = filtered.length ? filtered.map(order => `
           <article class="card">
             <div class="top">
               <div><div class="folio">#${String(order.id).slice(-4)}</div><div class="meta"><strong>${order.cliente || ''}</strong></div></div>
@@ -97,7 +97,11 @@
           </article>
         `).join('') : '<div class="empty">No hay pedidos pendientes de corte.</div>';
       } catch (e) {
-        list.innerHTML = `<div class="empty">Error al cargar corte: ${e.message}</div>`;
+        console.error('Error al cargar corte:', e);
+        list.innerHTML = '<div class="empty">No pudimos cargar el corte. Intenta de nuevo.</div>';
+        if (window.DepositoPWA && typeof DepositoPWA.notifyUser === 'function') {
+          DepositoPWA.notifyUser('No pudimos cargar el corte', 'Reintenta en unos segundos', 'warn');
+        }
       }
     }
     document.getElementById('btn-refresh').addEventListener('click', load);

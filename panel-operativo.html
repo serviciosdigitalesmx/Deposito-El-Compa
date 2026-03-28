@@ -235,7 +235,12 @@
       renderManualItems();
     }
     async function createManualOrder() {
-      if (!manualItems.length) return alert('Agrega al menos un producto');
+      if (!manualItems.length) {
+        if (window.DepositoPWA && typeof DepositoPWA.notifyUser === 'function') {
+          DepositoPWA.notifyUser('Agrega al menos un producto', 'Hay una validación pendiente', 'warn');
+        }
+        return;
+      }
       const cliente = document.getElementById('mpCliente').value.trim();
       const telefono = document.getElementById('mpTelefono').value.trim();
       const direccion = document.getElementById('mpDireccion').value.trim();
@@ -256,7 +261,9 @@
       document.getElementById('mpDireccion').value = '';
       renderManualItems();
       await load();
-      alert('Pedido creado y enviado a solicitudes');
+      if (window.DepositoPWA && typeof DepositoPWA.notifyUser === 'function') {
+        DepositoPWA.notifyUser('Pedido creado', 'Ya fue enviado a solicitudes', 'success');
+      }
     }
     renderManualProducts();
     load();

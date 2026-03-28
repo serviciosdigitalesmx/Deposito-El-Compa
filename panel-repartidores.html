@@ -280,11 +280,15 @@
       const monto = Number(document.getElementById('payMonto').value || 0);
       const concepto = document.getElementById('payConcepto').value.trim();
       if (!repartidorId) {
-        alert('Selecciona un repartidor');
+        if (window.DepositoPWA && typeof DepositoPWA.notifyUser === 'function') {
+          DepositoPWA.notifyUser('Selecciona un repartidor', 'Valida el destinatario antes de guardar', 'warn');
+        }
         return;
       }
       if (!monto || monto <= 0) {
-        alert('Captura un monto válido');
+        if (window.DepositoPWA && typeof DepositoPWA.notifyUser === 'function') {
+          DepositoPWA.notifyUser('Captura un monto válido', 'El pago no se puede guardar aún', 'warn');
+        }
         return;
       }
       await api().post('?action=repartidorPagar', { repartidor_id: repartidorId, repartidor_nombre: repartidorNombre, monto, concepto });

@@ -439,7 +439,7 @@ function login(body) {
       user = { id: role, nombre: fallbackNames[role], rol: role };
     }
   }
-  if (!user) return { ok: false, error: 'Credenciales inválidas' };
+  if (!user) return { ok: false, error: 'No pudimos validar las credenciales' };
   const token = Utilities.getUuid();
   // CacheService only supports short TTLs; keep sessions inside the documented limit.
   CacheService.getScriptCache().put(
