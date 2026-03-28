@@ -1,4 +1,4 @@
-const CACHE_NAME = 'deposito-el-compa-v1';
+const CACHE_NAME = 'deposito-el-compa-v2';
 const ASSETS = [
   './',
   './index.html',
@@ -35,6 +35,19 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const { request } = event;
   if (request.method !== 'GET') return;
+  const isHtmlNav = request.mode === 'navigate' || request.destination === 'document';
+  if (isHtmlNav) {
+    event.respondWith(
+      fetch(request).then(response => {
+        if (response && response.status === 200) {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(request, copy)).catch(() => {});
+        }
+        return response;
+      }).catch(() => caches.match(request).then(hit => hit || Response.error()))
+    );
+    return;
+  }
   event.respondWith(
     caches.match(request).then(hit => {
       if (hit) return hit;

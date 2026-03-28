@@ -158,7 +158,7 @@
   <script src="./js/deposito-api.js"></script>
   <script src="./js/deposito-notifications.js"></script>
   <script>
-    const PIN = '1234';
+    const PIN = '1111';
     const TOKEN_KEY = 'DEPOSITO_ADMIN_TOKEN';
     const loginOverlay = document.getElementById('loginOverlay');
     const loginError = document.getElementById('loginError');
@@ -200,14 +200,9 @@
         loginError.textContent = 'PIN incorrecto';
         return null;
       }
-      const res = await api().get(`?action=login&role=admin&pin=${encodeURIComponent(PIN)}&t=${Date.now()}`);
-      if (!res || !res.ok || !res.token) {
-        loginError.textContent = res && res.error ? res.error : 'No se pudo autenticar';
-        return null;
-      }
-      setAuth(res.token);
+      loginError.textContent = '';
       loginOverlay.classList.add('hidden');
-      return res.token;
+      return PIN;
     }
 
     function renderChart(states) {
