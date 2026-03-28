@@ -1,24 +1,24 @@
 :root {
-  --saas-bg: #070a13;
-  --saas-bg-soft: #0d1322;
-  --saas-panel: rgba(16, 21, 36, 0.86);
-  --saas-panel-strong: rgba(20, 26, 44, 0.96);
-  --saas-border: rgba(255, 255, 255, 0.08);
-  --saas-border-strong: rgba(255, 255, 255, 0.16);
-  --saas-text: #f4f7ff;
-  --saas-muted: #9aa4c7;
-  --saas-primary: #ff7a6f;
-  --saas-primary-2: #ff9b73;
-  --saas-secondary: #5ad3c7;
+  --saas-bg: #0a0a0b;
+  --saas-bg-soft: #0f1012;
+  --saas-panel: rgba(17, 17, 19, 0.90);
+  --saas-panel-strong: rgba(22, 22, 24, 0.98);
+  --saas-border: rgba(255, 255, 255, 0.04);
+  --saas-border-strong: rgba(255, 255, 255, 0.08);
+  --saas-text: #fcfcfd;
+  --saas-muted: #a0a0a3;
+  --saas-primary: #3e63dd;
+  --saas-primary-2: #5b7cff;
+  --saas-secondary: #c4a05f;
   --saas-success: #32d39b;
   --saas-warning: #f5c451;
   --saas-danger: #ff7f8f;
   --saas-shadow: 0 24px 70px rgba(0, 0, 0, 0.38);
   --saas-shadow-soft: 0 14px 34px rgba(0, 0, 0, 0.24);
-  --saas-radius-xl: 30px;
+  --saas-radius-xl: 28px;
   --saas-radius-lg: 22px;
-  --saas-radius-md: 16px;
-  --saas-radius-sm: 12px;
+  --saas-radius-md: 8px;
+  --saas-radius-sm: 4px;
 }
 
 html {
@@ -28,17 +28,25 @@ html {
 body {
   color: var(--saas-text);
   background:
-    radial-gradient(circle at 12% 12%, rgba(255, 122, 111, 0.10), transparent 24%),
-    radial-gradient(circle at 85% 10%, rgba(90, 211, 199, 0.08), transparent 22%),
-    radial-gradient(circle at 50% 100%, rgba(255, 155, 115, 0.05), transparent 30%),
+    radial-gradient(circle at 12% 12%, rgba(62, 99, 221, 0.12), transparent 24%),
+    radial-gradient(circle at 85% 10%, rgba(196, 160, 95, 0.10), transparent 22%),
+    radial-gradient(circle at 50% 100%, rgba(91, 124, 255, 0.05), transparent 30%),
     linear-gradient(180deg, var(--saas-bg) 0%, var(--saas-bg-soft) 100%) !important;
   background-attachment: fixed;
   min-height: 100vh;
 }
 
 body::before {
-  opacity: 0.14;
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
   background-size: 64px 64px;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.25), transparent 88%);
+  opacity: 0.14;
 }
 
 body::after {
@@ -49,11 +57,11 @@ body::after {
   background:
     radial-gradient(circle at 20% 20%, rgba(255,255,255,0.04), transparent 18%),
     radial-gradient(circle at 80% 0%, rgba(255,255,255,0.03), transparent 16%);
-  opacity: 0.5;
+  opacity: 0.45;
 }
 
 body::selection {
-  background: rgba(255, 122, 111, 0.26);
+  background: rgba(62, 99, 221, 0.26);
   color: #fff;
 }
 
@@ -119,8 +127,7 @@ header {
 .payment-method,
 .category-chip,
 .login-card {
-  background:
-    linear-gradient(180deg, rgba(20, 25, 41, 0.98), rgba(12, 16, 28, 0.98)) !important;
+  background: linear-gradient(180deg, rgba(22, 22, 24, 0.98), rgba(12, 12, 14, 0.98)) !important;
   border: 1px solid var(--saas-border) !important;
   box-shadow: var(--saas-shadow-soft) !important;
   position: relative;
@@ -149,28 +156,7 @@ header {
   inset: 0;
   pointer-events: none;
   background: linear-gradient(180deg, rgba(255,255,255,0.06), transparent 32%);
-  opacity: 0.45;
-}
-
-.card > *,
-.panel > *,
-.modal-content > *,
-.sheet > *,
-.section > *,
-.section-card > *,
-.card-shell > *,
-.stat > *,
-.stat-card > *,
-.product-card > *,
-.order-history-item > *,
-.order > *,
-.manual > *,
-.menu-item > *,
-.payment-method > *,
-.category-chip > *,
-.login-card > * {
-  position: relative;
-  z-index: 1;
+  opacity: 0.35;
 }
 
 .card:hover,
@@ -192,7 +178,7 @@ input,
 select,
 textarea {
   background: rgba(255, 255, 255, 0.04) !important;
-  border: 1px solid rgba(255, 255, 255, 0.10) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
   color: var(--saas-text) !important;
   border-radius: var(--saas-radius-md) !important;
 }
@@ -200,8 +186,8 @@ textarea {
 input:focus,
 select:focus,
 textarea:focus {
-  border-color: rgba(255, 122, 111, 0.72) !important;
-  box-shadow: 0 0 0 4px rgba(255, 122, 111, 0.12) !important;
+  border-color: rgba(62, 99, 221, 0.66) !important;
+  box-shadow: 0 0 0 4px rgba(62, 99, 221, 0.12) !important;
   background: rgba(255, 255, 255, 0.06) !important;
 }
 
@@ -218,7 +204,7 @@ button,
 .mini,
 .nav-item,
 .tab {
-  border-radius: 14px !important;
+  border-radius: 8px !important;
 }
 
 .btn,
@@ -245,7 +231,7 @@ button,
 }
 
 .tab.active {
-  box-shadow: 0 10px 24px rgba(255, 122, 111, 0.22) !important;
+  box-shadow: 0 10px 24px rgba(62, 99, 221, 0.22) !important;
 }
 
 .btn-loading::before,
@@ -256,75 +242,4 @@ button,
 
 .busy::after {
   background: linear-gradient(90deg, transparent, rgba(255,255,255,.14), transparent) !important;
-}
-
-.pulse {
-  box-shadow: 0 0 0 0 rgba(90, 211, 199, 0.75) !important;
-}
-
-.toast {
-  border: 1px solid rgba(255,255,255,.10) !important;
-  box-shadow: var(--saas-shadow) !important;
-}
-
-.empty,
-.empty-state {
-  background: rgba(255,255,255,0.02) !important;
-  border: 1px dashed rgba(255,255,255,0.12) !important;
-  color: var(--saas-muted) !important;
-}
-
-.app-header,
-.bar,
-header {
-  background: rgba(10, 13, 23, 0.84) !important;
-  border-bottom: 1px solid rgba(255,255,255,0.08) !important;
-  backdrop-filter: blur(20px);
-  box-shadow: 0 10px 28px rgba(0,0,0,.28);
-}
-
-.app-header,
-.profile-header,
-.hero-main,
-.manual-summary {
-  position: relative;
-  overflow: hidden;
-}
-
-.app-header::after,
-.profile-header::after,
-.hero-main::after,
-.manual-summary::after {
-  content: "";
-  position: absolute;
-  inset: auto -10% -40% auto;
-  width: 220px;
-  height: 220px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,122,111,.16), transparent 68%);
-  pointer-events: none;
-}
-
-.floating-cart {
-  box-shadow: 0 18px 44px rgba(255, 122, 111, 0.18) !important;
-}
-
-.progress-step.active .step-dot,
-.progress-step.completed .step-dot,
-.step-dot {
-  transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
-}
-
-.progress-step.active .step-dot {
-  box-shadow: 0 0 0 4px rgba(255, 122, 111, 0.16) !important;
-}
-
-.section-title,
-.title strong,
-.brand h1,
-.hero-main h2,
-.login-card h2,
-.card h2,
-.card h3 {
-  letter-spacing: -0.02em;
 }
