@@ -67,6 +67,27 @@
     @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
     @media(max-width:1100px){.hero,.layout{grid-template-columns:1fr}.summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(max-width:640px){.summary{grid-template-columns:1fr}.topbar{flex-direction:column;align-items:flex-start}}
+    body {
+      background:
+        radial-gradient(circle at 12% 12%, rgba(255, 122, 111, 0.10), transparent 24%),
+        radial-gradient(circle at 84% 10%, rgba(90, 211, 199, 0.08), transparent 20%),
+        linear-gradient(180deg, #070b16 0%, #05070f 100%);
+    }
+    .card, .login-card, .hero-main, .order {
+      backdrop-filter: blur(18px);
+    }
+    .topbar, .login-card {
+      position: relative;
+      overflow: hidden;
+    }
+    .topbar::before, .login-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(255, 122, 111, 0.75), rgba(90, 211, 199, 0.75), transparent);
+      opacity: .85;
+    }
   </style>
 </head>
 <body>
