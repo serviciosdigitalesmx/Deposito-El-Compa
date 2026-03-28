@@ -169,6 +169,10 @@
       localStorage.removeItem(AUTH_TOKEN_KEY);
       setApiAuth('');
     }
+    function isAuthError(err) {
+      const msg = String((err && err.message) || err || '');
+      return /Sesión inválida|Token requerido|Sin permisos/i.test(msg);
+    }
     async function ensureAuth() {
       const cached = localStorage.getItem(AUTH_TOKEN_KEY);
       if (cached) { setApiAuth(cached); return cached; }
@@ -185,8 +189,7 @@
       try {
         return await task();
       } catch (err) {
-        const msg = String((err && err.message) || err || '');
-        if (/Sesión inválida|Token requerido|Sin permisos/i.test(msg)) {
+        if (isAuthError(err)) {
           clearAuth();
           await ensureAuth();
           return await task();
@@ -262,7 +265,7 @@
         syncStats();
         render();
       } catch (e) {
-        list.innerHTML = `<div class="empty">Error al cargar productos: ${e.message}</div>`;
+        list.innerHTML = '<div class="empty">No se pudo actualizar el catálogo. Reintentando...</div>';
       }
     }
     function syncStats() {
@@ -289,7 +292,7 @@
             showToast('Estado actualizado');
             await load();
           } catch (e) {
-            showToast(e.message || 'No se pudo actualizar');
+            showToast(isAuthError(e) ? 'Reintentando conexión...' : (e.message || 'No se pudo actualizar'));
           } finally {
             btn.disabled = false;
           }
@@ -309,7 +312,7 @@
               showToast('Producto desactivado');
               await load();
             } catch (fallbackErr) {
-              showToast((fallbackErr && fallbackErr.message) || e.message || 'No se pudo eliminar');
+              showToast(isAuthError(fallbackErr) || isAuthError(e) ? 'Reintentando conexión...' : ((fallbackErr && fallbackErr.message) || e.message || 'No se pudo eliminar'));
             }
           } finally {
             btn.disabled = false;
@@ -355,20 +358,20 @@
       const submit = document.getElementById('btn-save');
         submit.disabled = true;
         submit.textContent = 'Guardando...';
-        try {
+      try {
           const action = payload.id ? 'productoActualizar' : 'productoGuardar';
           await withAuthRetry(() => window.DEPOSITO_API.post(`?action=${action}`, payload));
           showToast(payload.id ? 'Producto actualizado' : 'Producto creado');
           closeModal();
           form.reset();
           await load();
-      } catch (err) {
-        showToast(err.message || 'Error al guardar');
-      } finally {
-        submit.disabled = false;
-        submit.textContent = 'Guardar';
-      }
-    });
+        } catch (err) {
+        showToast(isAuthError(err) ? 'Reintentando conexión...' : (err.message || 'Error al guardar'));
+        } finally {
+          submit.disabled = false;
+          submit.textContent = 'Guardar';
+        }
+      });
     modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
     load();
   </script>
