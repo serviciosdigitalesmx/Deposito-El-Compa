@@ -3,158 +3,578 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#ff6b6b">
-  <title>Depósito El Compa - Integrador</title>
+  <meta name="theme-color" content="#0a0a0b">
+  <title>Depósito El Compa | Unified Command Center</title>
   <link rel="preconnect" href="https://cdnjs.cloudflare.com">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="css/deposito-unified.css">
-  <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="css/deposito-saas.css">
-  <script>
-    window.DEPOSITO_GAS_URL = 'https://script.google.com/macros/s/AKfycbw36LgiUW3Mp7ezvsQKcaDOAITZSryrMLdOXf0zu-8AtORq8l_0lwWkMu8RLYaS24ZZ/exec';
-  </script>
-  <script src="./js/deposito-notifications.js"></script>
   <style>
-    :root{--bg:#151827;--panel:#20243a;--panel-2:#2a2f4b;--text:#f4f7ff;--muted:#9ca6c9;--primary:#ff6b6b;--accent:#4ecdc4;--shadow:0 18px 50px rgba(0,0,0,.32)}
-    *{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,sans-serif;background:radial-gradient(circle at top,#222949 0,#151827 58%);color:var(--text)}
-    .bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;background:rgba(14,16,28,.9);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.08);position:sticky;top:0;z-index:5}
-    .bar::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;background:linear-gradient(90deg,transparent,rgba(255,107,107,.5),rgba(78,205,196,.5),transparent)}
-    .left{display:flex;align-items:center;gap:10px}.logo{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--primary),#ff8a6b);display:grid;place-items:center;box-shadow:var(--shadow)}
-    .title{font-weight:900;letter-spacing:.01em}.tabs{display:flex;gap:8px;flex-wrap:wrap}
-    .tab{border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:var(--text);padding:10px 14px;border-radius:12px;cursor:pointer;font-weight:800;transition:.2s ease;position:relative;overflow:hidden}
-    .tab:hover{transform:translateY(-1px);background:rgba(255,255,255,.08)}
-    .tab.active{background:linear-gradient(135deg,var(--primary),#ff7d7d);border-color:transparent;box-shadow:0 10px 24px rgba(255,107,107,.22)}
-    .tab.active::after{content:"";position:absolute;inset:auto 12px 6px; height:2px;border-radius:999px;background:rgba(255,255,255,.8)}
-    .wrap{height:calc(100vh - 72px)} .panel{display:none;height:100%}.panel.active{display:block}
-    iframe{width:100%;height:100%;border:0;background:var(--bg)}
-    .fallback{padding:10px 18px;color:var(--muted);font-size:12px;background:rgba(0,0,0,.18);border-top:1px solid rgba(255,255,255,.06)}.fallback a{color:var(--accent)}
-    .login{position:fixed;inset:0;background:rgba(7,8,16,.92);display:flex;align-items:center;justify-content:center;z-index:20;padding:16px}
-    .card{width:min(420px,100%);background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid rgba(255,107,107,.28);border-radius:18px;padding:26px;box-shadow:var(--shadow)}
-    .card h2{margin:0 0 6px;color:#ff8a8a;font-size:1.6rem} .card p{margin:0 0 14px;color:var(--muted);font-size:13px}
-    .input{width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,107,107,.28);color:var(--text);border-radius:12px;padding:12px 14px;outline:none;margin-bottom:10px}
-    .btn{width:100%;border:0;background:linear-gradient(135deg,var(--primary),#ff7d7d);color:#fff;font-weight:900;border-radius:12px;padding:12px;cursor:pointer;box-shadow:0 10px 24px rgba(255,107,107,.18)}
-    .err{min-height:18px;color:#ff8f9b;font-size:13px;margin-top:8px}
+    :root {
+      --bg: #0a0a0b;
+      --panel: #111113;
+      --panel-hover: #161618;
+      --text-primary: #fcfcfd;
+      --text-secondary: #a0a0a3;
+      --text-muted: #6f6f71;
+      --accent-primary: #3e63dd;
+      --accent-primary-dim: rgba(62, 99, 221, 0.1);
+      --premium-gold: #c4a05f;
+      --border-subtle: rgba(255, 255, 255, 0.04);
+      --border-strong: rgba(255, 255, 255, 0.08);
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --transition: all 0.2s ease-in-out;
+      --font-stack: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    * { box-sizing: border-box; outline: none; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text-primary);
+      background-color: var(--bg);
+      font-family: var(--font-stack);
+      font-size: 14px;
+      font-weight: 400;
+      letter-spacing: -0.01em;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+    .shell {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      min-height: 100vh;
+    }
+
+    .rail {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 24px 16px;
+      border-right: 1px solid var(--border-subtle);
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 8px 24px 8px;
+      border-bottom: 1px solid var(--border-subtle);
+      margin-bottom: 24px;
+    }
+
+    .brand-badge {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-md);
+      background: var(--panel);
+      border: 1px solid var(--border-strong);
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+      color: var(--premium-gold);
+    }
+
+    .brand-text h1 {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+    }
+
+    .brand-text p {
+      margin: 2px 0 0;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 300;
+    }
+
+    .nav {
+      display: grid;
+      gap: 4px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .nav-group-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      padding: 16px 12px 8px;
+      font-weight: 600;
+    }
+
+    .nav button {
+      width: 100%;
+      text-align: left;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-secondary);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      cursor: pointer;
+      font-family: var(--font-stack);
+      font-size: 13.5px;
+      font-weight: 400;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: var(--transition);
+    }
+
+    .nav button i {
+      width: 16px;
+      text-align: center;
+      font-size: 14px;
+      color: var(--text-muted);
+      transition: var(--transition);
+    }
+
+    .nav button:hover {
+      background: var(--panel-hover);
+      color: var(--text-primary);
+    }
+
+    .nav button:hover i {
+      color: var(--text-primary);
+    }
+
+    .nav button.active {
+      background: var(--accent-primary-dim);
+      color: var(--accent-primary);
+      font-weight: 500;
+      border-color: rgba(62, 99, 221, 0.2);
+    }
+
+    .nav button.active i {
+      color: var(--accent-primary);
+    }
+
+    .nav button small { display: none; }
+
+    .status-card {
+      margin-top: auto;
+      padding: 16px;
+      border-radius: var(--radius-md);
+      background: var(--panel);
+      border: 1px solid var(--border-strong);
+    }
+
+    .status-card strong {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--premium-gold);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .status-card div {
+      color: var(--text-secondary);
+      font-size: 12px;
+      line-height: 1.5;
+      font-weight: 300;
+    }
+
+    .content {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      background: #0e0e10;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 24px;
+      padding: 18px 32px;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: rgba(14, 14, 16, 0.9);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .topbar h2 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+    }
+
+    .topbar p {
+      margin: 4px 0 0;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 300;
+    }
+
+    .quick-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .quick-actions a {
+      text-decoration: none;
+      color: var(--text-secondary);
+      background: var(--panel);
+      border: 1px solid var(--border-strong);
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 500;
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      transition: var(--transition);
+    }
+
+    .quick-actions a:hover {
+      background: var(--panel-hover);
+      border-color: var(--text-muted);
+      color: var(--text-primary);
+    }
+
+    .view-container {
+      flex: 1;
+      padding: 24px 32px;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .context-hint {
+      margin-bottom: 16px;
+      padding: 10px 16px;
+      background: rgba(196, 160, 95, 0.05);
+      border-left: 2px solid var(--premium-gold);
+      color: var(--text-secondary);
+      font-size: 12.5px;
+      font-weight: 300;
+      border-radius: var(--radius-sm);
+    }
+
+    .frame-wrapper {
+      flex: 1;
+      position: relative;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: #000;
+      border: 1px solid var(--border-strong);
+      box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+      min-height: 72vh;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      position: absolute;
+      top: 0;
+      left: 0;
+      background: #0a0a0b;
+      transition: opacity .18s ease;
+    }
+
+    .login {
+      position: fixed;
+      inset: 0;
+      background: rgba(7,8,16,.92);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+      padding: 16px;
+    }
+
+    .card {
+      width: min(420px,100%);
+      background: linear-gradient(180deg,var(--panel),var(--panel-hover));
+      border: 1px solid var(--border-strong);
+      border-radius: 18px;
+      padding: 26px;
+      box-shadow: 0 18px 50px rgba(0,0,0,.32);
+    }
+
+    .card h2 {
+      margin: 0 0 6px;
+      color: var(--text-primary);
+      font-size: 1.6rem;
+      font-weight: 600;
+    }
+
+    .card p {
+      margin: 0 0 14px;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    .input {
+      width: 100%;
+      background: rgba(255,255,255,.04);
+      border: 1px solid var(--border-strong);
+      color: var(--text-primary);
+      border-radius: 12px;
+      padding: 12px 14px;
+      outline: none;
+      margin-bottom: 10px;
+      font-family: var(--font-stack);
+    }
+
+    .input:focus {
+      border-color: rgba(62, 99, 221, .42);
+      box-shadow: 0 0 0 3px rgba(62, 99, 221, .12);
+    }
+
+    .btn {
+      width: 100%;
+      border: 0;
+      background: linear-gradient(135deg,var(--accent-primary),#5b7cff);
+      color: #fff;
+      font-weight: 900;
+      border-radius: 12px;
+      padding: 12px;
+      cursor: pointer;
+      box-shadow: 0 10px 24px rgba(62,99,221,.18);
+      font-family: var(--font-stack);
+    }
+
+    .err {
+      min-height: 18px;
+      color: #ff8f9b;
+      font-size: 13px;
+      margin-top: 8px;
+    }
+
     .tabs, .fallback { animation: fadeIn .35s ease both; }
-    @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: none; }
+    }
+
     body {
       background:
-        radial-gradient(circle at 12% 12%, rgba(255, 122, 111, 0.10), transparent 24%),
-        radial-gradient(circle at 84% 10%, rgba(90, 211, 199, 0.08), transparent 20%),
+        radial-gradient(circle at 12% 12%, rgba(62, 99, 221, 0.09), transparent 24%),
+        radial-gradient(circle at 84% 10%, rgba(196, 160, 95, 0.08), transparent 20%),
         linear-gradient(180deg, #070b16 0%, #05070f 100%);
     }
-    .bar, .card, .login, .fallback {
+
+    .rail, .topbar, .card, .login, .fallback {
       backdrop-filter: blur(18px);
     }
-    .bar {
+
+    .fallback {
+      padding: 10px 18px;
+      color: var(--text-muted);
+      font-size: 12px;
+      background: rgba(0,0,0,.18);
+      border-top: 1px solid rgba(255,255,255,.06);
+    }
+
+    .fallback a {
+      color: var(--accent-primary);
+      text-decoration: none;
+    }
+
+    .fallback a:hover {
+      text-decoration: underline;
+    }
+
+    .topbar {
       box-shadow: 0 10px 28px rgba(0,0,0,.28);
     }
-    .bar::before {
+
+    .topbar::before {
       content: "";
       position: absolute;
       inset: 0 0 auto 0;
       height: 2px;
-      background: linear-gradient(90deg, transparent, rgba(255, 122, 111, 0.75), rgba(90, 211, 199, 0.75), transparent);
+      background: linear-gradient(90deg, transparent, rgba(62, 99, 221, 0.75), rgba(196, 160, 95, 0.75), transparent);
       opacity: .85;
+    }
+
+    @media (max-width: 1024px) {
+      .shell { grid-template-columns: 1fr; }
+      .rail {
+        position: relative;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border-subtle);
+      }
+      .nav {
+        display: flex;
+        flex-wrap: wrap;
+        height: auto;
+        padding-bottom: 16px;
+      }
+      .nav-group-title { width: 100%; padding: 8px 0; }
+      .status-card { display: none; }
+      .topbar { position: relative; padding: 16px; }
+      .view-container { padding: 16px; }
+      .frame-wrapper { min-height: 70vh; }
     }
   </style>
 </head>
 <body>
-  <div id="login-screen" class="login">
-    <div class="card">
-      <h2>Acceso interno</h2>
-      <p>Un solo acceso para Caja, Productos, Repartidores, Hieleras, Reparto y Archivo</p>
-      <input id="master-password" class="input" type="password" placeholder="Contraseña" autocomplete="current-password">
-      <button id="master-login-btn" class="btn" type="button">Entrar</button>
-      <div id="master-error" class="err"></div>
-    </div>
-  </div>
+  <div class="shell">
+    <aside class="rail">
+      <div class="brand">
+        <div class="brand-badge"><i class="fa-solid fa-whiskey-glass"></i></div>
+        <div class="brand-text">
+          <h1>Depósito El Compa</h1>
+          <p>Unified Command Center</p>
+        </div>
+      </div>
 
-  <header class="bar">
-    <div class="left">
-      <div class="logo">🍻</div>
-      <div class="title">Depósito El Compa · Integrador Interno</div>
-    </div>
-    <nav class="tabs">
-      <button id="tab-operativo" class="tab active" type="button">Caja / Operativo</button>
-      <button id="tab-productos" class="tab" type="button">Productos</button>
-      <button id="tab-repartidores" class="tab" type="button">Repartidores</button>
-      <button id="tab-hieleras" class="tab" type="button">Hieleras</button>
-      <button id="tab-solicitudes" class="tab" type="button">Solicitudes</button>
-      <button id="tab-repartidor" class="tab" type="button">Repartidor</button>
-      <button id="tab-corte" class="tab" type="button">Pendiente corte</button>
-      <button id="tab-archivo" class="tab" type="button">Archivo</button>
-    </nav>
-  </header>
+      <div class="nav" id="nav">
+        <div class="nav-group-title">Core Views</div>
+        <button class="active" data-view="cliente" data-title="Módulo Cliente" data-src="./index.html"><i class="fa-solid fa-store"></i> Cliente</button>
+        <button data-view="admin" data-title="Executive Dashboard" data-src="./admin.html"><i class="fa-solid fa-chart-line"></i> Admin (KPIs)</button>
+        <button data-view="interno" data-title="Integrador Central" data-src="./integrador.html"><i class="fa-solid fa-microchip"></i> Interno Pro</button>
 
-  <div class="wrap">
-    <section id="panel-operativo" class="panel active"><iframe id="frame-operativo" src="about:blank" title="Operativo"></iframe></section>
-    <section id="panel-productos" class="panel"><iframe id="frame-productos" src="about:blank" title="Productos"></iframe></section>
-    <section id="panel-repartidores" class="panel"><iframe id="frame-repartidores" src="about:blank" title="Repartidores"></iframe></section>
-    <section id="panel-hieleras" class="panel"><iframe id="frame-hieleras" src="about:blank" title="Hieleras"></iframe></section>
-    <section id="panel-solicitudes" class="panel"><iframe id="frame-solicitudes" src="about:blank" title="Solicitudes"></iframe></section>
-    <section id="panel-repartidor" class="panel"><iframe id="frame-repartidor" src="about:blank" title="Repartidor"></iframe></section>
-    <section id="panel-corte" class="panel"><iframe id="frame-corte" src="about:blank" title="Pendiente de corte"></iframe></section>
-    <section id="panel-archivo" class="panel"><iframe id="frame-archivo" src="about:blank" title="Archivo"></iframe></section>
-  </div>
+        <div class="nav-group-title">Operaciones</div>
+        <button data-view="solicitudes" data-title="Gestión de Solicitudes" data-src="./panel-solicitudes.html"><i class="fa-solid fa-tray"></i> Solicitudes</button>
+        <button data-view="hieleras" data-title="Logística Hieleras" data-src="./panel-tecnico.html"><i class="fa-solid fa-snowflake"></i> Hieleras</button>
+        <button data-view="repartidor" data-title="Fleet Control" data-src="./panel-repartidor.html"><i class="fa-solid fa-route"></i> Repartidor</button>
+        <button data-view="operativo" data-title="Punto de Venta / Caja" data-src="./panel-operativo.html"><i class="fa-solid fa-cash-register"></i> Caja Pro</button>
 
-  <div class="fallback">
-    Si algo falla:
-    <a href="./panel-operativo.html" target="_blank">Caja / Operativo</a> |
-    <a href="./panel-productos.html" target="_blank">Productos</a> |
-    <a href="./panel-repartidores.html" target="_blank">Repartidores</a> |
-    <a href="./panel-tecnico.html" target="_blank">Hieleras</a> |
-    <a href="./panel-solicitudes.html" target="_blank">Solicitudes</a> |
-    <a href="./panel-repartidor.html" target="_blank">Repartidor</a> |
-    <a href="./panel-corte.html" target="_blank">Pendiente corte</a> |
-    <a href="./panel-archivo.html" target="_blank">Archivo</a>
+        <div class="nav-group-title">Inventario y Personal</div>
+        <button data-view="productos" data-title="Catálogo Master" data-src="./panel-productos.html"><i class="fa-solid fa-boxes-stacked"></i> Productos</button>
+        <button data-view="repartidores" data-title="Recursos Humanos" data-src="./panel-repartidores.html"><i class="fa-solid fa-users-gear"></i> Repartidores</button>
+
+        <div class="nav-group-title">Finanzas</div>
+        <button data-view="corte" data-title="Corte de Caja Pendiente" data-src="./panel-corte.html"><i class="fa-solid fa-file-invoice-dollar"></i> Pendiente Corte</button>
+        <button data-view="archivo" data-title="Archivo Histórico" data-src="./panel-archivo.html"><i class="fa-solid fa-archive"></i> Archivo</button>
+      </div>
+
+      <div class="status-card">
+        <strong id="panelTitle">Módulo Cliente</strong>
+        <div id="panelDesc">Sincronizado. Catálogo público, carrito y confirmación de pedidos en tiempo real.</div>
+      </div>
+    </aside>
+
+    <section class="content">
+      <div class="topbar">
+        <div>
+          <h2>Consola Unificada de Referencia</h2>
+          <p>Entorno de validación aislado. Versión premium.</p>
+        </div>
+        <div class="quick-actions">
+          <a href="./index.html" target="_blank"><i class="fa-solid fa-external-link-alt"></i> Launch Client Arc</a>
+          <a href="./integrador.html" target="_blank"><i class="fa-solid fa-server"></i> Launch Core Ops</a>
+        </div>
+      </div>
+
+      <div class="view-container">
+        <div class="context-hint">
+          <i class="fa-solid fa-circle-info" style="color:var(--premium-gold); margin-right:5px;"></i>
+          <strong>Nota de entorno:</strong> Esta instancia opera sobre datos locales de escritorio. Los cambios visuales aquí no afectan la rama de producción principal hasta su despliegue oficial.
+        </div>
+        <div class="frame-wrapper">
+          <iframe id="frame" src="./index.html" title="Vista de Consola"></iframe>
+        </div>
+      </div>
+    </section>
   </div>
 
   <script>
-    const MASTER_PASS = 'Admin1';
-    const PANEL_OP = document.getElementById('panel-operativo');
-    const PANEL_HI = document.getElementById('panel-hieleras');
-    const PANEL_SO = document.getElementById('panel-solicitudes');
-    const PANEL_RE = document.getElementById('panel-repartidor');
-    const PANEL_CO = document.getElementById('panel-corte');
-    const PANEL_AR = document.getElementById('panel-archivo');
-    const PANEL_PR = document.getElementById('panel-productos');
-    const PANEL_RP = document.getElementById('panel-repartidores');
-    const FRAME_OP = document.getElementById('frame-operativo');
-    const FRAME_HI = document.getElementById('frame-hieleras');
-    const FRAME_SO = document.getElementById('frame-solicitudes');
-    const FRAME_RE = document.getElementById('frame-repartidor');
-    const FRAME_CO = document.getElementById('frame-corte');
-    const FRAME_AR = document.getElementById('frame-archivo');
-    const FRAME_PR = document.getElementById('frame-productos');
-    const FRAME_RP = document.getElementById('frame-repartidores');
-    const LOGIN = document.getElementById('login-screen');
-    const PASS = document.getElementById('master-password');
-    const ERR = document.getElementById('master-error');
-    const SRC = {
-      operativo: './panel-operativo.html',
-      productos: './panel-productos.html',
-      repartidores: './panel-repartidores.html',
-      hieleras: './panel-tecnico.html',
-      solicitudes: './panel-solicitudes.html',
-      repartidor: './panel-repartidor.html',
-      corte: './panel-corte.html',
-      archivo: './panel-archivo.html'
+    const nav = document.getElementById('nav');
+    const frame = document.getElementById('frame');
+    const panelTitle = document.getElementById('panelTitle');
+    const panelDesc = document.getElementById('panelDesc');
+
+    const copy = {
+      'Módulo Cliente': 'Sincronizado. Catálogo público, carrito y confirmación de pedidos en tiempo real.',
+      'Executive Dashboard': 'Ingesta de datos analíticos, visión ejecutiva de KPIs y control de resultados globales.',
+      'Integrador Central': 'Hub de operaciones centralizado: orquestación de caja, hieleras, reparto y archivo.',
+      'Gestión de Solicitudes': 'Pipeline de entrada de pedidos y acciones de validación de caja.',
+      'Logística Hieleras': 'Workflow de preparación y fulfillment de pedidos aceptados.',
+      'Fleet Control': 'Monitorización de pedidos en ruta, telemetría de entrega y gestión de cortes.',
+      'Punto de Venta / Caja': 'Terminal operativa, entrada manual de datos y cierre de ciclos de pedido.',
+      'Catálogo Master': 'Mantenimiento del catálogo, SKU e integridad de activos visuales.',
+      'Recursos Humanos': 'Alta, baja y administración de credenciales del personal de reparto.',
+      'Corte de Caja Pendiente': 'Conciliación de pedidos entregados pendientes de liquidación financiera.',
+      'Archivo Histórico': 'Bóveda de datos históricos de operaciones concluidas (Solo lectura).'
     };
 
     function loadFrame(name) {
-      const map = { operativo: FRAME_OP, productos: FRAME_PR, repartidores: FRAME_RP, hieleras: FRAME_HI, solicitudes: FRAME_SO, repartidor: FRAME_RE, corte: FRAME_CO, archivo: FRAME_AR };
-      const frame = map[name];
-      if (frame && frame.src === 'about:blank') frame.src = `${SRC[name]}?v=${Date.now()}`;
+      const src = {
+        cliente: './index.html',
+        admin: './admin.html',
+        interno: './integrador.html',
+        operativo: './panel-operativo.html',
+        productos: './panel-productos.html',
+        repartidores: './panel-repartidores.html',
+        hieleras: './panel-tecnico.html',
+        solicitudes: './panel-solicitudes.html',
+        repartidor: './panel-repartidor.html',
+        corte: './panel-corte.html',
+        archivo: './panel-archivo.html'
+      }[name];
+      if (src && frame.dataset.current !== name) {
+        frame.style.opacity = '0.55';
+        frame.src = `${src}?v=${Date.now()}`;
+        frame.dataset.current = name;
+        frame.onload = () => { frame.style.opacity = '1'; };
+      }
     }
+
     function show(name) {
-      ['operativo','productos','repartidores','hieleras','solicitudes','repartidor','corte','archivo'].forEach(n => {
-        document.getElementById(`panel-${n}`).classList.toggle('active', n === name);
-        document.getElementById(`tab-${n}`).classList.toggle('active', n === name);
-        if (n === name) loadFrame(n);
+      document.querySelectorAll('.nav button').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.view === name);
       });
+      loadFrame(name);
+      const active = document.querySelector(`.nav button[data-view="${name}"]`);
+      const title = active ? active.dataset.title : 'Módulo Cliente';
+      panelTitle.textContent = title;
+      panelDesc.textContent = copy[title] || '';
     }
+
+    nav.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-view]');
+      if (!btn) return;
+      show(btn.dataset.view || 'cliente');
+    });
+
+    const MASTER_PASS = 'Admin1';
+    const LOGIN = document.createElement('div');
+    LOGIN.className = 'login';
+    LOGIN.id = 'login-screen';
+    LOGIN.innerHTML = `
+      <div class="card">
+        <h2>Acceso interno</h2>
+        <p>Un solo acceso para Caja, Productos, Repartidores, Hieleras, Reparto y Archivo</p>
+        <input id="master-password" class="input" type="password" placeholder="Contraseña" autocomplete="current-password">
+        <button id="master-login-btn" class="btn" type="button">Entrar</button>
+        <div id="master-error" class="err"></div>
+      </div>`;
+    document.body.appendChild(LOGIN);
+
+    const PASS = document.getElementById('master-password');
+    const ERR = document.getElementById('master-error');
+    const LOGIN_BTN = document.getElementById('master-login-btn');
+
     function unlock() {
       const value = (PASS.value || '').trim();
       if (value !== MASTER_PASS) {
@@ -162,18 +582,12 @@
         return;
       }
       LOGIN.style.display = 'none';
-      show('operativo');
+      show('cliente');
     }
-    document.getElementById('master-login-btn').addEventListener('click', unlock);
+
+    LOGIN_BTN.addEventListener('click', unlock);
     PASS.addEventListener('keydown', (e) => { if (e.key === 'Enter') unlock(); });
-    document.getElementById('tab-operativo').addEventListener('click', () => show('operativo'));
-    document.getElementById('tab-productos').addEventListener('click', () => show('productos'));
-    document.getElementById('tab-repartidores').addEventListener('click', () => show('repartidores'));
-    document.getElementById('tab-hieleras').addEventListener('click', () => show('hieleras'));
-    document.getElementById('tab-solicitudes').addEventListener('click', () => show('solicitudes'));
-    document.getElementById('tab-repartidor').addEventListener('click', () => show('repartidor'));
-    document.getElementById('tab-corte').addEventListener('click', () => show('corte'));
-    document.getElementById('tab-archivo').addEventListener('click', () => show('archivo'));
+
     if (window.DepositoPWA) {
       window.DepositoPWA.registerSW();
       window.DepositoPWA.requestPermission();
@@ -184,7 +598,11 @@
         filter: row => String(row.estado || row.status || '').toLowerCase() === 'nuevo',
         onNewItem: async ({ rows }) => {
           const count = rows.length;
-          await window.DepositoPWA.notifyUser('Pedido nuevo', `Nuevo pedido detectado desde el integrador. Tienes ${count} pendiente${count === 1 ? '' : 's'}.`, 'urgent');
+          await window.DepositoPWA.notifyUser(
+            'Pedido nuevo',
+            `Nuevo pedido detectado desde el integrador. Tienes ${count} pendiente${count === 1 ? '' : 's'}.`,
+            'urgent'
+          );
         }
       });
     }
