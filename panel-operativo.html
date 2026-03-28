@@ -35,6 +35,17 @@
     .manual-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;position:relative;z-index:1}
     .manual input,.manual select,.manual textarea{width:100%;background:rgba(8,10,20,.48);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px 14px;color:var(--text);outline:none;transition:.18s ease}
     .manual input:focus,.manual select:focus,.manual textarea:focus{border-color:rgba(255,107,107,.42);box-shadow:0 0 0 3px rgba(255,107,107,.12)}
+    .manual select{
+      appearance:none;
+      -webkit-appearance:none;
+      -moz-appearance:none;
+      background-image:linear-gradient(45deg,transparent 50%,rgba(243,244,246,.75) 50%),linear-gradient(135deg,rgba(243,244,246,.75) 50%,transparent 50%);
+      background-position:calc(100% - 18px) calc(50% - 3px),calc(100% - 12px) calc(50% - 3px);
+      background-size:6px 6px,6px 6px;
+      background-repeat:no-repeat;
+      padding-right:38px;
+    }
+    .manual option{background:#12141f;color:#f3f4f6}
     .manual textarea{min-height:86px;resize:vertical}
     .manual-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;position:relative;z-index:1}
     .manual-list{margin-top:14px;display:grid;gap:10px;position:relative;z-index:1}
