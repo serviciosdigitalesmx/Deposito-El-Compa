@@ -30,7 +30,7 @@ function doGet(e) {
 function doPost(e) {
   console.log('POST recibido', JSON.stringify(e || {}));
   try {
-    return jsonResponse(handleRequest('POST', e));
+    return jsonResponse(handleRequest('POST', normalizePostEvent(e)));
   } catch (error) {
     console.error('POST error', error && error.stack ? error.stack : String(error));
     return jsonResponse({ ok: false, error: String(error && error.message ? error.message : error) });
@@ -267,6 +267,40 @@ function parseBody(e) {
   }
 
   return body;
+}
+
+function parseEnvelope(e) {
+  if (!e || !e.postData || !e.postData.contents) return {};
+  try {
+    const raw = JSON.parse(e.postData.contents || '{}');
+    return raw && typeof raw === 'object' ? raw : {};
+  } catch (_) {
+    return {};
+  }
+}
+
+function normalizePostEvent(e) {
+  const envelope = parseEnvelope(e);
+  const payload = envelope && typeof envelope.payload === 'object' && envelope.payload ? envelope.payload : {};
+  const header = envelope && typeof envelope.header === 'object' && envelope.header ? envelope.header : {};
+  const params = e && e.parameter ? e.parameter : {};
+  const token = String(envelope.token || envelope.header_token || payload.token || params.token || '');
+  const action = String(header.action || payload.action || params.action || '');
+  const intent = String(header.intent || payload.intent || 'POST');
+  const flattened = {
+    ...params,
+    ...payload,
+    action,
+    intent,
+    token,
+    header_token: token,
+    header: header,
+    payload: payload,
+  };
+  return {
+    parameter: { ...params, action, token },
+    postData: { contents: JSON.stringify(flattened) }
+  };
 }
 
 function decodeValue(value) {

@@ -1,7 +1,21 @@
 (function (global) {
+  function detectStorageKey() {
+    const path = String(global.location && global.location.pathname || '').toLowerCase();
+    if (path.includes('productos')) return 'DEPOSITO_PROD_V1';
+    if (path.includes('operativo') || path.includes('caja')) return 'DEPOSITO_OPER_V1';
+    if (path.includes('archivo')) return 'DEPOSITO_ARCH_V1';
+    if (path.includes('tecnico') || path.includes('hieleras')) return 'DEPOSITO_HIELERAS_V1';
+    if (path.includes('repartidor')) return 'DEPOSITO_REPARTIDOR_V1';
+    if (path.includes('corte')) return 'DEPOSITO_CORTE_V1';
+    if (path.includes('solicitudes')) return 'DEPOSITO_SOLICITUDES_V1';
+    if (path.includes('admin')) return 'DEPOSITO_ADMIN_V1';
+    return 'DEPOSITO_GENERIC_V1';
+  }
+
   const defaultConfig = {
     endpoint: global.DEPOSITO_GAS_URL || '',
     token: global.DEPOSITO_GAS_TOKEN || '',
+    storageKey: detectStorageKey(),
     timeoutMs: 12000,
   };
   const QUEUE_KEY = 'DEPOSITO_API_POST_QUEUE_V1';
@@ -24,13 +38,14 @@
     } catch (_) {}
   }
 
-  function enqueuePost(url, body, token) {
+  function enqueuePost(url, body, token, envelope = null) {
     const queue = loadQueue();
     const item = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       url,
       body,
       token: token || defaultConfig.token || '',
+      envelope,
       createdAt: new Date().toISOString(),
     };
     queue.push(item);
@@ -50,6 +65,7 @@
           mode: 'cors',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify({
+            ...(item.envelope || {}),
             ...(item.body || {}),
             token: item.token,
             header_token: item.token,
@@ -100,15 +116,37 @@
   }
 
   function postViaForm(url, body, token) {
+    const actionMatch = String(url || '').match(/[?&]action=([^&]+)/i);
+    const action = actionMatch ? decodeURIComponent(actionMatch[1]) : '';
+    const storageKey = global.DEPOSITO_API.storageKey || defaultConfig.storageKey;
+    const sessionToken = token || defaultConfig.token || (storageKey && global.localStorage ? global.localStorage.getItem(storageKey) : '') || '';
+    const envelope = {
+      token: sessionToken,
+      header_token: sessionToken,
+      action,
+      header: {
+        intent: 'POST',
+        action,
+        uuid: global.crypto && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+        timestamp: Date.now(),
+        panel: String(global.location && global.location.pathname || ''),
+      },
+      payload: body || {},
+    };
     const payload = {
       ...body,
-      token: token || defaultConfig.token || '',
-      header_token: token || defaultConfig.token || '',
+      ...envelope,
+      token: sessionToken,
+      header_token: sessionToken,
+      action,
+      intent: 'POST',
+      uuid: envelope.header.uuid,
+      timestamp: envelope.header.timestamp,
     };
     const raw = JSON.stringify(payload);
 
     if (global.navigator && global.navigator.onLine === false) {
-      enqueuePost(url, body, token);
+      enqueuePost(url, body, sessionToken, envelope);
       return Promise.resolve({ ok: true, queued: true, offline: true });
     }
 
@@ -134,7 +172,7 @@
     }).catch((error) => {
       const isNetworkLike = !error || /network|fetch|failed to fetch|load failed|connection/i.test(String(error.message || error));
       if (isNetworkLike) {
-        enqueuePost(url, body, token);
+        enqueuePost(url, body, sessionToken, envelope);
         return { ok: true, queued: true, offline: true };
       }
       throw error;
@@ -146,6 +184,9 @@
     setConfig(config = {}) {
       Object.assign(defaultConfig, config);
       Object.assign(global.DEPOSITO_API, config);
+    },
+    getStorageKey() {
+      return global.DEPOSITO_API.storageKey || defaultConfig.storageKey;
     },
     get(path, opts) {
       return request(path, { ...opts, method: 'GET' });
