@@ -5,320 +5,98 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Depósito El Compa - Productos</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="css/deposito-unified.css">
   <link rel="stylesheet" href="css/deposito-saas.css">
   <style>
-    :root{--bg:#121423;--panel:#1b1f33;--panel-2:#252a44;--text:#f4f7ff;--muted:#97a0b3;--accent:#ff6b6b;--good:#34d399;--warn:#fbbf24;--bad:#fb7185;--shadow:0 14px 32px rgba(0,0,0,.28)}
-    *{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,sans-serif;background:radial-gradient(circle at top,#1b1f37 0,#121423 60%);color:var(--text)}
-    header{position:sticky;top:0;z-index:10;padding:16px 20px;background:rgba(12,14,24,.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.08)}
-    .bar{max-width:1400px;margin:0 auto;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
-    .title{display:flex;flex-direction:column;gap:4px}.title strong{font-size:20px}.title span{color:var(--muted);font-size:13px}
-    main{max-width:1400px;margin:0 auto;padding:18px 20px 28px}
-    .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:18px 0}
-    .card{background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:16px;box-shadow:var(--shadow)}
-    .stat .label{color:var(--muted);font-size:.82rem}.stat .value{font-size:2rem;font-weight:900;margin-top:8px}
-    .toolbar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;margin:18px 0}
-    .input,.select{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:11px 12px;color:var(--text);outline:none}
-    .input:focus,.select:focus{border-color:rgba(255,107,107,.42);box-shadow:0 0 0 3px rgba(255,107,107,.12)}
-    .btn{border:0;border-radius:12px;padding:11px 14px;font-weight:900;cursor:pointer;transition:.18s ease;display:inline-flex;align-items:center;gap:8px;text-decoration:none}
-    .btn:hover{transform:translateY(-1px)} .btn.primary{background:var(--accent);color:#fff} .btn.secondary{background:rgba(255,255,255,.08);color:var(--text)}
-    table{width:100%;border-collapse:collapse}.table-wrap{overflow:auto}
-    th,td{padding:12px 10px;text-align:left;border-bottom:1px solid rgba(255,255,255,.06);vertical-align:top}
-    th{color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.05em}
-    .pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;font-size:.78rem;font-weight:800}
-    .good{background:rgba(52,211,153,.14);color:var(--good)} .warn{background:rgba(251,191,36,.14);color:var(--warn)} .bad{background:rgba(251,113,133,.14);color:var(--bad)}
-    .mini{border:0;border-radius:10px;padding:8px 10px;font-weight:800;cursor:pointer}.mini.edit{background:rgba(255,255,255,.08);color:var(--text)} .mini.off{background:rgba(251,113,133,.16);color:#ffd8df}.mini.on{background:rgba(52,211,153,.16);color:#d6ffef}
-    .login{position:fixed;inset:0;background:rgba(5,6,14,.94);display:flex;align-items:center;justify-content:center;z-index:20;padding:16px}
-    .login-card{width:min(420px,100%);background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:24px;box-shadow:var(--shadow)}
-    .login-card h2{margin:0 0 8px;font-size:1.55rem}.login-card p{margin:0 0 14px;color:var(--muted);font-size:.95rem}.err{min-height:18px;color:#ff8f9b;font-size:13px;margin-top:8px}
-    .modal{position:fixed;inset:0;background:rgba(5,6,14,.82);display:flex;align-items:center;justify-content:center;z-index:30;padding:16px}
-    .modal.hidden,.login.hidden{display:none!important}
-    .modal-card{width:min(720px,100%);max-height:88vh;overflow:auto;background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:20px;box-shadow:var(--shadow)}
-    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.grid .full{grid-column:1/-1}
-    .file{padding:10px;background:rgba(255,255,255,.04);border:1px dashed rgba(255,255,255,.12);border-radius:12px}
-    .toast{position:fixed;right:20px;bottom:20px;z-index:50;background:rgba(12,14,24,.96);color:var(--text);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px 14px;box-shadow:var(--shadow);opacity:0;transform:translateY(10px);pointer-events:none;transition:.2s ease;max-width:min(360px,calc(100vw - 40px))}
-    .toast.show{opacity:1;transform:translateY(0)}
-    .toast.good{border-color:rgba(52,211,153,.3)}
-    .toast.bad{border-color:rgba(251,113,133,.35)}
-    .is-busy{opacity:.72;pointer-events:none}
-    @media(max-width:980px){.stats,.grid{grid-template-columns:1fr 1fr}.toolbar{align-items:stretch}}
-    @media(max-width:640px){.stats,.grid{grid-template-columns:1fr}}
+    body{margin:0;font-family:Inter,system-ui,sans-serif;background:radial-gradient(circle at top,#1b1f2f 0,#12141f 55%);color:#f3f4f6}
+    header{position:sticky;top:0;background:rgba(17,20,31,.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.08);padding:16px 20px;z-index:10}
+    .bar,.wrap{max-width:1400px;margin:0 auto}
+    .bar{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+    .title{display:flex;flex-direction:column;gap:4px}
+    .title strong{font-size:20px}
+    .title span{color:#97a0b3;font-size:13px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;padding:18px 20px 28px}
+    .card{background:linear-gradient(180deg,#1b1f2f,#262a3d);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:16px;box-shadow:0 12px 30px rgba(0,0,0,.25)}
+    .card h3{margin:0 0 6px}
+    .meta{color:#97a0b3;font-size:13px;line-height:1.5}
+    .badge{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700;background:rgba(78,205,196,.14);color:#4ecdc4}
+    .price{font-size:24px;font-weight:800;color:#ff6b6b;margin:10px 0 0}
+    .img{width:100%;height:160px;border-radius:14px;object-fit:cover;background:#0f121a;border:1px solid rgba(255,255,255,.08)}
+    .toplinks{display:flex;gap:10px;flex-wrap:wrap}
+    .toplinks a{color:#fff;text-decoration:none;padding:10px 14px;border-radius:12px;background:rgba(255,255,255,.08)}
+    .empty{padding:28px;text-align:center;color:#97a0b3;border:1px dashed rgba(255,255,255,.12);border-radius:18px;background:rgba(255,255,255,.02)}
   </style>
 </head>
 <body>
-  <div id="loginOverlay" class="login">
-    <div class="login-card">
-      <h2>🔧 Productos</h2>
-      <p>Alta, edición y activación de catálogo para el integrador.</p>
-      <input id="pin" class="input" type="password" placeholder="PIN de admin">
-      <button id="loginBtn" class="btn primary" style="width:100%;margin-top:10px;">Entrar</button>
-      <div id="loginError" class="err"></div>
-    </div>
-  </div>
-
-  <div class="modal hidden" id="modal">
-    <div class="modal-card">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap;">
-        <div>
-          <h2 style="margin:0 0 4px;">Producto</h2>
-          <div class="muted">Crear o editar catálogo</div>
-        </div>
-        <button class="btn secondary" id="closeModal" type="button">Cerrar</button>
-      </div>
-      <div class="grid">
-        <input class="input" id="pNombre" placeholder="Nombre">
-        <input class="input" id="pPrecio" type="number" min="0" step="1" placeholder="Precio">
-        <input class="input" id="pStock" type="number" min="0" step="1" placeholder="Stock">
-        <select class="input" id="pCategoria">
-          <option value="cerveza">Cerveza</option>
-          <option value="botana">Botana</option>
-          <option value="otros">Otros</option>
-        </select>
-        <input class="input full" id="pImagen" placeholder="URL o deja vacío y sube archivo">
-        <div class="file full">
-          <input class="input" id="pImageFile" type="file" accept="image/*">
-        </div>
-        <input class="input" id="pIcono" placeholder="Icono" value="🍺">
-      </div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;">
-        <button class="btn primary" id="saveProduct" type="button">Guardar</button>
-        <button class="btn secondary" id="cancelProduct" type="button">Cancelar</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="toast" class="toast" aria-live="polite"></div>
-
   <header>
     <div class="bar">
       <div class="title">
-        <strong><i class="fa-solid fa-box-open"></i> Integrador · Productos</strong>
-        <span>Mantenimiento del catálogo desde el panel interno.</span>
+        <strong><i class="fa-solid fa-bottle-water"></i> Productos</strong>
+        <span>Catálogo y gestión visual de inventario</span>
       </div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;">
-        <a class="btn secondary" href="./integrador.html"><i class="fa-solid fa-grid-2"></i> Integrador</a>
-        <button id="addBtn" class="btn primary" type="button"><i class="fa-solid fa-plus"></i> Nuevo producto</button>
-        <button id="refreshBtn" class="btn secondary" type="button"><i class="fa-solid fa-rotate"></i> Refrescar</button>
+      <div class="toplinks">
+        <a href="./admin.html">Admin</a>
+        <a href="./integrador.html">Integrador</a>
       </div>
     </div>
   </header>
-
-  <main>
-    <section class="stats">
-      <div class="card stat"><div class="label">Productos</div><div class="value" id="m-total">0</div></div>
-      <div class="card stat"><div class="label">Activos</div><div class="value" id="m-activos">0</div></div>
-      <div class="card stat"><div class="label">Agotados</div><div class="value" id="m-agotados">0</div></div>
-      <div class="card stat"><div class="label">Bajo stock</div><div class="value" id="m-bajos">0</div></div>
-    </section>
-
-    <div class="toolbar">
-      <input id="search" class="input" style="min-width:260px;" placeholder="Buscar producto...">
-      <select id="filter" class="select">
-        <option value="todos">Todos</option>
-        <option value="activo">Activos</option>
-        <option value="inactivo">Inactivos</option>
-      </select>
-    </div>
-
-    <div class="card table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Producto</th>
-            <th>Precio</th>
-            <th>Stock</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="rows"></tbody>
-      </table>
-    </div>
-  </main>
-
+  <main class="wrap"><div id="list" class="grid"></div></main>
   <script>
     window.DEPOSITO_GAS_URL = 'https://script.google.com/macros/s/AKfycbw36LgiUW3Mp7ezvsQKcaDOAITZSryrMLdOXf0zu-8AtORq8l_0lwWkMu8RLYaS24ZZ/exec';
   </script>
   <script src="./js/deposito-api.js"></script>
   <script>
-    const AUTH_PIN = '1234';
     const AUTH_ROLE = 'admin';
-    const TOKEN_KEY = 'DEPOSITO_GAS_TOKEN_PRODUCTOS';
-    const loginOverlay = document.getElementById('loginOverlay');
-    const loginError = document.getElementById('loginError');
-    const modal = document.getElementById('modal');
-    const toast = document.getElementById('toast');
-    let products = [];
-    let editId = '';
-    let busy = false;
+    const AUTH_PIN = '1111';
+    const AUTH_TOKEN_KEY = 'DEPOSITO_GAS_TOKEN';
+    const list = document.getElementById('list');
 
-    function api(){ return window.DEPOSITO_API; }
-    function setAuth(token){ localStorage.setItem(TOKEN_KEY, token); api().setConfig({ endpoint: window.DEPOSITO_GAS_URL, token }); }
-    function money(v){ return Number(v || 0).toLocaleString('es-MX', { style:'currency', currency:'MXN' }); }
-    function setBusy(state){
-      busy = !!state;
-      document.body.classList.toggle('is-busy', busy);
-      ['saveProduct','addBtn','refreshBtn','closeModal','cancelProduct'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.disabled = busy && id !== 'refreshBtn';
-      });
-    }
-    function showToast(msg, kind = 'good'){
-      toast.textContent = msg;
-      toast.className = `toast ${kind} show`;
-      clearTimeout(showToast._t);
-      showToast._t = setTimeout(() => toast.className = 'toast', 2400);
+    function setApiAuth(token) {
+      window.DEPOSITO_API.setConfig({ endpoint: window.DEPOSITO_GAS_URL, token: token || '' });
     }
 
-    async function login(){
-      const cached = localStorage.getItem(TOKEN_KEY);
-      if (cached){ setAuth(cached); loginOverlay.classList.add('hidden'); return cached; }
-      const pin = (document.getElementById('pin').value || '').trim();
-      if (pin !== AUTH_PIN){ loginError.textContent = 'PIN incorrecto'; return null; }
-      const res = await api().get(`?action=login&role=${AUTH_ROLE}&pin=${AUTH_PIN}&t=${Date.now()}`);
-      if (!res || !res.ok || !res.token){ loginError.textContent = (res && res.error) || 'No se pudo autenticar'; return null; }
-      setAuth(res.token); loginOverlay.classList.add('hidden'); return res.token;
+    async function ensureAuth() {
+      const cached = localStorage.getItem(AUTH_TOKEN_KEY);
+      if (cached) {
+        setApiAuth(cached);
+        return cached;
+      }
+      const res = await window.DEPOSITO_API.get(`?action=login&role=${AUTH_ROLE}&pin=${AUTH_PIN}&t=${Date.now()}`);
+      if (!res?.ok || !res.token) throw new Error(res?.error || 'No se pudo autenticar admin');
+      localStorage.setItem(AUTH_TOKEN_KEY, res.token);
+      setApiAuth(res.token);
+      return res.token;
     }
 
-    function statusTone(p){
+    function card(p) {
+      const img = p.imagen_url || p.image || '';
       const active = String(p.activo || 'true').toLowerCase() === 'true';
-      const stock = Number(p.stock || 0);
-      if (!active) return ['Inactivo','bad'];
-      if (stock <= 0) return ['Agotado','bad'];
-      if (stock < 20) return ['Bajo stock','warn'];
-      return ['Disponible','good'];
+      const src = img.startsWith('http') || img.startsWith('data:') ? img : `assets/images/${img}`;
+      return `<article class="card">
+        <img class="img" src="${src}" alt="${p.nombre || 'Producto'}" onerror="this.src='assets/images/modelo.png'">
+        <div style="margin-top:12px;display:flex;justify-content:space-between;gap:8px;align-items:flex-start">
+          <div>
+            <h3>${p.nombre || 'Sin nombre'}</h3>
+            <div class="meta">Categoría: ${p.categoria || '---'}<br>Stock: ${p.stock ?? '---'}</div>
+          </div>
+          <span class="badge">${active ? 'Activo' : 'Inactivo'}</span>
+        </div>
+        <div class="price">$${Number(p.precio || 0).toFixed(2)}</div>
+      </article>`;
     }
 
-    function render(){
-      const q = (document.getElementById('search').value || '').trim().toLowerCase();
-      const filter = document.getElementById('filter').value;
-      const filtered = products.filter(p => {
-        const name = `${p.nombre || ''} ${p.categoria || ''}`.toLowerCase();
-        const active = String(p.activo || 'true').toLowerCase() === 'true';
-        if (filter === 'activo' && !active) return false;
-        if (filter === 'inactivo' && active) return false;
-        return !q || name.includes(q);
-      });
-      document.getElementById('m-total').textContent = products.length;
-      document.getElementById('m-activos').textContent = products.filter(p => String(p.activo || 'true').toLowerCase() === 'true').length;
-      document.getElementById('m-agotados').textContent = products.filter(p => Number(p.stock || 0) <= 0).length;
-      document.getElementById('m-bajos').textContent = products.filter(p => Number(p.stock || 0) > 0 && Number(p.stock || 0) < 20).length;
-      const rows = document.getElementById('rows');
-      rows.innerHTML = filtered.length ? filtered.map(p => {
-        const [label, tone] = statusTone(p);
-        const active = String(p.activo || 'true').toLowerCase() === 'true';
-        return `<tr>
-          <td><strong>${p.nombre || ''}</strong><div class="muted" style="font-size:.85rem;">${p.categoria || ''}</div></td>
-          <td>${money(p.precio)}</td>
-          <td>${Number(p.stock || 0)}</td>
-          <td><span class="pill ${tone}">${label}</span></td>
-          <td style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button class="mini edit" type="button" data-edit="${p.id}">Editar</button>
-            <button class="mini ${active ? 'off' : 'on'}" type="button" data-toggle="${p.id}">${active ? 'Desactivar' : 'Activar'}</button>
-          </td>
-        </tr>`;
-      }).join('') : '<tr><td colspan="5" class="muted">Sin productos.</td></tr>';
-      rows.querySelectorAll('[data-edit]').forEach(btn => btn.addEventListener('click', () => openEdit(btn.dataset.edit)));
-      rows.querySelectorAll('[data-toggle]').forEach(btn => btn.addEventListener('click', () => toggle(btn.dataset.toggle)));
-    }
-
-    function openModal(){ modal.classList.remove('hidden'); }
-    function closeModal(){ modal.classList.add('hidden'); editId = ''; }
-    function fillForm(p = {}){
-      document.getElementById('pNombre').value = p.nombre || '';
-      document.getElementById('pPrecio').value = p.precio || '';
-      document.getElementById('pStock').value = p.stock || '';
-      document.getElementById('pCategoria').value = p.categoria || 'cerveza';
-      document.getElementById('pImagen').value = p.imagen_url || '';
-      document.getElementById('pIcono').value = p.icon || '🍺';
-      const fileInput = document.getElementById('pImageFile');
-      if (fileInput) fileInput.value = '';
-    }
-
-    function openNew(){ editId = ''; fillForm({ categoria:'cerveza', icon:'🍺' }); openModal(); }
-    function openEdit(id){ editId = id; fillForm(products.find(p => String(p.id) === String(id)) || {}); openModal(); }
-
-    async function load(){
-      await login();
-      setBusy(true);
+    async function load() {
+      list.innerHTML = '<div class="empty">Cargando productos...</div>';
       try {
-        const res = await api().get(`?action=productos&t=${Date.now()}`);
-        products = Array.isArray(res.data) ? res.data : [];
-        render();
-        showToast(`Catálogo actualizado: ${products.length} productos`);
-      } catch (error) {
-        showToast(error.message || 'No se pudo cargar el catálogo', 'bad');
-      } finally {
-        setBusy(false);
+        await ensureAuth();
+        const res = await window.DEPOSITO_API.get('?action=productos&t=' + Date.now());
+        const rows = Array.isArray(res.data) ? res.data : [];
+        list.innerHTML = rows.length ? rows.map(card).join('') : '<div class="empty">No hay productos cargados.</div>';
+      } catch (e) {
+        list.innerHTML = `<div class="empty">Error al cargar productos: ${e.message}</div>`;
       }
     }
 
-    async function save(){
-      if (busy) return;
-      setBusy(true);
-      try {
-        let imageValue = document.getElementById('pImagen').value.trim();
-        const fileInput = document.getElementById('pImageFile');
-        if (fileInput && fileInput.files && fileInput.files[0]) {
-          imageValue = await new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(String(reader.result || ''));
-            reader.onerror = () => reject(new Error('No se pudo leer la imagen'));
-            reader.readAsDataURL(fileInput.files[0]);
-          });
-        }
-        const payload = {
-          nombre: document.getElementById('pNombre').value.trim(),
-          precio: Number(document.getElementById('pPrecio').value || 0),
-          stock: Number(document.getElementById('pStock').value || 0),
-          categoria: document.getElementById('pCategoria').value,
-          imagen_url: imageValue,
-          icon: document.getElementById('pIcono').value.trim(),
-          activo: true
-        };
-        const result = editId
-          ? await api().post('?action=productoActualizar', { id: editId, ...payload })
-          : await api().post('?action=productoGuardar', payload);
-        if (!result || !result.ok) throw new Error((result && result.error) || 'No se pudo guardar el producto');
-        showToast(editId ? 'Producto actualizado' : 'Producto guardado');
-        closeModal();
-        await load();
-      } catch (error) {
-        showToast(error.message || 'No se pudo guardar', 'bad');
-      } finally {
-        setBusy(false);
-      }
-    }
-
-    async function toggle(id){
-      if (busy) return;
-      setBusy(true);
-      try {
-        const result = await api().post('?action=productoToggle', { id });
-        if (!result || !result.ok) throw new Error((result && result.error) || 'No se pudo cambiar el estado');
-        showToast(result.activo ? 'Producto activado' : 'Producto desactivado');
-        await load();
-      } catch (error) {
-        showToast(error.message || 'No se pudo actualizar', 'bad');
-      } finally {
-        setBusy(false);
-      }
-    }
-
-    document.getElementById('loginBtn').addEventListener('click', load);
-    document.getElementById('refreshBtn').addEventListener('click', load);
-    document.getElementById('addBtn').addEventListener('click', openNew);
-    document.getElementById('closeModal').addEventListener('click', closeModal);
-    document.getElementById('cancelProduct').addEventListener('click', closeModal);
-    document.getElementById('saveProduct').addEventListener('click', save);
-    document.getElementById('search').addEventListener('input', render);
-    document.getElementById('filter').addEventListener('change', render);
-    modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
-    if (localStorage.getItem(TOKEN_KEY)) {
-      loginOverlay.classList.add('hidden');
-      api().setConfig({ endpoint: window.DEPOSITO_GAS_URL, token: localStorage.getItem(TOKEN_KEY) });
-      load();
-    }
+    load();
   </script>
 </body>
 </html>
