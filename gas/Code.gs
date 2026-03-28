@@ -387,6 +387,7 @@ function getDashboard(params) {
 
 function login(body) {
   ensureBootstrap();
+  ensureAuthSeed();
   const role = String(body.role || '').trim();
   const pin = String(body.pin || '').trim();
   const users = listSheet(SHEETS.usuarios).data || [];
@@ -413,6 +414,23 @@ function ensureBootstrap() {
     !rep || rep.getLastRow() <= 1;
   if (needsSeed) {
     setup();
+  }
+}
+
+function ensureAuthSeed() {
+  const ss = getSpreadsheet();
+  const users = ss.getSheetByName(SHEETS.usuarios);
+  if (!users) {
+    seedUsersIfEmpty(ss);
+    return;
+  }
+  const data = users.getDataRange().getValues();
+  const rows = Array.isArray(data) ? data.slice(1) : [];
+  const hasAdmin = rows.some(r => String(r[2] || '').toLowerCase() === 'admin' && String(r[3] || '') === '1234');
+  const hasCaja = rows.some(r => String(r[2] || '').toLowerCase() === 'caja' && String(r[3] || '') === '3333');
+  if (!hasAdmin || !hasCaja) {
+    users.clear();
+    seedUsersIfEmpty(ss);
   }
 }
 
