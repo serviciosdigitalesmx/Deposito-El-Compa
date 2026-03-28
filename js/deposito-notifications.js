@@ -78,7 +78,7 @@
     const {
       endpoint,
       signatureKey = STORAGE_KEY,
-      intervalMs = 15000,
+      intervalMs = 5000,
       filter = () => true,
       onNewItem = async () => {},
       toSignature = rows => rows.map(r => `${r.id}|${r.estado || r.status || ''}|${r.updated_at || ''}`).join('||'),

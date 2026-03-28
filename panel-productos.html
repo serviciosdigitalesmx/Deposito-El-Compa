@@ -5,97 +5,354 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Depósito El Compa - Productos</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/deposito-unified.css">
   <link rel="stylesheet" href="css/deposito-saas.css">
   <style>
-    body{margin:0;font-family:Inter,system-ui,sans-serif;background:radial-gradient(circle at top,#1b1f2f 0,#12141f 55%);color:#f3f4f6}
-    header{position:sticky;top:0;background:rgba(17,20,31,.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.08);padding:16px 20px;z-index:10}
+    :root{--bg:#12141f;--panel:#1b1f2f;--panel-2:#262a3d;--text:#f3f4f6;--muted:#97a0b3;--accent:#4ecdc4;--accent-2:#60a5fa;--danger:#ef4444;--shadow:0 12px 30px rgba(0,0,0,.25)}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,sans-serif;background:radial-gradient(circle at top,#1b1f2f 0,#12141f 55%);color:var(--text)}
+    header{position:sticky;top:0;z-index:20;padding:16px 20px;background:rgba(17,20,31,.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.08)}
     .bar,.wrap{max-width:1400px;margin:0 auto}
     .bar{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
     .title{display:flex;flex-direction:column;gap:4px}
     .title strong{font-size:20px}
-    .title span{color:#97a0b3;font-size:13px}
-    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;padding:18px 20px 28px}
-    .card{background:linear-gradient(180deg,#1b1f2f,#262a3d);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:16px;box-shadow:0 12px 30px rgba(0,0,0,.25)}
-    .card h3{margin:0 0 6px}
-    .meta{color:#97a0b3;font-size:13px;line-height:1.5}
-    .badge{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700;background:rgba(78,205,196,.14);color:#4ecdc4}
-    .price{font-size:24px;font-weight:800;color:#ff6b6b;margin:10px 0 0}
-    .img{width:100%;height:160px;border-radius:14px;object-fit:cover;background:#0f121a;border:1px solid rgba(255,255,255,.08)}
-    .toplinks{display:flex;gap:10px;flex-wrap:wrap}
-    .toplinks a{color:#fff;text-decoration:none;padding:10px 14px;border-radius:12px;background:rgba(255,255,255,.08)}
-    .empty{padding:28px;text-align:center;color:#97a0b3;border:1px dashed rgba(255,255,255,.12);border-radius:18px;background:rgba(255,255,255,.02)}
+    .title span{color:var(--muted);font-size:13px}
+    .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .btn{border:0;border-radius:12px;padding:11px 14px;font-weight:800;cursor:pointer;color:#fff;background:rgba(255,255,255,.08);transition:.2s transform,.2s opacity}
+    .btn:hover{transform:translateY(-1px)}
+    .btn.primary{background:linear-gradient(135deg,#4ecdc4,#38bdf8);color:#031313}
+    .btn.danger{background:rgba(239,68,68,.88)}
+    .btn.soft{background:rgba(255,255,255,.08)}
+    .hero{max-width:1400px;margin:18px auto 0;padding:0 20px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+    .stat{background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:16px;box-shadow:var(--shadow)}
+    .stat small{display:block;color:var(--muted);margin-bottom:6px}
+    .stat b{font-size:30px}
+    .content{max-width:1400px;margin:0 auto;padding:18px 20px 28px}
+    .panel{background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid rgba(255,255,255,.08);border-radius:20px;box-shadow:var(--shadow);overflow:hidden}
+    .panel-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:16px 18px;border-bottom:1px solid rgba(255,255,255,.08)}
+    .panel-head .hint{color:var(--muted);font-size:13px}
+    .filters{display:flex;gap:8px;flex-wrap:wrap}
+    .search{width:min(340px,100%);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:var(--text);padding:12px 14px;border-radius:12px;outline:none}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;padding:18px}
+    .card{background:rgba(10,14,24,.92);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:14px;box-shadow:var(--shadow)}
+    .img{width:100%;height:154px;border-radius:14px;object-fit:cover;background:#0f121a;border:1px solid rgba(255,255,255,.08)}
+    .badge{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:800}
+    .active{background:rgba(34,197,94,.14);color:#4ade80}
+    .inactive{background:rgba(239,68,68,.14);color:#fca5a5}
+    .meta{margin-top:10px;color:var(--muted);font-size:13px;line-height:1.5}
+    .price{margin-top:10px;font-size:24px;font-weight:900;color:#ff6b6b}
+    .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+    .actions .btn{padding:10px 12px;border-radius:12px;font-size:13px}
+    .empty{padding:28px;text-align:center;color:var(--muted);border:1px dashed rgba(255,255,255,.12);border-radius:18px;background:rgba(255,255,255,.02);margin:18px}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(3,6,15,.72);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+    .modal{width:min(860px,100%);background:linear-gradient(180deg,#1b1f2f,#262a3d);border:1px solid rgba(255,255,255,.08);border-radius:22px;box-shadow:0 30px 80px rgba(0,0,0,.4);overflow:hidden}
+    .modal-head{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;border-bottom:1px solid rgba(255,255,255,.08)}
+    .modal-head strong{font-size:18px}
+    .modal-body{padding:18px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+    .field{display:flex;flex-direction:column;gap:7px}
+    .field.full{grid-column:1 / -1}
+    label{font-size:13px;color:#cbd5e1;font-weight:700}
+    input,select{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:var(--text);border-radius:12px;padding:12px 14px;outline:none}
+    input[type="file"]{padding:10px}
+    .preview{display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.04);border:1px dashed rgba(255,255,255,.12);border-radius:16px;padding:14px}
+    .preview img{width:72px;height:72px;border-radius:14px;object-fit:cover;border:1px solid rgba(255,255,255,.08);background:#0f121a}
+    .modal-actions{padding:16px 18px;border-top:1px solid rgba(255,255,255,.08);display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+    .toast{position:fixed;top:18px;left:50%;transform:translateX(-50%) translateY(-20px);opacity:0;pointer-events:none;background:#111827;color:#fff;padding:12px 16px;border-radius:999px;border:1px solid rgba(255,255,255,.12);box-shadow:var(--shadow);transition:.25s;z-index:60}
+    .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+    .busy{opacity:.85;pointer-events:none}
+    @media (max-width:900px){.hero{grid-template-columns:repeat(2,minmax(0,1fr));}.modal-body{grid-template-columns:1fr}}
+    @media (max-width:560px){.hero{grid-template-columns:1fr;}}
   </style>
 </head>
 <body>
+  <div id="toast" class="toast"></div>
   <header>
     <div class="bar">
       <div class="title">
         <strong><i class="fa-solid fa-bottle-water"></i> Productos</strong>
-        <span>Catálogo y gestión visual de inventario</span>
+        <span>Alta, edición, activación y borrado desde el panel interno.</span>
       </div>
-      <div class="toplinks">
-        <a href="./admin.html">Admin</a>
-        <a href="./integrador.html">Integrador</a>
+      <div class="toolbar">
+        <a class="btn soft" href="./admin.html">Admin</a>
+        <a class="btn soft" href="./integrador.html">Integrador</a>
+        <button class="btn primary" id="btn-new"><i class="fa-solid fa-plus"></i> Nuevo producto</button>
+        <button class="btn soft" id="btn-refresh"><i class="fa-solid fa-rotate"></i> Refrescar</button>
       </div>
     </div>
   </header>
-  <main class="wrap"><div id="list" class="grid"></div></main>
+
+  <section class="hero">
+    <div class="stat"><small>Productos</small><b id="stat-total">0</b></div>
+    <div class="stat"><small>Activos</small><b id="stat-active">0</b></div>
+    <div class="stat"><small>Inactivos</small><b id="stat-inactive">0</b></div>
+    <div class="stat"><small>Bajo stock</small><b id="stat-low">0</b></div>
+  </section>
+
+  <main class="content">
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <strong><i class="fa-solid fa-layer-group"></i> Catálogo operativo</strong>
+          <div class="hint">Usa buscar, editar, activar, desactivar o borrar sin salir del panel.</div>
+        </div>
+        <div class="filters">
+          <input id="search" class="search" placeholder="Buscar producto...">
+          <select id="stateFilter">
+            <option value="all">Todos</option>
+            <option value="active">Activos</option>
+            <option value="inactive">Inactivos</option>
+          </select>
+        </div>
+      </div>
+      <div id="list" class="grid"></div>
+    </section>
+  </main>
+
+  <div id="modal" class="modal-backdrop" aria-hidden="true">
+    <div class="modal">
+      <div class="modal-head">
+        <strong id="modalTitle">Nuevo producto</strong>
+        <button class="btn soft" id="btn-close">Cerrar</button>
+      </div>
+      <form id="productForm">
+        <div class="modal-body">
+          <input type="hidden" id="productId">
+          <div class="field"><label>Nombre</label><input id="nombre" required></div>
+          <div class="field"><label>Precio</label><input id="precio" type="number" min="0" step="0.01" required></div>
+          <div class="field"><label>Stock</label><input id="stock" type="number" min="0" step="1" required></div>
+          <div class="field"><label>Categoría</label><input id="categoria" placeholder="cerveza, botana, otros"></div>
+          <div class="field full"><label>Imagen URL o data</label><input id="imagen_url" placeholder="https://... o data:image/..."></div>
+          <div class="field"><label>Imagen local</label><input id="imagen_file" type="file" accept="image/*"></div>
+          <div class="field"><label>Estado</label>
+            <select id="activo">
+              <option value="true">Activo</option>
+              <option value="false">Inactivo</option>
+            </select>
+          </div>
+          <div class="field full">
+            <div class="preview">
+              <img id="previewImg" alt="preview" src="assets/images/modelo.png">
+              <div>
+                <div style="font-weight:800">Vista previa</div>
+                <div style="color:var(--muted);font-size:13px">La imagen local se convierte en data URL para guardarse sin romper el catálogo.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn soft" id="btn-reset">Limpiar</button>
+          <button type="submit" class="btn primary" id="btn-save">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script>
     window.DEPOSITO_GAS_URL = 'https://script.google.com/macros/s/AKfycbw36LgiUW3Mp7ezvsQKcaDOAITZSryrMLdOXf0zu-8AtORq8l_0lwWkMu8RLYaS24ZZ/exec';
   </script>
   <script src="./js/deposito-api.js"></script>
   <script>
     const AUTH_ROLE = 'admin';
-    const AUTH_PIN = '1111';
+    const AUTH_PIN = '1234';
+    const AUTH_PIN_FALLBACK = '1111';
     const AUTH_TOKEN_KEY = 'DEPOSITO_GAS_TOKEN';
     const list = document.getElementById('list');
+    const modal = document.getElementById('modal');
+    const toast = document.getElementById('toast');
+    const form = document.getElementById('productForm');
+    let rows = [];
 
     function setApiAuth(token) {
       window.DEPOSITO_API.setConfig({ endpoint: window.DEPOSITO_GAS_URL, token: token || '' });
     }
-
     async function ensureAuth() {
       const cached = localStorage.getItem(AUTH_TOKEN_KEY);
-      if (cached) {
-        setApiAuth(cached);
-        return cached;
+      if (cached) { setApiAuth(cached); return cached; }
+      let res = await window.DEPOSITO_API.get(`?action=login&role=${AUTH_ROLE}&pin=${AUTH_PIN}&t=${Date.now()}`);
+      if ((!res?.ok || !res.token) && AUTH_PIN_FALLBACK) {
+        res = await window.DEPOSITO_API.get(`?action=login&role=${AUTH_ROLE}&pin=${AUTH_PIN_FALLBACK}&t=${Date.now()}`);
       }
-      const res = await window.DEPOSITO_API.get(`?action=login&role=${AUTH_ROLE}&pin=${AUTH_PIN}&t=${Date.now()}`);
       if (!res?.ok || !res.token) throw new Error(res?.error || 'No se pudo autenticar admin');
       localStorage.setItem(AUTH_TOKEN_KEY, res.token);
       setApiAuth(res.token);
       return res.token;
     }
-
+    function showToast(msg, ms = 2000) {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => toast.classList.remove('show'), ms);
+    }
+    function openModal(item = null) {
+      document.getElementById('productId').value = item?.id || '';
+      document.getElementById('nombre').value = item?.nombre || item?.name || '';
+      document.getElementById('precio').value = item?.precio || item?.price || 0;
+      document.getElementById('stock').value = item?.stock ?? 0;
+      document.getElementById('categoria').value = item?.categoria || item?.category || 'cerveza';
+      document.getElementById('imagen_url').value = item?.imagen_url || item?.image || '';
+      document.getElementById('activo').value = String(item?.activo ?? true).toLowerCase() === 'false' ? 'false' : 'true';
+      document.getElementById('previewImg').src = resolveImage(item?.imagen_url || item?.image || '');
+      document.getElementById('modalTitle').textContent = item ? 'Editar producto' : 'Nuevo producto';
+      modal.style.display = 'flex';
+    }
+    function closeModal() { modal.style.display = 'none'; }
+    function resolveImage(value) {
+      const raw = String(value || '').trim();
+      if (!raw) return 'assets/images/modelo.png';
+      if (/^https?:\/\//i.test(raw) || raw.startsWith('data:')) return raw;
+      return `assets/images/${raw}`;
+    }
+    function normalizeFilterValue(value) { return String(value || '').toLowerCase(); }
+    function filteredRows() {
+      const search = normalizeFilterValue(document.getElementById('search').value);
+      const mode = document.getElementById('stateFilter').value;
+      return rows.filter(row => {
+        const name = normalizeFilterValue(row.nombre || row.name || '');
+        const active = String(row.activo || 'true').toLowerCase() === 'true';
+        if (mode === 'active' && !active) return false;
+        if (mode === 'inactive' && active) return false;
+        if (search && !name.includes(search)) return false;
+        return true;
+      });
+    }
     function card(p) {
-      const img = p.imagen_url || p.image || '';
       const active = String(p.activo || 'true').toLowerCase() === 'true';
-      const src = img.startsWith('http') || img.startsWith('data:') ? img : `assets/images/${img}`;
-      return `<article class="card">
-        <img class="img" src="${src}" alt="${p.nombre || 'Producto'}" onerror="this.src='assets/images/modelo.png'">
+      const src = resolveImage(p.imagen_url || p.image || '');
+      const name = p.nombre || p.name || 'Sin nombre';
+      return `<article class="card" data-id="${p.id}">
+        <img class="img" src="${src}" alt="${name}" onerror="this.src='assets/images/modelo.png'">
         <div style="margin-top:12px;display:flex;justify-content:space-between;gap:8px;align-items:flex-start">
           <div>
-            <h3>${p.nombre || 'Sin nombre'}</h3>
-            <div class="meta">Categoría: ${p.categoria || '---'}<br>Stock: ${p.stock ?? '---'}</div>
+            <h3 style="margin:0 0 4px">${name}</h3>
+            <div class="meta">Categoría: ${p.categoria || p.category || '---'}<br>Stock: ${p.stock ?? '---'}</div>
           </div>
-          <span class="badge">${active ? 'Activo' : 'Inactivo'}</span>
+          <span class="badge ${active ? 'active' : 'inactive'}">${active ? 'Activo' : 'Inactivo'}</span>
         </div>
-        <div class="price">$${Number(p.precio || 0).toFixed(2)}</div>
+        <div class="price">$${Number(p.precio || p.price || 0).toFixed(2)}</div>
+        <div class="actions">
+          <button class="btn soft" data-edit="${p.id}"><i class="fa-solid fa-pen"></i> Editar</button>
+          <button class="btn ${active ? 'danger' : 'primary'}" data-toggle="${p.id}">${active ? 'Desactivar' : 'Activar'}</button>
+          <button class="btn danger" data-delete="${p.id}"><i class="fa-solid fa-trash"></i> Eliminar</button>
+        </div>
       </article>`;
     }
-
     async function load() {
       list.innerHTML = '<div class="empty">Cargando productos...</div>';
       try {
         await ensureAuth();
         const res = await window.DEPOSITO_API.get('?action=productos&t=' + Date.now());
-        const rows = Array.isArray(res.data) ? res.data : [];
-        list.innerHTML = rows.length ? rows.map(card).join('') : '<div class="empty">No hay productos cargados.</div>';
+        rows = Array.isArray(res.data) ? res.data : [];
+        syncStats();
+        render();
       } catch (e) {
         list.innerHTML = `<div class="empty">Error al cargar productos: ${e.message}</div>`;
       }
     }
-
+    function syncStats() {
+      const total = rows.length;
+      const active = rows.filter(r => String(r.activo || 'true').toLowerCase() === 'true').length;
+      const inactive = total - active;
+      const low = rows.filter(r => Number(r.stock || 0) > 0 && Number(r.stock || 0) < 20).length;
+      document.getElementById('stat-total').textContent = total;
+      document.getElementById('stat-active').textContent = active;
+      document.getElementById('stat-inactive').textContent = inactive;
+      document.getElementById('stat-low').textContent = low;
+    }
+    function render() {
+      const data = filteredRows();
+      list.innerHTML = data.length ? data.map(card).join('') : '<div class="empty">No hay productos para mostrar.</div>';
+      document.querySelectorAll('[data-edit]').forEach(btn => {
+        btn.addEventListener('click', () => openModal(rows.find(r => String(r.id) === String(btn.dataset.edit))));
+      });
+      document.querySelectorAll('[data-toggle]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          btn.disabled = true;
+          try {
+            await window.DEPOSITO_API.post('?action=productoToggle', { id: btn.dataset.toggle });
+            showToast('Estado actualizado');
+            await load();
+          } catch (e) {
+            showToast(e.message || 'No se pudo actualizar');
+          } finally {
+            btn.disabled = false;
+          }
+        });
+      });
+      document.querySelectorAll('[data-delete]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          if (!confirm('¿Eliminar este producto?')) return;
+          btn.disabled = true;
+          try {
+            await window.DEPOSITO_API.post('?action=productoEliminar', { id: btn.dataset.delete });
+            showToast('Producto eliminado');
+            await load();
+          } catch (e) {
+            try {
+              await window.DEPOSITO_API.post('?action=productoToggle', { id: btn.dataset.delete });
+              showToast('Producto desactivado');
+              await load();
+            } catch (fallbackErr) {
+              showToast((fallbackErr && fallbackErr.message) || e.message || 'No se pudo eliminar');
+            }
+          } finally {
+            btn.disabled = false;
+          }
+        });
+      });
+    }
+    async function fileToDataUrl(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ''));
+        reader.onerror = () => reject(reader.error || new Error('No se pudo leer la imagen'));
+        reader.readAsDataURL(file);
+      });
+    }
+    document.getElementById('btn-new').addEventListener('click', () => openModal());
+    document.getElementById('btn-close').addEventListener('click', closeModal);
+    document.getElementById('btn-reset').addEventListener('click', () => openModal());
+    document.getElementById('btn-refresh').addEventListener('click', load);
+    document.getElementById('search').addEventListener('input', render);
+    document.getElementById('stateFilter').addEventListener('change', render);
+    document.getElementById('imagen_file').addEventListener('change', async (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const dataUrl = await fileToDataUrl(file);
+      document.getElementById('imagen_url').value = dataUrl;
+      document.getElementById('previewImg').src = dataUrl;
+    });
+    document.getElementById('imagen_url').addEventListener('input', (e) => {
+      document.getElementById('previewImg').src = resolveImage(e.target.value);
+    });
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        id: document.getElementById('productId').value.trim(),
+        nombre: document.getElementById('nombre').value.trim(),
+        precio: Number(document.getElementById('precio').value || 0),
+        stock: Number(document.getElementById('stock').value || 0),
+        categoria: document.getElementById('categoria').value.trim(),
+        imagen_url: document.getElementById('imagen_url').value.trim(),
+        activo: document.getElementById('activo').value
+      };
+      const submit = document.getElementById('btn-save');
+      submit.disabled = true;
+      submit.textContent = 'Guardando...';
+      try {
+        const action = payload.id ? 'productoActualizar' : 'productoGuardar';
+        await window.DEPOSITO_API.post(`?action=${action}`, payload);
+        showToast(payload.id ? 'Producto actualizado' : 'Producto creado');
+        closeModal();
+        form.reset();
+        await load();
+      } catch (err) {
+        showToast(err.message || 'Error al guardar');
+      } finally {
+        submit.disabled = false;
+        submit.textContent = 'Guardar';
+      }
+    });
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
     load();
   </script>
 </body>

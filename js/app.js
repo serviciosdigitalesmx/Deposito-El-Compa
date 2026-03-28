@@ -47,9 +47,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const savedTheme = localStorage.getItem('theme') || 'dark';
     if (savedTheme === 'light') toggleTheme();
     loadProductsFromApi();
-    setInterval(loadProductsFromApi, 15000);
+    setInterval(loadProductsFromApi, 3000);
     loadOrdersFromApi();
-    setInterval(loadOrdersFromApi, 10000);
+    setInterval(loadOrdersFromApi, 3000);
 });
 
 function normalizeImageRef(value) {

@@ -118,7 +118,7 @@
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: raw,
       credentials: 'omit',
-    }).then(async (response) => {
+      }).then(async (response) => {
       const contentType = response.headers.get('content-type') || '';
       const data = contentType.includes('application/json')
         ? await response.json()
@@ -126,6 +126,9 @@
       if (!response.ok) {
         const message = typeof data === 'string' ? data : data.error || data.message || `HTTP ${response.status}`;
         throw new Error(message);
+      }
+      if (data && typeof data === 'object' && data.ok === false) {
+        throw new Error(data.error || data.message || 'Solicitud rechazada por el backend');
       }
       return data;
     }).catch((error) => {

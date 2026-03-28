@@ -565,8 +565,11 @@
       <div class="card">
         <h2>Acceso interno</h2>
         <p>Un solo acceso para Caja, Productos, Repartidores, Hieleras, Reparto y Archivo</p>
-        <input id="master-password" class="input" type="password" placeholder="Contraseña" autocomplete="current-password">
-        <button id="master-login-btn" class="btn" type="button">Entrar</button>
+        <form id="master-login-form" autocomplete="on">
+          <input type="text" name="username" value="internal" autocomplete="username" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;" aria-hidden="true" tabindex="-1">
+          <input id="master-password" class="input" type="password" placeholder="Contraseña" autocomplete="current-password">
+          <button id="master-login-btn" class="btn" type="submit">Entrar</button>
+        </form>
         <div id="master-error" class="err"></div>
       </div>`;
     document.body.appendChild(LOGIN);
@@ -585,7 +588,10 @@
       show('cliente');
     }
 
-    LOGIN_BTN.addEventListener('click', unlock);
+    document.getElementById('master-login-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      unlock();
+    });
     PASS.addEventListener('keydown', (e) => { if (e.key === 'Enter') unlock(); });
 
     if (window.DepositoPWA) {
@@ -594,7 +600,7 @@
       window.DepositoPWA.attachOrderPolling({
         endpoint: window.DEPOSITO_GAS_URL,
         signatureKey: 'DEPOSITO_INTEGRADOR_PEDIDOS_SIGNATURE',
-        intervalMs: 15000,
+        intervalMs: 5000,
         filter: row => String(row.estado || row.status || '').toLowerCase() === 'nuevo',
         onNewItem: async ({ rows }) => {
           const count = rows.length;

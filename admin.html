@@ -95,8 +95,11 @@
     <div class="login-card">
       <h2>🍻 Depósito El Compa</h2>
       <p>Acceso del dueño: métricas, resultados y navegación al integrador operativo.</p>
-      <input id="pin" class="input" type="password" placeholder="PIN de admin" autocomplete="current-password">
-      <button id="loginBtn" class="btn btn-primary" style="width:100%;margin-top:10px;">Entrar</button>
+      <form id="loginForm" autocomplete="on">
+        <input type="text" name="username" value="admin" autocomplete="username" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;" aria-hidden="true" tabindex="-1">
+        <input id="pin" class="input" type="password" placeholder="PIN de admin" autocomplete="current-password">
+        <button id="loginBtn" class="btn btn-primary" type="submit" style="width:100%;margin-top:10px;">Entrar</button>
+      </form>
       <div id="loginError" class="err"></div>
     </div>
   </div>
@@ -244,7 +247,10 @@
       renderRecent(Array.isArray(data.recientes) ? data.recientes : []);
     }
 
-    document.getElementById('loginBtn').addEventListener('click', loadData);
+    document.getElementById('loginForm').addEventListener('submit', e => {
+      e.preventDefault();
+      loadData();
+    });
     pinInput.addEventListener('keydown', e => { if (e.key === 'Enter') loadData(); });
     document.getElementById('refreshBtn').addEventListener('click', loadData);
     if (localStorage.getItem(TOKEN_KEY)) {
@@ -258,7 +264,7 @@
       window.DepositoPWA.attachOrderPolling({
         endpoint: window.DEPOSITO_GAS_URL,
         signatureKey: 'DEPOSITO_ADMIN_PEDIDOS_SIGNATURE',
-        intervalMs: 15000,
+        intervalMs: 5000,
         filter: row => String(row.estado || row.status || '').toLowerCase() === 'nuevo',
         onNewItem: async ({ rows }) => {
           const count = rows.length;

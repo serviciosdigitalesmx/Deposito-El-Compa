@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const savedTheme = localStorage.getItem('theme') || 'dark';
     if (savedTheme === 'light') toggleTheme();
     loadOrdersFromApi();
-    setInterval(loadOrdersFromApi, 5000);
+    setInterval(loadOrdersFromApi, 2000);
 });
 
 async function loadOrdersFromApi() {

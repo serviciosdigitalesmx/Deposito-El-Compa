@@ -249,7 +249,7 @@
     }
     renderManualProducts();
     load();
-    setInterval(load, 20000);
+    setInterval(load, 3000);
     document.addEventListener('click', (e) => {
       if (e.target && e.target.id === 'mpAddItem') addManualItem();
       if (e.target && e.target.id === 'mpCreate') createManualOrder();
