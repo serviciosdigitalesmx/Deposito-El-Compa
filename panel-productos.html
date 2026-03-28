@@ -36,6 +36,11 @@
     .modal-card{width:min(720px,100%);max-height:88vh;overflow:auto;background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:20px;box-shadow:var(--shadow)}
     .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.grid .full{grid-column:1/-1}
     .file{padding:10px;background:rgba(255,255,255,.04);border:1px dashed rgba(255,255,255,.12);border-radius:12px}
+    .toast{position:fixed;right:20px;bottom:20px;z-index:50;background:rgba(12,14,24,.96);color:var(--text);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px 14px;box-shadow:var(--shadow);opacity:0;transform:translateY(10px);pointer-events:none;transition:.2s ease;max-width:min(360px,calc(100vw - 40px))}
+    .toast.show{opacity:1;transform:translateY(0)}
+    .toast.good{border-color:rgba(52,211,153,.3)}
+    .toast.bad{border-color:rgba(251,113,133,.35)}
+    .is-busy{opacity:.72;pointer-events:none}
     @media(max-width:980px){.stats,.grid{grid-template-columns:1fr 1fr}.toolbar{align-items:stretch}}
     @media(max-width:640px){.stats,.grid{grid-template-columns:1fr}}
   </style>
@@ -81,6 +86,8 @@
       </div>
     </div>
   </div>
+
+  <div id="toast" class="toast" aria-live="polite"></div>
 
   <header>
     <div class="bar">
@@ -140,12 +147,28 @@
     const loginOverlay = document.getElementById('loginOverlay');
     const loginError = document.getElementById('loginError');
     const modal = document.getElementById('modal');
+    const toast = document.getElementById('toast');
     let products = [];
     let editId = '';
+    let busy = false;
 
     function api(){ return window.DEPOSITO_API; }
     function setAuth(token){ localStorage.setItem(TOKEN_KEY, token); api().setConfig({ endpoint: window.DEPOSITO_GAS_URL, token }); }
     function money(v){ return Number(v || 0).toLocaleString('es-MX', { style:'currency', currency:'MXN' }); }
+    function setBusy(state){
+      busy = !!state;
+      document.body.classList.toggle('is-busy', busy);
+      ['saveProduct','addBtn','refreshBtn','closeModal','cancelProduct'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.disabled = busy && id !== 'refreshBtn';
+      });
+    }
+    function showToast(msg, kind = 'good'){
+      toast.textContent = msg;
+      toast.className = `toast ${kind} show`;
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => toast.className = 'toast', 2400);
+    }
 
     async function login(){
       const cached = localStorage.getItem(TOKEN_KEY);
@@ -217,40 +240,69 @@
 
     async function load(){
       await login();
-      const res = await api().get(`?action=productos&t=${Date.now()}`);
-      products = Array.isArray(res.data) ? res.data : [];
-      render();
+      setBusy(true);
+      try {
+        const res = await api().get(`?action=productos&t=${Date.now()}`);
+        products = Array.isArray(res.data) ? res.data : [];
+        render();
+        showToast(`Catálogo actualizado: ${products.length} productos`);
+      } catch (error) {
+        showToast(error.message || 'No se pudo cargar el catálogo', 'bad');
+      } finally {
+        setBusy(false);
+      }
     }
 
     async function save(){
-      let imageValue = document.getElementById('pImagen').value.trim();
-      const fileInput = document.getElementById('pImageFile');
-      if (fileInput && fileInput.files && fileInput.files[0]) {
-        imageValue = await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(String(reader.result || ''));
-          reader.onerror = () => reject(new Error('No se pudo leer la imagen'));
-          reader.readAsDataURL(fileInput.files[0]);
-        });
+      if (busy) return;
+      setBusy(true);
+      try {
+        let imageValue = document.getElementById('pImagen').value.trim();
+        const fileInput = document.getElementById('pImageFile');
+        if (fileInput && fileInput.files && fileInput.files[0]) {
+          imageValue = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(String(reader.result || ''));
+            reader.onerror = () => reject(new Error('No se pudo leer la imagen'));
+            reader.readAsDataURL(fileInput.files[0]);
+          });
+        }
+        const payload = {
+          nombre: document.getElementById('pNombre').value.trim(),
+          precio: Number(document.getElementById('pPrecio').value || 0),
+          stock: Number(document.getElementById('pStock').value || 0),
+          categoria: document.getElementById('pCategoria').value,
+          imagen_url: imageValue,
+          icon: document.getElementById('pIcono').value.trim(),
+          activo: true
+        };
+        const result = editId
+          ? await api().post('?action=productoActualizar', { id: editId, ...payload })
+          : await api().post('?action=productoGuardar', payload);
+        if (!result || !result.ok) throw new Error((result && result.error) || 'No se pudo guardar el producto');
+        showToast(editId ? 'Producto actualizado' : 'Producto guardado');
+        closeModal();
+        await load();
+      } catch (error) {
+        showToast(error.message || 'No se pudo guardar', 'bad');
+      } finally {
+        setBusy(false);
       }
-      const payload = {
-        nombre: document.getElementById('pNombre').value.trim(),
-        precio: Number(document.getElementById('pPrecio').value || 0),
-        stock: Number(document.getElementById('pStock').value || 0),
-        categoria: document.getElementById('pCategoria').value,
-        imagen_url: imageValue,
-        icon: document.getElementById('pIcono').value.trim(),
-        activo: true
-      };
-      if (editId) await api().post('?action=productoActualizar', { id: editId, ...payload });
-      else await api().post('?action=productoGuardar', payload);
-      closeModal();
-      await load();
     }
 
     async function toggle(id){
-      await api().post('?action=productoToggle', { id });
-      await load();
+      if (busy) return;
+      setBusy(true);
+      try {
+        const result = await api().post('?action=productoToggle', { id });
+        if (!result || !result.ok) throw new Error((result && result.error) || 'No se pudo cambiar el estado');
+        showToast(result.activo ? 'Producto activado' : 'Producto desactivado');
+        await load();
+      } catch (error) {
+        showToast(error.message || 'No se pudo actualizar', 'bad');
+      } finally {
+        setBusy(false);
+      }
     }
 
     document.getElementById('loginBtn').addEventListener('click', load);

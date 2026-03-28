@@ -386,6 +386,7 @@ function getDashboard(params) {
 }
 
 function login(body) {
+  ensureBootstrap();
   const role = String(body.role || '').trim();
   const pin = String(body.pin || '').trim();
   const users = listSheet(SHEETS.usuarios).data || [];
@@ -399,6 +400,20 @@ function login(body) {
     1500
   );
   return { ok: true, token, user: { id: user.id, nombre: user.nombre, rol: user.rol } };
+}
+
+function ensureBootstrap() {
+  const ss = getSpreadsheet();
+  const users = ss.getSheetByName(SHEETS.usuarios);
+  const products = ss.getSheetByName(SHEETS.productos);
+  const rep = ss.getSheetByName(SHEETS.repartidores);
+  const needsSeed =
+    !users || users.getLastRow() <= 1 ||
+    !products || products.getLastRow() <= 1 ||
+    !rep || rep.getLastRow() <= 1;
+  if (needsSeed) {
+    setup();
+  }
 }
 
 function requireAuth(token, allowedRoles) {
