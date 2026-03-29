@@ -97,7 +97,6 @@
           </article>
         `).join('') : '<div class="empty">No hay pedidos pendientes de corte.</div>';
       } catch (e) {
-        console.error('Error al cargar corte:', e);
         list.innerHTML = '<div class="empty">No pudimos cargar el corte. Intenta de nuevo.</div>';
         if (window.DepositoPWA && typeof DepositoPWA.notifyUser === 'function') {
           DepositoPWA.notifyUser('No pudimos cargar el corte', 'Reintenta en unos segundos', 'warn');

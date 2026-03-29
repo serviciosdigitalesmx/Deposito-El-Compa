@@ -233,8 +233,10 @@
           `;
       }).join('') : '<div class="empty">No hay solicitudes en este momento.</div>';
       } catch (e) {
-        console.error('Error al cargar solicitudes:', e);
         list.innerHTML = '<div class="empty">No pudimos cargar las solicitudes. Intenta de nuevo.</div>';
+        if (window.DepositoPWA && typeof DepositoPWA.notifyUser === 'function') {
+          DepositoPWA.notifyUser('No pudimos cargar las solicitudes', 'Reintenta en unos segundos', 'warn');
+        }
       }
     }
 

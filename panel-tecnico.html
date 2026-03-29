@@ -240,8 +240,10 @@
           `;
       }).join('') : '<div class="empty">No hay pedidos en hieleras.</div>';
       } catch (e) {
-        console.error('Error al cargar hieleras:', e);
         list.innerHTML = '<div class="empty">No pudimos cargar las hieleras. Intenta de nuevo.</div>';
+        if (window.DepositoPWA && typeof DepositoPWA.notifyUser === 'function') {
+          DepositoPWA.notifyUser('No pudimos cargar las hieleras', 'Reintenta en unos segundos', 'warn');
+        }
       }
     }
 

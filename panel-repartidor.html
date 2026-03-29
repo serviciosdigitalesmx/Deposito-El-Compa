@@ -335,7 +335,6 @@
           `;
         }).join('') : '<div class="empty">No hay pedidos asignados al repartidor.</div>';
       } catch (e) {
-        console.error('Error al cargar repartidor:', e);
         list.innerHTML = '<div class="empty">No pudimos cargar los pedidos del repartidor. Intenta de nuevo.</div>';
       }
     }

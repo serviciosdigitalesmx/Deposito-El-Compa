@@ -164,7 +164,6 @@
         document.getElementById('count-entregados').textContent = entregados;
       list.innerHTML = rows.length ? rows.map(rowHtml).join('') : '<div class="empty">No hay registros en archivo.</div>';
       } catch (e) {
-        console.error('Error al cargar archivo:', e);
         list.innerHTML = '<div class="empty">No pudimos cargar el archivo. Intenta de nuevo.</div>';
         if (window.DepositoPWA && typeof DepositoPWA.notifyUser === 'function') {
           DepositoPWA.notifyUser('No pudimos cargar el archivo', 'Reintenta en unos segundos', 'warn');
