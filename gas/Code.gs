@@ -19,22 +19,12 @@ const SHEETS = {
 
 function doGet(e) {
   console.log('GET recibido', JSON.stringify(e || {}));
-  try {
-    return jsonResponse(handleRequest('GET', e));
-  } catch (error) {
-    console.error('GET error', error && error.stack ? error.stack : String(error));
-    return jsonResponse(buildErrorResponse(error, 'GET'));
-  }
+  return jsonResponse(safeExecute(handleRequest, 'GET', e));
 }
 
 function doPost(e) {
   console.log('POST recibido', JSON.stringify(e || {}));
-  try {
-    return jsonResponse(handleRequest('POST', normalizePostEvent(e)));
-  } catch (error) {
-    console.error('POST error', error && error.stack ? error.stack : String(error));
-    return jsonResponse(buildErrorResponse(error, 'POST'));
-  }
+  return jsonResponse(safeExecute(handleRequest, 'POST', normalizePostEvent(e)));
 }
 
 function doPatch(e) {
@@ -301,6 +291,17 @@ function normalizePostEvent(e) {
     parameter: { ...params, action, token },
     postData: { contents: JSON.stringify(flattened) }
   };
+}
+
+function safeExecute(fn, ...args) {
+  try {
+    const result = fn(...args);
+    return (result && typeof result === 'object' && Object.prototype.hasOwnProperty.call(result, 'ok'))
+      ? result
+      : { ok: true, data: result };
+  } catch (err) {
+    return buildErrorResponse(err, args && args[0] ? String(args[0]).toUpperCase() : '');
+  }
 }
 
 function buildErrorResponse(error, method) {

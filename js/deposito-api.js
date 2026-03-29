@@ -103,6 +103,12 @@
           }
           throw error;
         }
+        if (data && typeof data === 'object' && data.ok === false) {
+          const error = new Error(data.user_message || data.error || data.message || 'Solicitud rechazada por el backend');
+          error.code = data.error_code || data.code || 'SERVER_ERROR';
+          error.debug = data.debug || '';
+          throw error;
+        }
         flushed += 1;
       } catch (error) {
         remaining.push(item);
@@ -140,6 +146,12 @@
         error.code = payload.error_code || payload.code || '';
         error.debug = payload.debug || '';
       }
+      throw error;
+    }
+    if (payload && typeof payload === 'object' && payload.ok === false) {
+      const error = new Error(payload.user_message || payload.error || payload.message || 'Solicitud rechazada por el backend');
+      error.code = payload.error_code || payload.code || 'SERVER_ERROR';
+      error.debug = payload.debug || '';
       throw error;
     }
     return normalizeResponse(payload, response);
