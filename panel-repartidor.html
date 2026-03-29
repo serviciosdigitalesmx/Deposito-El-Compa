@@ -60,8 +60,11 @@
     <div style="width:min(420px,100%);background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid rgba(167,139,250,.28);border-radius:18px;padding:24px;box-shadow:var(--shadow)">
       <h2 style="margin:0 0 6px;color:#c4b5fd;font-size:1.6rem">Acceso repartidor</h2>
       <p style="margin:0 0 14px;color:var(--muted);font-size:13px">Un solo acceso para ver tus pedidos asignados y confirmar entregas.</p>
-      <input id="master-password" type="password" placeholder="Contraseña" autocomplete="current-password" style="width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(167,139,250,.28);color:var(--text);border-radius:12px;padding:12px 14px;outline:none;margin-bottom:10px">
-      <button id="master-login-btn" type="button" style="width:100%;border:0;background:linear-gradient(135deg,var(--accent),#8b5cf6);color:#fff;font-weight:900;border-radius:12px;padding:12px;cursor:pointer;box-shadow:0 10px 24px rgba(167,139,250,.18)">Entrar</button>
+      <form id="master-login-form" autocomplete="on">
+        <input type="text" name="username" value="repartidor" autocomplete="username" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;" aria-hidden="true" tabindex="-1">
+        <input id="master-password" type="password" placeholder="Contraseña" autocomplete="current-password" style="width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(167,139,250,.28);color:var(--text);border-radius:12px;padding:12px 14px;outline:none;margin-bottom:10px">
+        <button id="master-login-btn" type="submit" style="width:100%;border:0;background:linear-gradient(135deg,var(--accent),#8b5cf6);color:#fff;font-weight:900;border-radius:12px;padding:12px;cursor:pointer;box-shadow:0 10px 24px rgba(167,139,250,.18)">Entrar</button>
+      </form>
       <div id="master-error" style="min-height:18px;color:#fda4af;font-size:13px;margin-top:8px"></div>
     </div>
   </div>
@@ -337,7 +340,7 @@
       }
     }
 
-    document.getElementById('master-login-btn').addEventListener('click', unlock);
+    document.getElementById('master-login-form').addEventListener('submit', (e) => { e.preventDefault(); unlock(); });
     document.getElementById('master-password').addEventListener('keydown', (e) => { if (e.key === 'Enter') unlock(); });
     document.getElementById('btn-refresh').addEventListener('click', () => load(true));
     if (window.DepositoPWA) {

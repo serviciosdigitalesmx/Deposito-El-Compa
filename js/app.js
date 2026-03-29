@@ -57,7 +57,7 @@ function normalizeImageRef(value) {
     if (!raw) return '';
     try {
         if (/^https?:\/\//i.test(raw) || raw.startsWith('data:')) return raw;
-        return raw.replace(/^\.\/?/, '');
+        return raw.replace(/^(\.\/)?(assets\/images\/)+/i, '').replace(/^\.\/?/, '');
     } catch (_) {
         return raw;
     }

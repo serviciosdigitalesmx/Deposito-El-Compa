@@ -40,6 +40,24 @@ let state = {
     theme: 'dark'
 };
 
+function normalizeImageRef(value) {
+    const raw = String(value || '').trim();
+    if (!raw) return '';
+    try {
+        if (/^https?:\/\//i.test(raw) || raw.startsWith('data:')) return raw;
+        return raw.replace(/^(\.\/)?(assets\/images\/)+/i, '').replace(/^\.\/?/, '');
+    } catch (_) {
+        return raw;
+    }
+}
+
+function productImageSrc(product) {
+    const ref = normalizeImageRef(product?.image || product?.imagen_url || '');
+    if (!ref) return '';
+    if (/^https?:\/\//i.test(ref) || ref.startsWith('data:')) return ref;
+    return `assets/images/${ref}`;
+}
+
 // Funciones de inicialización
 document.addEventListener('DOMContentLoaded', () => {
     updateDate();
@@ -192,7 +210,7 @@ function renderProducts() {
     grid.innerHTML = state.products.map(product => `
         <div class="product-card" data-category="${product.category}">
             <div class="product-image">
-                <img src="assets/images/${product.image || ''}" alt="${product.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <img src="${productImageSrc(product)}" alt="${product.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                 <div class="image-fallback" style="display:none;align-items:center;justify-content:center;width:100%;height:100%;font-size:60px;">${product.icon}</div>
             </div>
             <div class="product-info">
@@ -250,7 +268,7 @@ function updateCart() {
         container.innerHTML = state.cart.map(item => `
             <div class="cart-item">
                 <div class="cart-item-image">
-                    <img src="assets/images/${item.image || ''}" alt="${item.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <img src="${productImageSrc(item)}" alt="${item.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                     <div class="image-fallback" style="display:none;align-items:center;justify-content:center;width:100%;height:100%;font-size:2rem;">${item.icon}</div>
                 </div>
                 <div class="cart-item-details">
@@ -437,7 +455,7 @@ function renderInventory() {
         <tr style="border-bottom: 1px solid var(--glass-border);">
             <td style="padding: 15px;">
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <img src="assets/images/${p.image || ''}" width="40" height="40" style="object-fit: contain; border-radius: 8px; background: var(--dark);" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <img src="${productImageSrc(p)}" width="40" height="40" style="object-fit: contain; border-radius: 8px; background: var(--dark);" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                     <div class="image-fallback" style="display:none;align-items:center;justify-content:center;width:40px;height:40px;border-radius:8px;background:var(--dark);font-size:1.2rem;">${p.icon}</div>
                     <span>${p.name}</span>
                 </div>
@@ -479,7 +497,7 @@ function renderReports() {
     container.innerHTML = topProducts.map((p, i) => `
         <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px; padding: 15px; background: var(--dark-lighter); border-radius: 10px;">
             <div style="font-size: 1.5rem; font-weight: 800; color: var(--primary); width: 30px;">${i + 1}</div>
-            <img src="assets/images/${p.image || ''}" width="50" height="50" style="object-fit: contain; border-radius: 8px; background: var(--dark);" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <img src="${productImageSrc(p)}" width="50" height="50" style="object-fit: contain; border-radius: 8px; background: var(--dark);" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
             <div class="image-fallback" style="display:none;align-items:center;justify-content:center;width:50px;height:50px;border-radius:8px;background:var(--dark);font-size:1.5rem;">${p.icon}</div>
             <div style="flex: 1;">
                 <div style="font-weight: 600;">${p.name}</div>
