@@ -136,7 +136,13 @@
       return postViaForm(url, body, token);
     }
 
-    const response = await fetch(url);
+    const storageKey = global.DEPOSITO_API.storageKey || defaultConfig.storageKey;
+    const sessionToken = token || defaultConfig.token || (storageKey && global.localStorage ? global.localStorage.getItem(storageKey) : '') || '';
+    const readUrl = new URL(url);
+    if (sessionToken && !readUrl.searchParams.has('token')) {
+      readUrl.searchParams.set('token', sessionToken);
+    }
+    const response = await fetch(readUrl.toString(), { credentials: 'omit' });
     const contentType = response.headers.get('content-type') || '';
     const payload = contentType.includes('application/json') ? await response.json() : await response.text();
     if (!response.ok) {
