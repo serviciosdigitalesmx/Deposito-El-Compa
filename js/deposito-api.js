@@ -20,6 +20,25 @@
   };
   const QUEUE_KEY = 'DEPOSITO_API_POST_QUEUE_V1';
 
+  function normalizeResponse(data, response) {
+    if (data && typeof data === 'object' && data.ok === false) {
+      const error = new Error(data.user_message || data.error || 'Solicitud rechazada por el backend');
+      error.code = data.error_code || data.code || 'SERVER_ERROR';
+      error.debug = data.debug || '';
+      error.response = data;
+      if (error.code === 'AUTH_EXPIRED') {
+        if (global.localStorage && defaultConfig.storageKey) {
+          try { global.localStorage.removeItem(defaultConfig.storageKey); } catch (_) {}
+        }
+        if (global.DEPOSITO_API) {
+          global.DEPOSITO_API.token = '';
+        }
+      }
+      throw error;
+    }
+    return data && typeof data === 'object' ? data : { ok: true, data };
+  }
+
   function loadQueue() {
     try {
       const raw = global.localStorage ? global.localStorage.getItem(QUEUE_KEY) : '[]';
@@ -76,7 +95,13 @@
         const contentType = response.headers.get('content-type') || '';
         const data = contentType.includes('application/json') ? await response.json() : await response.text();
         if (!response.ok) {
-          throw new Error(typeof data === 'string' ? data : data.error || data.message || `HTTP ${response.status}`);
+          const message = typeof data === 'string' ? data : data.error || data.message || `HTTP ${response.status}`;
+          const error = new Error(message);
+          if (data && typeof data === 'object') {
+            error.code = data.error_code || data.code || 'SERVER_ERROR';
+            error.debug = data.debug || '';
+          }
+          throw error;
         }
         flushed += 1;
       } catch (error) {
@@ -110,9 +135,14 @@
     const payload = contentType.includes('application/json') ? await response.json() : await response.text();
     if (!response.ok) {
       const message = typeof payload === 'string' ? payload : payload.error || payload.message || `HTTP ${response.status}`;
-      throw new Error(message);
+      const error = new Error(message);
+      if (payload && typeof payload === 'object') {
+        error.code = payload.error_code || payload.code || '';
+        error.debug = payload.debug || '';
+      }
+      throw error;
     }
-    return payload;
+    return normalizeResponse(payload, response);
   }
 
   function postViaForm(url, body, token) {
@@ -163,12 +193,14 @@
         : await response.text();
       if (!response.ok) {
         const message = typeof data === 'string' ? data : data.error || data.message || `HTTP ${response.status}`;
-        throw new Error(message);
+        const error = new Error(message);
+        if (data && typeof data === 'object') {
+          error.code = data.error_code || data.code || 'SERVER_ERROR';
+          error.debug = data.debug || '';
+        }
+        throw error;
       }
-      if (data && typeof data === 'object' && data.ok === false) {
-        throw new Error(data.error || data.message || 'Solicitud rechazada por el backend');
-      }
-      return data;
+      return normalizeResponse(data, response);
     }).catch((error) => {
       const isNetworkLike = !error || /network|fetch|failed to fetch|load failed|connection/i.test(String(error.message || error));
       if (isNetworkLike) {

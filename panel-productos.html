@@ -170,8 +170,8 @@
       setApiAuth('');
     }
     function isAuthError(err) {
-      const msg = String((err && err.message) || err || '');
-      return /Sesión inválida|Token requerido|Sin permisos/i.test(msg);
+      const code = String((err && err.code) || '').toUpperCase();
+      return code === 'AUTH_EXPIRED';
     }
     async function ensureAuth() {
       const cached = localStorage.getItem(AUTH_TOKEN_KEY);

@@ -23,7 +23,7 @@ function doGet(e) {
     return jsonResponse(handleRequest('GET', e));
   } catch (error) {
     console.error('GET error', error && error.stack ? error.stack : String(error));
-    return jsonResponse({ ok: false, error: String(error && error.message ? error.message : error) });
+    return jsonResponse(buildErrorResponse(error, 'GET'));
   }
 }
 
@@ -33,7 +33,7 @@ function doPost(e) {
     return jsonResponse(handleRequest('POST', normalizePostEvent(e)));
   } catch (error) {
     console.error('POST error', error && error.stack ? error.stack : String(error));
-    return jsonResponse({ ok: false, error: String(error && error.message ? error.message : error) });
+    return jsonResponse(buildErrorResponse(error, 'POST'));
   }
 }
 
@@ -301,6 +301,53 @@ function normalizePostEvent(e) {
     parameter: { ...params, action, token },
     postData: { contents: JSON.stringify(flattened) }
   };
+}
+
+function buildErrorResponse(error, method) {
+  const message = String(error && error.message ? error.message : error || 'Error inesperado');
+  const code = classifyErrorCode(message);
+  const response = {
+    ok: false,
+    error: userFacingErrorMessage(code, message),
+    error_code: code,
+  };
+  if (method) response.method = method;
+  if (message !== response.error) {
+    response.debug = message;
+  }
+  return response;
+}
+
+function classifyErrorCode(message) {
+  const text = String(message || '').toLowerCase();
+  if (text.includes('sesión inválida') || text.includes('token requerido') || text.includes('sin permisos') || text.includes('credenciales')) {
+    return 'AUTH_EXPIRED';
+  }
+  if (text.includes('no se pudo obtener el bloqueo')) {
+    return 'LOCK_ERROR';
+  }
+  if (text.includes('no encontrado')) {
+    return 'NOT_FOUND';
+  }
+  if (text.includes('inválid') || text.includes('inval') || text.includes('requerido') || text.includes('falt')) {
+    return 'VALIDATION_ERROR';
+  }
+  return 'SERVER_ERROR';
+}
+
+function userFacingErrorMessage(code, fallback) {
+  switch (code) {
+    case 'AUTH_EXPIRED':
+      return 'La sesión expiró o no tienes permisos para esta acción';
+    case 'LOCK_ERROR':
+      return 'No se pudo asegurar el documento. Intenta de nuevo';
+    case 'NOT_FOUND':
+      return 'No encontramos el registro solicitado';
+    case 'VALIDATION_ERROR':
+      return 'Revisa los datos capturados e inténtalo de nuevo';
+    default:
+      return 'No pudimos completar la operación';
+  }
 }
 
 function decodeValue(value) {

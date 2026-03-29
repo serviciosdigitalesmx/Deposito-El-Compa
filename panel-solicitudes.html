@@ -231,9 +231,10 @@
               </div>
             </article>
           `;
-        }).join('') : '<div class="empty">No hay solicitudes en este momento.</div>';
+      }).join('') : '<div class="empty">No hay solicitudes en este momento.</div>';
       } catch (e) {
-        list.innerHTML = `<div class="empty">Error al cargar solicitudes: ${e.message}</div>`;
+        console.error('Error al cargar solicitudes:', e);
+        list.innerHTML = '<div class="empty">No pudimos cargar las solicitudes. Intenta de nuevo.</div>';
       }
     }
 
